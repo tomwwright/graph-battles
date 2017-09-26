@@ -1,0 +1,17 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    //"strictNullChecks": true,
+    "baseUrl": "src/",
+    "outDir": "build/es6",
+    "inlineSourceMap": true,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "target": "es6",
+    "module": "es6",
+    "jsx": "preserve",
+    "noEmitOnError": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
