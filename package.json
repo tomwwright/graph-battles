@@ -25,7 +25,6 @@
   "homepage": "https://github.com/tomwwright/graph-battles#readme",
   "dependencies": {
     "async": "^2.4.1",
-    "aws-sdk": "^2.7.21",
     "axios": "^0.16.1",
     "emojis-list": "^2.0.1",
     "glob": "^7.1.1",
@@ -52,6 +51,7 @@
     "@types/sweetalert": "^1.1.27",
     "@types/underscore": "^1.8.0",
     "@types/uuid": "^2.0.29",
+    "aws-sdk": "^2.7.21",
     "aws-sdk-mock": "^1.7.0",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.14.0",

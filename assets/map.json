@@ -1,0 +1,48 @@
+{
+  "territoryIds": [
+    "#0",
+    "#1"
+  ],
+  "unitIds": [
+    "#2"
+  ],
+  "dataMap": {
+    "#0": {
+      "id": "#0",
+      "unitIds": [
+        "#2"
+      ],
+      "food": 3,
+      "foodProduction": 1,
+      "maxFood": 5,
+      "goldProduction": 1,
+      "properties": [],
+      "actions": [],
+      "type": 0,
+      "currentAction": null
+    },
+    "#1": {
+      "id": "#1",
+      "unitIds": [],
+      "food": 5,
+      "foodProduction": 2,
+      "maxFood": 10,
+      "goldProduction": 2,
+      "properties": [
+        0
+      ],
+      "actions": [],
+      "type": 1,
+      "currentAction": null
+    },
+    "#2": {
+      "id": "#2",
+      "locationId": "#0",
+      "destinationId": "#1",
+      "statuses": [
+        0
+      ],
+      "foodConsumption": 1
+    }
+  }
+}

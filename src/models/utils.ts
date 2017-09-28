@@ -32,3 +32,7 @@ export function mapIDs(...objects: IDInstance[]): IDMap {
   objects.forEach(object => (map[object.data.id] = object));
   return map;
 }
+
+export function clone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}

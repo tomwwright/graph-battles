@@ -37,8 +37,7 @@ export function createUnit(map: GameMap, data: UnitData): Unit {
     // get movementEdge(this: Unit) {
     //   return <Edge>map.idMap.get(this.movementEdgeId);
     // },
-    data,
-    idMap: map.idMap
+    data
   };
 
   return unit;

@@ -20,6 +20,7 @@ export type TerritoryData = UnitContainerData & {
 };
 
 export type Territory = UnitContainer & {
+  data: TerritoryData;
   units: Unit[];
 };
 
