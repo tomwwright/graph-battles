@@ -9,7 +9,8 @@ export type GameData = {
   users: UserData[];
 };
 
-export type Game = GameData & {
+export type Game = {
+  data: GameData;
   turn: number;
   nextId: number;
   latestMap: GameMap;
@@ -19,15 +20,15 @@ export type Game = GameData & {
 export function createGame(data: GameData): Game {
   const game: Game = {
     get turn() {
-      return game.maps.length;
+      return game.data.maps.length;
     },
     get nextId() {
-      return game.latestMap.nextId;
+      return game.latestMap.data.nextId;
     },
     get latestMap() {
-      return game.maps[game.maps.length - 1];
+      return game.data.maps[game.data.maps.length - 1];
     },
-    ...data,
+    data,
     users: data.users.map(userData => createUser(game, userData))
   };
   return game;

@@ -1,47 +1,104 @@
 {
-  "territoryIds": [
-    "#0",
-    "#1"
-  ],
-  "unitIds": [
-    "#2"
-  ],
+  "playerIds": ["#0", "#1"],
+  "territoryIds": ["#2", "#3", "#4"],
+  "edgeIds": ["#5", "#6"],
+  "unitIds": ["#7", "#8", "#9"],
   "dataMap": {
     "#0": {
       "id": "#0",
-      "unitIds": [
-        "#2"
-      ],
-      "food": 3,
-      "foodProduction": 1,
-      "maxFood": 5,
+      "territoryIds": "#2",
+      "unitIds": ["#7"],
+      "gold": 1,
       "goldProduction": 1,
-      "properties": [],
-      "actions": [],
-      "type": 0,
-      "currentAction": null
+      "ready": false,
+      "neutralTerritoryCaptures": 0,
+      "opponentTerritoryCaptures": 0,
+      "unitsDestroyed": 0
     },
     "#1": {
       "id": "#1",
-      "unitIds": [],
+      "territoryIds": "#4",
+      "unitIds": ["#8"],
+      "gold": 0,
+      "goldProduction": 2,
+      "ready": false,
+      "neutralTerritoryCaptures": 0,
+      "opponentTerritoryCaptures": 0,
+      "unitsDestroyed": 0
+    },
+    "#2": {
+      "id": "#2",
+      "playerId": "#0",
+      "unitIds": ["#7"],
       "food": 5,
       "foodProduction": 2,
       "maxFood": 10,
       "goldProduction": 2,
-      "properties": [
-        0
-      ],
+      "properties": [0],
       "actions": [],
       "type": 1,
       "currentAction": null
     },
-    "#2": {
-      "id": "#2",
-      "locationId": "#0",
-      "destinationId": "#1",
-      "statuses": [
-        0
-      ],
+    "#3": {
+      "id": "#3",
+      "playerId": null,
+      "unitIds": ["#9"],
+      "food": 3,
+      "foodProduction": 1,
+      "maxFood": 3,
+      "goldProduction": 0,
+      "properties": [],
+      "actions": [],
+      "type": 1,
+      "currentAction": null
+    },
+    "#4": {
+      "id": "#4",
+      "playerId": "#1",
+      "unitIds": ["#8"],
+      "food": 4,
+      "foodProduction": 1,
+      "maxFood": 7,
+      "goldProduction": 1,
+      "properties": [0],
+      "actions": [],
+      "type": 1,
+      "currentAction": null
+    },
+    "#5": {
+      "id": "#5",
+      "unitIds": [],
+      "territoryAId": "#2",
+      "territoryBId": "#3"
+    },
+    "#6": {
+      "id": "#6",
+      "unitIds": [],
+      "territoryAId": "#3",
+      "territoryBId": "#4"
+    },
+    "#7": {
+      "id": "#7",
+      "playerId": "#0",
+      "locationId": "#2",
+      "destinationId": "#3",
+      "statuses": [0],
+      "foodConsumption": 1
+    },
+    "#8": {
+      "id": "#8",
+      "playerId": "#1",
+      "locationId": "#4",
+      "destinationId": null,
+      "statuses": [],
+      "foodConsumption": 1
+    },
+    "#9": {
+      "id": "#9",
+      "playerId": null,
+      "locationId": "#3",
+      "destinationId": null,
+      "statuses": [1],
       "foodConsumption": 1
     }
   }

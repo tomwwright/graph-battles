@@ -22,13 +22,12 @@ export type Player = UnitContainer & {
 export function createPlayer(map: GameMap, playerData: PlayerData): Player {
   let player: Player = {
     get territories(this: Player) {
-      return this.data.territoryIds.map(id => <Territory>this.idMap.get(id));
+      return this.data.territoryIds.map(id => <Territory>map.idMap[id]);
     },
     get units(this: Player) {
-      return this.data.unitIds.map(id => <Unit>this.idMap.get(id));
+      return this.data.unitIds.map(id => <Unit>map.idMap[id]);
     },
-    data: playerData,
-    idMap: map.idMap
+    data: playerData
   };
   return player;
 }

@@ -1,4 +1,4 @@
-import { ID, HasID } from "models/utils";
+import { ID, HasID, IDInstance } from "models/utils";
 import { Game } from "models/game";
 import { Player } from "models/player";
 
@@ -7,16 +7,17 @@ export type UserData = HasID & {
   playerIds: ID[];
 };
 
-export type User = UserData & {
+export type User = IDInstance & {
+  data: UserData;
   players: Player[];
 };
 
 export function createUser(game: Game, data: UserData): User {
   const user: User = {
     get players(this: User) {
-      return this.playerIds.map(id => game.latestMap.players.find(player => player.id === id));
+      return this.data.playerIds.map(id => game.latestMap.players.find(player => player.data.id === id));
     },
-    ...data
+    data
   };
   return user;
 }

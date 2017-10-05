@@ -13,18 +13,8 @@ export type IDInstance = {
   data: HasID;
 };
 
-export class IDProvider {
-  nextId: number = 0;
-
-  constructor(id: number = 0) {
-    this.nextId = id;
-  }
-
-  next(): ID {
-    let id = "#" + Number(this.nextId).toString(16);
-    this.nextId++;
-    return id;
-  }
+export function toID(id: number): string {
+  return Number(id).toString(16);
 }
 
 export function mapIDs(...objects: IDInstance[]): IDMap {
