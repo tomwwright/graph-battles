@@ -1,21 +1,29 @@
-import * as ReactDOM from 'react-dom';
-import * as React from 'react';
-import { Provider } from 'mobx-react';
-import GameStore from 'game/stores/gameStore';
-import Root from 'game/components/root';
+import * as ReactDOM from "react-dom";
+import * as React from "react";
+import { Provider } from "mobx-react";
+import { Provider as ThemeProvider } from "rebass";
+import GameStore from "game/stores/gameStore";
+import UiStore from "game/stores/uiStore";
+import Root from "game/components/Root";
 
-import { createMap } from 'models/map';
+import { createMap } from "models/map";
 
 const stores = {
-  game: new GameStore()
+  game: new GameStore(),
+  ui: new UiStore()
 };
 
-const mapData = require('../../../assets/map.json');
+const mapData = require("../../../assets/map.json");
 
 stores.game.map = createMap(mapData);
 
+stores.ui.selectedUnitId = stores.game.map.data.unitIds[0];
+
 ReactDOM.render(
-  <Provider game={stores.game}>
-    <Root />
-  </Provider>,
-  document.getElementById("react-container"));
+  <ThemeProvider>
+    <Provider {...stores}>
+      <Root />
+    </Provider>
+  </ThemeProvider>,
+  document.getElementById("react-container")
+);

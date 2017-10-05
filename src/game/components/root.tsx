@@ -1,5 +1,5 @@
-import * as React from 'react';
-import GameInfo from 'game/components/GameInfo';
+import * as React from "react";
+import GameInfo from "game/components/GameInfo";
 
 const Root: React.StatelessComponent<{}> = () => (
   <div>
