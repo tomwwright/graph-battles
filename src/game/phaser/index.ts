@@ -1,14 +1,21 @@
 import * as Phaser from "phaser-ce";
 
-import UiStore from "game/stores/uiStore";
+import RootStore from "game/stores";
+import TerritoryView from "game/phaser/territory";
+import EdgeView from "game/phaser/edge";
 
+import { GameMap } from "models/map";
 import { TerritoryTypeCheckOrder, Colour } from "models/values";
 import { TerritoryAssetStrings, TERRITORY_ASSET_PREFIX, TERRITORY_ASSET_BACKDROP_SUFFIX } from "game/constants";
 
 const ASSET_PATH = "/assets/";
 
-export function initialisePhaser(window: Window, divId: string, store: UiStore) {
-  const phaser = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, divId, { preload, create });
+export function initialisePhaser(window: Window, divId: string, store: RootStore) {
+  const phaser = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, divId, {
+    preload,
+    create,
+    update
+  });
 
   window.onresize = () => {
     let width = window.innerWidth;
@@ -32,11 +39,11 @@ export function initialisePhaser(window: Window, divId: string, store: UiStore) 
 
     for (let type of TerritoryTypeCheckOrder) {
       let assetString = TerritoryAssetStrings[type];
-      this.load.image(
+      phaser.load.image(
         TERRITORY_ASSET_PREFIX + assetString,
         ASSET_PATH + "territories/territory-" + assetString + ".png"
       );
-      this.load.image(
+      phaser.load.image(
         TERRITORY_ASSET_PREFIX + assetString + TERRITORY_ASSET_BACKDROP_SUFFIX,
         ASSET_PATH + "territories/territory-" + assetString + "-backdrop.png"
       );
@@ -45,7 +52,32 @@ export function initialisePhaser(window: Window, divId: string, store: UiStore) 
 
   function create() {
     phaser.stage.backgroundColor = Colour.BLACK;
-    store.phaser = phaser;
-    store.isPhaserInitialised = true;
+
+    store.ui.phaser = phaser;
+    store.ui.isPhaserInitialised = true;
+  }
+
+  function update() {}
+}
+
+export function initialiseViews(stores: RootStore, territoryPositions: Array<{ x: number; y: number }>) {
+  for (let i = 0; i < stores.game.map.territories.length; ++i) {
+    const territoryId = stores.game.map.territories[i].data.id;
+    stores.ui.territoryViews.set(
+      territoryId,
+      new TerritoryView(
+        stores.ui.phaser,
+        stores.game,
+        stores.ui,
+        territoryId,
+        territoryPositions[i].x,
+        territoryPositions[i].y
+      )
+    );
+  }
+
+  for (let i = 0; i < stores.game.map.edges.length; ++i) {
+    const edgeId = stores.game.map.edges[i].data.id;
+    stores.ui.edgeViews.set(edgeId, new EdgeView(stores.ui.phaser, stores, edgeId));
   }
 }

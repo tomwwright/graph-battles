@@ -1,19 +1,22 @@
 import { autorun } from "mobx";
 import { Territory } from "models/territory";
 import { ID } from "models/utils";
-import GameStore from "game/stores/gameStore";
-import UiStore from "game/stores/uiStore";
+import GameStore from "game/stores/game";
+import UiStore from "game/stores/ui";
 import {
   TerritoryAssetStrings,
   TERRITORY_ASSET_PREFIX,
   TERRITORY_ASSET_BACKDROP_SUFFIX,
-  TERRITORY_VISIBILITY_OVERLAY_ALPHA
+  TERRITORY_VISIBILITY_OVERLAY_ALPHA,
+  TERRITORY_SELECTED_ALPHA
 } from "game/constants";
+
 import { Colour } from "models/values";
 
 export default class TerritoryView {
   modelId: ID;
   gameStore: GameStore;
+  uiStore: UiStore;
 
   phaser: Phaser.Game;
   sprite: Phaser.Image;
@@ -22,10 +25,11 @@ export default class TerritoryView {
   spriteActionIndicator: Phaser.Image;
   spriteGroup: Phaser.Group;
 
-  constructor(phaser: Phaser.Game, gameStore: GameStore, modelId: string, x: number, y: number) {
+  constructor(phaser: Phaser.Game, gameStore: GameStore, uiStore: UiStore, modelId: string, x: number, y: number) {
     this.modelId = modelId;
     this.phaser = phaser;
     this.gameStore = gameStore;
+    this.uiStore = uiStore;
 
     this.initialiseSprites(x, y);
     this.initialiseSpriteEvents();
@@ -70,19 +74,30 @@ export default class TerritoryView {
   }
 
   initialiseSpriteEvents() {
-    // this.sprite.inputEnabled = true;
-    // this.sprite.input.pixelPerfectOver = true;
-    // this.sprite.events.onInputOver.add(game.inputHooks.onTerritoryOver);
-    // this.sprite.events.onInputOut.add(game.inputHooks.onTerritoryOut);
-    // this.sprite.events.onInputDown.add(game.inputHooks.onTerritoryDown);
-    // this.sprite.data.view = this.modelId;
+    this.sprite.inputEnabled = true;
+    this.sprite.input.pixelPerfectOver = true;
+    const self = this;
+    console.log("initialing territory sprite events");
+    this.sprite.input.enabled = true;
+    this.sprite.events.onInputUp.add((obj: Phaser.Image, pointer: Phaser.Pointer) => {
+      self.uiStore.selectTerritory(obj.data.modelId);
+    });
+    this.sprite.data.modelId = this.modelId;
   }
 
   initialiseAutoruns() {
+    autorun(this.onUpdateSelected.bind(this));
     autorun(this.onUpdateVisibility.bind(this));
     autorun(this.onUpdateActionIndicator.bind(this));
     autorun(this.onUpdateTerritorySprite.bind(this));
     autorun(this.onUpdateTerritoryController.bind(this));
+  }
+
+  onUpdateSelected() {
+    this.sprite.alpha =
+      this.uiStore.selectedType == "territory" && this.uiStore.selectedId == this.modelId
+        ? TERRITORY_SELECTED_ALPHA
+        : 1;
   }
 
   onUpdateVisibility() {

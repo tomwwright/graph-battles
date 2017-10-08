@@ -3,9 +3,9 @@ import { Territory } from "models/territory";
 import * as TerritoryActionResolvers from "models/territoryActionResolvers";
 
 export enum Colour {
-  BLACK = 0x000000,
-  WHITE = 0xffffff,
-  RED = 0xff0000,
+  BLACK = 0x000000, // 0
+  WHITE = 0xffffff, // 16777215
+  RED = 0xff0000, // 16711680
   BLUE = 0x0000ff,
   GREEN = 0x00ff00,
   PURPLE = 0x9900ff,

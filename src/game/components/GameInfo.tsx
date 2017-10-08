@@ -2,7 +2,7 @@ import * as React from "react";
 import { inject, observer } from "mobx-react";
 import { Card, Text } from "rebass";
 
-import GameStore from "game/stores/gameStore";
+import GameStore from "game/stores/game";
 import InfoPane from "game/components/InfoPane";
 import UnitInfo from "game/components/UnitInfo";
 
