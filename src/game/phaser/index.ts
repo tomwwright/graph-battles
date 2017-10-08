@@ -3,11 +3,9 @@ import * as Phaser from "phaser-ce";
 import UiStore from "game/stores/uiStore";
 
 import { TerritoryTypeCheckOrder, Colour } from "models/values";
-import { TerritoryAssetStrings } from "game/constants";
+import { TerritoryAssetStrings, TERRITORY_ASSET_PREFIX, TERRITORY_ASSET_BACKDROP_SUFFIX } from "game/constants";
 
 const ASSET_PATH = "/assets/";
-const TERRITORY_ASSET_PREFIX: string = "territory-";
-const TERRITORY_ASSET_BACKDROP_SUFFIX: string = "-backdrop";
 
 export function initialisePhaser(window: Window, divId: string, store: UiStore) {
   const phaser = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, divId, { preload, create });
@@ -47,6 +45,7 @@ export function initialisePhaser(window: Window, divId: string, store: UiStore) 
 
   function create() {
     phaser.stage.backgroundColor = Colour.BLACK;
+    store.phaser = phaser;
     store.isPhaserInitialised = true;
   }
 }

@@ -1,5 +1,10 @@
 import { TerritoryType, Status, TerritoryAction } from "models/values";
 
+export const TERRITORY_ASSET_PREFIX: string = "territory-";
+export const TERRITORY_ASSET_BACKDROP_SUFFIX: string = "-backdrop";
+
+export const TERRITORY_VISIBILITY_OVERLAY_ALPHA = 0.5;
+
 export const TerritoryAssetStrings: { [key: number]: string } = {
   [TerritoryType.UNSETTLED]: "unsettled",
   [TerritoryType.SETTLED]: "settled",

@@ -3,8 +3,10 @@ import { GameMap } from "models/map";
 import { UnitContainerData, UnitContainer } from "models/unitcontainer";
 import { Territory } from "models/territory";
 import { Unit } from "models/unit";
+import { Colour } from "models/values";
 
 export type PlayerData = UnitContainerData & {
+  colour: Colour;
   territoryIds: ID[];
   gold: number;
   goldProduction: number;

@@ -17,7 +17,7 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ game, ui }) => (
     <InfoPane>
       <Text>Phaser Initialised? {ui.isPhaserInitialised ? "Yes" : "No"}</Text>
     </InfoPane>
-    {ui.selectedUnitId ? <UnitInfo unit={game.map.units.find(unit => unit.data.id == ui.selectedUnitId)} /> : null}
+    {ui.selectedType === "unit" ? <UnitInfo unit={game.map.units.find(unit => unit.data.id == ui.selectedId)} /> : null}
   </div>
 );
 

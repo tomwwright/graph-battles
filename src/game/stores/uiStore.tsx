@@ -1,4 +1,5 @@
 import { observable, action } from "mobx";
+import * as Phaser from "phaser-ce";
 import { ID } from "models/utils";
 import { Unit } from "models/unit";
 
@@ -7,6 +8,8 @@ export default class UiStore {
   @observable selectedType: "unit" | "territory" | null;
   @observable isPhaserInitialised: boolean = false;
   @observable turn: number = 1;
+
+  phaser: Phaser.Game;
 
   @action
   select(id: ID, type: "unit" | "territory" | null) {

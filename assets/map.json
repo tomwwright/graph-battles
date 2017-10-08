@@ -6,6 +6,7 @@
   "dataMap": {
     "#0": {
       "id": "#0",
+      "colour": 10027263,
       "territoryIds": "#2",
       "unitIds": ["#7"],
       "gold": 1,
@@ -17,6 +18,7 @@
     },
     "#1": {
       "id": "#1",
+      "colour": 255,
       "territoryIds": "#4",
       "unitIds": ["#8"],
       "gold": 0,
