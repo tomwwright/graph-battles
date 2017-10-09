@@ -50,7 +50,7 @@
       "maxFood": 3,
       "goldProduction": 0,
       "properties": [],
-      "actions": [],
+      "actions": [0, 1],
       "type": 1,
       "currentAction": null
     },
@@ -63,7 +63,7 @@
       "maxFood": 7,
       "goldProduction": 1,
       "properties": [0],
-      "actions": [],
+      "actions": [2],
       "type": 1,
       "currentAction": null
     },
