@@ -3,12 +3,13 @@ import * as Phaser from "phaser-ce";
 import RootStore from "game/stores";
 import TerritoryView from "game/phaser/territory";
 import EdgeView from "game/phaser/edge";
+import UnitView from "game/phaser/unit";
 
 import { GameMap } from "models/map";
 import { TerritoryTypeCheckOrder, Colour } from "models/values";
 import { TerritoryAssetStrings, TERRITORY_ASSET_PREFIX, TERRITORY_ASSET_BACKDROP_SUFFIX } from "game/constants";
 
-const ASSET_PATH = "/assets/";
+export const ASSET_PATH = "/assets/";
 
 export function initialisePhaser(window: Window, divId: string, store: RootStore) {
   const phaser = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, divId, {
@@ -36,6 +37,7 @@ export function initialisePhaser(window: Window, divId: string, store: RootStore
     phaser.load.image("status-starve", ASSET_PATH + "status-starve.png");
     phaser.load.image("territory-action", ASSET_PATH + "territory-action.png");
     phaser.load.image("arrow", ASSET_PATH + "arrow.png");
+    phaser.load.image("marker", ASSET_PATH + "marker.png");
 
     for (let type of TerritoryTypeCheckOrder) {
       let assetString = TerritoryAssetStrings[type];
@@ -76,8 +78,13 @@ export function initialiseViews(stores: RootStore, territoryPositions: Array<{ x
     );
   }
 
-  for (let i = 0; i < stores.game.map.edges.length; ++i) {
-    const edgeId = stores.game.map.edges[i].data.id;
+  for (let edge of stores.game.map.edges) {
+    const edgeId = edge.data.id;
     stores.ui.edgeViews.set(edgeId, new EdgeView(stores.ui.phaser, stores, edgeId));
+  }
+
+  for (let unit of stores.game.map.units) {
+    const unitId = unit.data.id;
+    stores.ui.unitViews.set(unitId, new UnitView(stores.ui.phaser, stores.game, stores.ui, unitId));
   }
 }

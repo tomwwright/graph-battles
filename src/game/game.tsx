@@ -5,6 +5,7 @@ import { when } from "mobx";
 import { Provider as ThemeProvider } from "rebass";
 import Root from "game/components/Root";
 import RootStore from "game/stores";
+import { VisibilityMode } from "game/stores/game";
 
 import { initialisePhaser, initialiseViews } from "game/phaser";
 import TerritoryView from "game/phaser/territory";
@@ -25,6 +26,7 @@ when(
     // phaser is ready!
     const positions = [{ x: 300, y: 300 }, { x: 550, y: 200 }, { x: 700, y: 400 }];
     initialiseViews(stores, positions);
+    stores.game.setVisibility(VisibilityMode.VISIBLE);
   }
 );
 

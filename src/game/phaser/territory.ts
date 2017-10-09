@@ -8,7 +8,7 @@ import {
   TERRITORY_ASSET_PREFIX,
   TERRITORY_ASSET_BACKDROP_SUFFIX,
   TERRITORY_VISIBILITY_OVERLAY_ALPHA,
-  TERRITORY_SELECTED_ALPHA
+  SELECTED_ALPHA
 } from "game/constants";
 
 import { Colour } from "models/values";
@@ -76,9 +76,9 @@ export default class TerritoryView {
   initialiseSpriteEvents() {
     this.sprite.inputEnabled = true;
     this.sprite.input.pixelPerfectOver = true;
-    const self = this;
-    console.log("initialing territory sprite events");
     this.sprite.input.enabled = true;
+
+    const self = this;
     this.sprite.events.onInputUp.add((obj: Phaser.Image, pointer: Phaser.Pointer) => {
       self.uiStore.selectTerritory(obj.data.modelId);
     });
@@ -95,9 +95,7 @@ export default class TerritoryView {
 
   onUpdateSelected() {
     this.sprite.alpha =
-      this.uiStore.selectedType == "territory" && this.uiStore.selectedId == this.modelId
-        ? TERRITORY_SELECTED_ALPHA
-        : 1;
+      this.uiStore.selectedType == "territory" && this.uiStore.selectedId == this.modelId ? SELECTED_ALPHA : 1;
   }
 
   onUpdateVisibility() {

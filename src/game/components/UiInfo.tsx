@@ -6,6 +6,7 @@ import GameStore from "game/stores/game";
 import UiStore from "game/stores/ui";
 import InfoPane from "game/components/InfoPane";
 import UnitInfo from "game/components/UnitInfo";
+import TerritoryInfo from "game/components/TerritoryInfo";
 
 type UiInfoProps = {
   game?: GameStore;
@@ -21,6 +22,9 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ game, ui }) => (
       </Text>
     </InfoPane>
     {ui.selectedType === "unit" ? <UnitInfo unit={game.map.units.find(unit => unit.data.id == ui.selectedId)} /> : null}
+    {ui.selectedType === "territory" ? (
+      <TerritoryInfo territory={game.map.territories.find(territory => territory.data.id == ui.selectedId)} />
+    ) : null}
   </div>
 );
 

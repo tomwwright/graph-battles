@@ -1,10 +1,10 @@
 import { TerritoryType, Status, TerritoryAction } from "models/values";
 
+export const SELECTED_ALPHA = 0.8;
+
 export const TERRITORY_ASSET_PREFIX: string = "territory-";
 export const TERRITORY_ASSET_BACKDROP_SUFFIX: string = "-backdrop";
-
 export const TERRITORY_VISIBILITY_OVERLAY_ALPHA = 0.5;
-export const TERRITORY_SELECTED_ALPHA = 0.8;
 
 export const TerritoryAssetStrings: { [key: number]: string } = {
   [TerritoryType.UNSETTLED]: "unsettled",
@@ -23,12 +23,12 @@ export const TerritoryAssetStrings: { [key: number]: string } = {
 type StatusDefinition = {
   status: number;
   assetString: string;
-  prettyText: string;
+  text: string;
 };
 
 export const StatusDefinitions: { [key: number]: StatusDefinition } = {
-  [Status.DEFEND]: { status: Status.DEFEND, assetString: "status-defend", prettyText: "Defending" },
-  [Status.STARVE]: { status: Status.STARVE, assetString: "status-starve", prettyText: "Starving" }
+  [Status.DEFEND]: { status: Status.DEFEND, assetString: "status-defend", text: "Defending" },
+  [Status.STARVE]: { status: Status.STARVE, assetString: "status-starve", text: "Starving" }
 };
 
 export const TerritoryActionTexts: { [key: number]: string } = {
@@ -39,3 +39,6 @@ export const TerritoryActionTexts: { [key: number]: string } = {
   [TerritoryAction.BUILD_CITY]: "Build City",
   [TerritoryAction.BUILD_CASTLE]: "Build Castle"
 };
+
+export const UNITS_PER_ROW = 3;
+export const UNITS_SPACING = 0.2;

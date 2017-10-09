@@ -26,7 +26,7 @@ export type Unit = IDInstance & {
 export function createUnit(map: GameMap, data: UnitData): Unit {
   let unit: Unit = {
     get player(this: Unit) {
-      return <Player>map.idMap.get[this.data.playerId];
+      return <Player>map.idMap[this.data.playerId];
     },
     get location(this: Unit) {
       return <UnitContainer>map.idMap[this.data.locationId];
