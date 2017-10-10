@@ -2,14 +2,16 @@ import * as React from "react";
 import { Territory } from "models/territory";
 import { Card, BackgroundImage, Box, Subhead, Small, Text } from "rebass";
 import TerritoryAction from "game/components/TerritoryAction";
+import { TerritoryAction as TerritoryActionEnum } from "models/values";
 
 import { ASSET_PATH } from "game/phaser";
 
 type TerritoryInfoProps = {
   territory: Territory;
+  setTerritoryAction: (action: TerritoryActionEnum) => void;
 };
 
-const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory }) => (
+const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory, setTerritoryAction }) => (
   <div>
     <Card width={256}>
       <BackgroundImage src={`${ASSET_PATH}territory-portrait.jpg`} />
@@ -27,7 +29,18 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
         </Small>
       </Box>
     </Card>
-    {territory.data.actions.map(action => <TerritoryAction action={action} />)}
+    {territory.data.actions.map(action => {
+      const isSelected = territory.data.currentAction === action;
+      const isAvailable = territory.data.currentAction === null || isSelected;
+      return (
+        <TerritoryAction
+          onClick={setTerritoryAction}
+          action={action}
+          isSelected={isSelected}
+          isAvailable={isAvailable}
+        />
+      );
+    })}
   </div>
 );
 

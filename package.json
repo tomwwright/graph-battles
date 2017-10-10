@@ -7,7 +7,7 @@
     "compile:es5": "babel --source-maps inline --presets=es2015,react --out-dir build/es5 build/es6",
     "bundle:client": "webpack --config webpack.config.js",
     "bundle:resolver": "webpack --config webpack.config.resolver.js",
-    "compile": "yarn compile:es6 && yarn compile:es5",
+    "compile": "yarn compile:es6",
     "build:client": "yarn compile && yarn bundle:client",
     "build:resolver": "yarn compile && yarn bundle:resolver",
     "test": "yarn test:model || yarn test:resolver",
@@ -71,9 +71,6 @@
     "webpack": "^2.5.1"
   },
   "babel": {
-    "presets": [
-      "es2015",
-      "react"
-    ]
+    "presets": ["es2015", "react"]
   }
 }

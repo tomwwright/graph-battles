@@ -4,14 +4,15 @@
     "experimentalDecorators": true,
     //"strictNullChecks": true,
     "baseUrl": "src/",
-    "outDir": "build/es6",
+    "outDir": "build/es5",
     "inlineSourceMap": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
-    "target": "es6",
-    "module": "es6",
-    "jsx": "preserve",
-    "noEmitOnError": true
+    "target": "es5",
+    //"module": "es6",
+    "jsx": "react",
+    "noEmitOnError": true,
+    "lib": ["es2015", "dom"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

@@ -23,7 +23,10 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ game, ui }) => (
     </InfoPane>
     {ui.selectedType === "unit" ? <UnitInfo unit={game.map.units.find(unit => unit.data.id == ui.selectedId)} /> : null}
     {ui.selectedType === "territory" ? (
-      <TerritoryInfo territory={game.map.territories.find(territory => territory.data.id == ui.selectedId)} />
+      <TerritoryInfo
+        territory={game.map.territories.find(territory => territory.data.id == ui.selectedId)}
+        setTerritoryAction={action => game.setTerritoryAction(territory, action)}
+      />
     ) : null}
   </div>
 );
