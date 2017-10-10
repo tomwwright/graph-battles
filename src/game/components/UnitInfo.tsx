@@ -4,6 +4,7 @@ import { Card, BackgroundImage, Box, Subhead, Small, Text } from "rebass";
 
 import { ASSET_PATH } from "game/phaser";
 import { StatusDefinitions } from "game/constants";
+import { ColourStrings } from "models/values";
 
 type UnitInfoProps = {
   unit: Unit;
@@ -14,7 +15,10 @@ const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, children }) =
     <BackgroundImage src={`${ASSET_PATH}unit-portrait.jpg`} />
     <Box p={2}>
       <Subhead>
-        Unit {unit.data.id} <Small>{unit.player ? `Player ${unit.data.playerId}` : "No player"}</Small>
+        Unit {unit.data.id}{" "}
+        <Small color={unit.player ? ColourStrings[unit.player.data.colour] : "gray"}>
+          {unit.player ? `Player ${unit.data.playerId}` : "No player"}
+        </Small>
       </Subhead>
       <Small>
         <Text>Location {unit.location.data.id}</Text>

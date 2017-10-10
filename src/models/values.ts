@@ -13,6 +13,17 @@ export enum Colour {
   ORANGE = 0xff9900
 }
 
+export const ColourStrings = {
+  [Colour.BLACK]: "black",
+  [Colour.WHITE]: "white",
+  [Colour.RED]: "red",
+  [Colour.BLUE]: "blue",
+  [Colour.GREEN]: "green",
+  [Colour.PURPLE]: "purple",
+  [Colour.YELLOW]: "yellow",
+  [Colour.ORANGE]: "orange"
+};
+
 export enum Status {
   DEFEND,
   STARVE

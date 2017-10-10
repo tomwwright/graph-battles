@@ -1,6 +1,7 @@
-import { observable, action } from "mobx";
+import { observable, action, computed } from "mobx";
 import { ID } from "models/utils";
 import { GameMap, GameMapData, createMap } from "models/map";
+import { Player } from "models/player";
 import { Territory, setTerritoryAction } from "models/territory";
 import { TerritoryAction } from "models/values";
 
@@ -12,7 +13,13 @@ export enum VisibilityMode {
 
 export default class GameStore {
   @observable.ref map: GameMap;
+  @observable currentPlayerId: ID;
   @observable visibility: Map<ID, boolean> = new Map();
+
+  @computed
+  get currentPlayer(): Player {
+    return this.map.players.find(player => player.data.id === this.currentPlayerId);
+  }
 
   @action
   setMap(mapData: GameMapData) {

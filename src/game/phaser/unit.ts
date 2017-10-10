@@ -172,6 +172,10 @@ export default class UnitView {
 
   onUpdateSelected() {
     this.sprite.alpha =
-      this.uiStore.selectedType == "unit" && this.uiStore.selectedId == this.modelId ? SELECTED_ALPHA : 1;
+      this.uiStore.selected &&
+      this.uiStore.selected.type === "unit" &&
+      this.uiStore.selected.ids.indexOf(this.modelId) != -1
+        ? SELECTED_ALPHA
+        : 1;
   }
 }

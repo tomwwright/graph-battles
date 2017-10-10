@@ -3,5 +3,5 @@ import UiStore from "game/stores/ui";
 
 export default class RootStore {
   game: GameStore = new GameStore();
-  ui: UiStore = new UiStore();
+  ui: UiStore = new UiStore(this.game);
 }

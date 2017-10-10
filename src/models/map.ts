@@ -21,6 +21,10 @@ export type GameMap = IDInstance & {
   edges: Edge[];
   units: Unit[];
   addUnit: (territory: Territory) => GameMap;
+  unit: (unitId: ID) => Unit;
+  territory: (territoryId: ID) => Territory;
+  edge: (edgeId: ID) => Edge;
+  player: (playerId: ID) => Player;
 };
 
 export function createMap(data: GameMapData): GameMap {
@@ -36,6 +40,18 @@ export function createMap(data: GameMapData): GameMap {
     },
     get units(this: GameMap) {
       return this.data.unitIds.map(id => <Unit>this.idMap[id]);
+    },
+    unit(unitId: ID) {
+      return map.units.find(unit => unit.data.id === unitId);
+    },
+    territory(territoryId: ID) {
+      return map.territories.find(territory => territory.data.id === territoryId);
+    },
+    edge(edgeId: ID) {
+      return map.edges.find(edge => edge.data.id === edgeId);
+    },
+    player(playerId: ID) {
+      return map.players.find(player => player.data.id === playerId);
     },
     addUnit: (territory: Territory) => addUnit(map, territory),
     data,

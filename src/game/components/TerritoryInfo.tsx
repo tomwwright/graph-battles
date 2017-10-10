@@ -2,7 +2,7 @@ import * as React from "react";
 import { Territory } from "models/territory";
 import { Card, BackgroundImage, Box, Subhead, Small, Text } from "rebass";
 import TerritoryAction from "game/components/TerritoryAction";
-import { TerritoryAction as TerritoryActionEnum } from "models/values";
+import { TerritoryAction as TerritoryActionEnum, ColourStrings } from "models/values";
 
 import { ASSET_PATH } from "game/phaser";
 
@@ -18,7 +18,9 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
       <Box p={2}>
         <Subhead>
           Territory {territory.data.id}{" "}
-          <Small>{territory.player ? `Player ${territory.data.playerId}` : "No player"}</Small>
+          <Small color={territory.player ? ColourStrings[territory.player.data.colour] : "gray"}>
+            {territory.player ? `Player ${territory.data.playerId}` : "No player"}
+          </Small>
         </Subhead>
         <Small>
           <Text>
@@ -29,11 +31,12 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
         </Small>
       </Box>
     </Card>
-    {territory.data.actions.map(action => {
+    {territory.data.actions.map((action, i) => {
       const isSelected = territory.data.currentAction === action;
       const isAvailable = territory.data.currentAction === null || isSelected;
       return (
         <TerritoryAction
+          key={i}
           onClick={setTerritoryAction}
           action={action}
           isSelected={isSelected}
