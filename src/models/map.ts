@@ -67,9 +67,6 @@ export function createMap(data: GameMapData): GameMap {
 }
 
 export function addUnit(map: GameMap, territory: Territory): GameMap {
-  map = createMap(clone(map.data));
-  territory = <Territory>map.idMap[territory.data.id];
-
   const unitData: UnitData = {
     id: toID(map.data.nextId),
     playerId: territory.data.playerId,
@@ -80,8 +77,11 @@ export function addUnit(map: GameMap, territory: Territory): GameMap {
     foodConsumption: 1
   };
 
-  territory.data.unitIds.push(unitData.id);
+  map.data.dataMap[unitData.id] = unitData;
+  map.idMap[unitData.id] = createUnit(map, unitData);
+
   map.data.unitIds.push(unitData.id);
+  territory.data.unitIds.push(unitData.id);
   if (territory.player) territory.player.data.unitIds.push(unitData.id);
 
   return createMap(map.data);
