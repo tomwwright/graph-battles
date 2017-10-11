@@ -1,9 +1,9 @@
-import { ID, HasID, IDInstance } from "models/utils";
-import { GameMap } from "models/map";
-import { Player } from "models/player";
-import { UnitContainer } from "models/unitcontainer";
-import { Territory } from "models/territory";
-import { Edge } from "models/edge";
+import { ID, HasID, Model } from "models/utils";
+import GameMap from "models/map";
+import Player from "models/player";
+import UnitContainer from "models/unitcontainer";
+import Territory from "models/territory";
+import Edge from "models/edge";
 import { Status } from "models/values";
 
 export type UnitData = HasID & {
@@ -15,30 +15,17 @@ export type UnitData = HasID & {
   foodConsumption: number;
 };
 
-export type Unit = IDInstance & {
-  data: UnitData;
-  player: Player;
-  location: UnitContainer;
-  destination: Territory;
-  movementEdge: Edge;
-};
-
-export function createUnit(map: GameMap, data: UnitData): Unit {
-  let unit: Unit = {
-    get player(this: Unit) {
-      return <Player>map.idMap[this.data.playerId];
-    },
-    get location(this: Unit) {
-      return <UnitContainer>map.idMap[this.data.locationId];
-    },
-    get destination(this: Unit) {
-      return <Territory>map.idMap[this.data.destinationId];
-    },
-    get movementEdge(this: Unit) {
-      return <Edge>map.idMap[this.data.movementEdgeId];
-    },
-    data
-  };
-
-  return unit;
+export default class Unit extends Model<UnitData> {
+  get player() {
+    return <Player>this.map.modelMap[this.data.playerId];
+  }
+  get location() {
+    return <UnitContainer>this.map.modelMap[this.data.locationId];
+  }
+  get destination() {
+    return <Territory>this.map.modelMap[this.data.destinationId];
+  }
+  get movementEdge() {
+    return <Edge>this.map.modelMap[this.data.movementEdgeId];
+  }
 }

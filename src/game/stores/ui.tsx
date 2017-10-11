@@ -6,7 +6,7 @@ import EdgeView from "game/phaser/edge";
 import UnitView from "game/phaser/unit";
 
 import { ID } from "models/utils";
-import { Unit } from "models/unit";
+import Unit from "models/unit";
 
 type Selected =
   | null

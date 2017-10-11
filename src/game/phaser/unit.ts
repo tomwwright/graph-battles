@@ -5,7 +5,7 @@ import UiStore from "game/stores/ui";
 import { StatusDefinitions, SELECTED_ALPHA, UNITS_PER_ROW, UNITS_SPACING } from "game/constants";
 
 import { ID } from "models/utils";
-import { Unit } from "models/unit";
+import Unit from "models/unit";
 import { Colour } from "models/values";
 
 export default class UnitView {

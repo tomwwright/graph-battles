@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Unit } from "models/unit";
+import Unit from "models/unit";
 import { Card, BackgroundImage, Box, Subhead, Small, Text } from "rebass";
 
 import { ASSET_PATH } from "game/phaser";

@@ -1,33 +1,18 @@
-import { ID, IDInstance } from "models/utils";
-import { GameMap } from "models/map";
-import { UnitContainerData, UnitContainer } from "models/unitcontainer";
-import { Territory } from "models/territory";
-import { Unit } from "models/unit";
+import { ID, Model } from "models/utils";
+import GameMap from "models/map";
+import UnitContainer, { UnitContainerData } from "models/unitcontainer";
+import Territory from "models/territory";
 
 export type EdgeData = UnitContainerData & {
   territoryAId: ID;
   territoryBId: ID;
 };
 
-export type Edge = IDInstance &
-  UnitContainer & {
-    data: EdgeData;
-    territoryA: Territory;
-    territoryB: Territory;
-  };
-
-export function createEdge(map: GameMap, data: EdgeData): Edge {
-  let edge: Edge = {
-    get territoryA(this: Edge) {
-      return <Territory>map.idMap[this.data.territoryAId];
-    },
-    get territoryB(this: Edge) {
-      return <Territory>map.idMap[this.data.territoryBId];
-    },
-    get units(this: Edge) {
-      return this.data.unitIds.map(id => <Unit>map.idMap[id]);
-    },
-    data
-  };
-  return edge;
+export default class Edge extends Model<EdgeData> {
+  get territoryA() {
+    return <Territory>this.map.modelMap[this.data.territoryAId];
+  }
+  get territoryB() {
+    return <Territory>this.map.modelMap[this.data.territoryBId];
+  }
 }

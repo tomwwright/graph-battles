@@ -1,23 +1,22 @@
-import { ID, HasID, IDInstance } from "models/utils";
-import { Game } from "models/game";
-import { Player } from "models/player";
+import { ID, HasID, Model } from "models/utils";
+import Game from "models/game";
+import Player from "models/player";
 
 export type UserData = HasID & {
   name: string;
   playerIds: ID[];
 };
 
-export type User = IDInstance & {
+export default class User {
   data: UserData;
-  players: Player[];
-};
+  game: Game;
 
-export function createUser(game: Game, data: UserData): User {
-  const user: User = {
-    get players(this: User) {
-      return this.data.playerIds.map(id => game.latestMap.players.find(player => player.data.id === id));
-    },
-    data
-  };
-  return user;
+  constructor(game: Game, data: UserData) {
+    this.data = data;
+    this.game = game;
+  }
+
+  get players() {
+    return this.data.playerIds.map(id => this.game.latestMap.players.find(player => player.data.id === id));
+  }
 }

@@ -1,5 +1,5 @@
-import { GameMap } from "models/map";
-import { Territory } from "models/territory";
+import GameMap from "models/map";
+import Territory from "models/territory";
 import * as TerritoryActionResolvers from "models/territoryActionResolvers";
 
 export enum Colour {

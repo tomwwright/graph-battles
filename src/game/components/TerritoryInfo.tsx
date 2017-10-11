@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Territory } from "models/territory";
+import Territory from "models/territory";
 import { Card, BackgroundImage, Box, Subhead, Small, Text } from "rebass";
 import TerritoryAction from "game/components/TerritoryAction";
 import { TerritoryAction as TerritoryActionEnum, ColourStrings } from "models/values";

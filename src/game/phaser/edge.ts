@@ -1,7 +1,7 @@
 import * as Phaser from "phaser-ce";
 import RootStore from "game/stores";
 import { ID } from "models/utils";
-import { Edge } from "models/edge";
+import Edge from "models/edge";
 
 export default class EdgeView {
   modelId: ID;
@@ -10,7 +10,7 @@ export default class EdgeView {
   constructor(phaser: Phaser.Game, stores: RootStore, modelId: ID) {
     this.modelId = modelId;
 
-    const model = stores.game.map.idMap[modelId] as Edge;
+    const model = stores.game.map.edge(modelId);
 
     const territoryViewA = stores.ui.territoryViews.get(model.territoryA.data.id);
     const territoryViewB = stores.ui.territoryViews.get(model.territoryB.data.id);

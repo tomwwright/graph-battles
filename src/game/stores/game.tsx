@@ -1,8 +1,8 @@
 import { observable, action, computed } from "mobx";
 import { ID } from "models/utils";
-import { GameMap, GameMapData, createMap } from "models/map";
-import { Player } from "models/player";
-import { Territory, setTerritoryAction } from "models/territory";
+import GameMap, { GameMapData } from "models/map";
+import Player from "models/player";
+import Territory from "models/territory";
 import { TerritoryAction } from "models/values";
 
 export enum VisibilityMode {
@@ -23,7 +23,7 @@ export default class GameStore {
 
   @action
   setMap(mapData: GameMapData) {
-    this.map = createMap(mapData);
+    this.map = new GameMap(mapData);
   }
 
   @action
@@ -38,7 +38,7 @@ export default class GameStore {
 
   @action
   setTerritoryAction(territory: Territory, action: TerritoryAction) {
-    setTerritoryAction(territory, action);
+    territory.setTerritoryAction(action);
     this.setMap(this.map.data);
   }
 }

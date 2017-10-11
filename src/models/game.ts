@@ -1,5 +1,5 @@
-import { GameMap } from "models/map";
-import { User, UserData, createUser } from "models/user";
+import GameMap from "models/map";
+import User, { UserData } from "models/user";
 
 export type GameData = {
   id: string;
@@ -9,27 +9,24 @@ export type GameData = {
   users: UserData[];
 };
 
-export type Game = {
+export default class Game {
   data: GameData;
-  turn: number;
-  nextId: number;
-  latestMap: GameMap;
   users: User[];
-};
 
-export function createGame(data: GameData): Game {
-  const game: Game = {
-    get turn() {
-      return game.data.maps.length;
-    },
-    get nextId() {
-      return game.latestMap.data.nextId;
-    },
-    get latestMap() {
-      return game.data.maps[game.data.maps.length - 1];
-    },
-    data,
-    users: data.users.map(userData => createUser(game, userData))
-  };
-  return game;
+  constructor(data: GameData) {
+    this.data = data;
+    this.users = data.users.map(userData => new User(this, userData));
+  }
+
+  get turn() {
+    return this.data.maps.length;
+  }
+
+  get nextId() {
+    return this.latestMap.data.nextId;
+  }
+
+  get latestMap() {
+    return this.data.maps[this.data.maps.length - 1];
+  }
 }

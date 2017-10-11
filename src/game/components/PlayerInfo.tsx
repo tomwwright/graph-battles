@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Small, Text } from "rebass";
 import InfoPane from "game/components/InfoPane";
-import { Player } from "models/player";
+import Player from "models/player";
 import { TerritoryAction, TerritoryActionDefinitions, ColourStrings } from "models/values";
 
 type PlayerInfoProps = {

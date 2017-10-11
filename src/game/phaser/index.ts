@@ -5,7 +5,7 @@ import TerritoryView from "game/phaser/territory";
 import EdgeView from "game/phaser/edge";
 import UnitView from "game/phaser/unit";
 
-import { GameMap } from "models/map";
+import GameMap from "models/map";
 import { TerritoryTypeCheckOrder, Colour } from "models/values";
 import { TerritoryAssetStrings, TERRITORY_ASSET_PREFIX, TERRITORY_ASSET_BACKDROP_SUFFIX } from "game/constants";
 

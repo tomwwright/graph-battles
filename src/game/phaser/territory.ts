@@ -1,5 +1,5 @@
 import { autorun } from "mobx";
-import { Territory } from "models/territory";
+import Territory from "models/territory";
 import { ID } from "models/utils";
 import GameStore from "game/stores/game";
 import UiStore from "game/stores/ui";

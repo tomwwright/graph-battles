@@ -9,14 +9,14 @@ import { VisibilityMode } from "game/stores/game";
 
 import { initialisePhaser, initialiseViews } from "game/phaser";
 import TerritoryView from "game/phaser/territory";
-import { createMap } from "models/map";
+import GameMap from "models/map";
 
 const stores = new RootStore();
 
 (window as any).stores = stores;
 
 const mapData = require("../../../assets/map.json");
-stores.game.map = createMap(mapData);
+stores.game.map = new GameMap(mapData);
 
 initialisePhaser(window, "phaser-container", stores);
 
