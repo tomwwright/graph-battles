@@ -1,4 +1,4 @@
-import { ID, Model, clone } from "models/utils";
+import { ID, Model, clone, setAdd, setRemove } from "models/utils";
 import GameMap from "models/map";
 import { UnitContainerData } from "models/unitcontainer";
 import Player from "models/player";
@@ -33,7 +33,11 @@ export default class Territory extends Model<TerritoryData> {
   }
 
   addProperty(property: TerritoryProperty) {
-    if (!this.data.properties.find(p => p === property)) this.data.properties.push(property);
+    setAdd(this.data.properties, property);
+  }
+
+  removeProperty(property: TerritoryProperty) {
+    setRemove(this.data.properties, property);
   }
 
   setTerritoryAction(action: TerritoryAction) {

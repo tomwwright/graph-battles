@@ -36,3 +36,14 @@ export function clone<T>(obj: T): T {
 export function contains<T>(array: T[], thing: T): boolean {
   return array.indexOf(thing) !== -1;
 }
+
+export function setAdd<T>(array: T[], thing: T): T[] {
+  if (!contains(array, thing)) array.push(thing);
+  return array;
+}
+
+export function setRemove<T>(array: T[], thing: T): T[] {
+  const index = array.indexOf(thing);
+  if (index !== -1) array.splice(index, 1);
+  return array;
+}
