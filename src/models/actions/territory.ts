@@ -18,7 +18,7 @@ export function applyTerritoryAction(map: GameMap, action: TerritoryModelAction)
 
   if (!territory.player || territory.data.playerId !== action.playerId)
     throw new Error(`Player ${action.playerId} is not controlling player of Territory ${action.territoryId}`);
-  if (!contains(territory.data.actions, action.action))
+  if (action.action && !contains(territory.data.actions, action.action))
     throw new Error(`Territory ${action.territoryId} cannot take Action ${action.action}`);
 
   territory.setTerritoryAction(action.action);

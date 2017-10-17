@@ -20,7 +20,7 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ game, ui }) => {
   } else if (ui.selected && ui.selected.type === "territory") {
     const territory = game.map.territory(ui.selected.id);
     selectedComponents = (
-      <TerritoryInfo territory={territory} setTerritoryAction={action => game.setTerritoryAction(territory, action)} />
+      <TerritoryInfo territory={territory} setTerritoryAction={action => game.onTerritoryAction(territory, action)} />
     );
   }
   return (

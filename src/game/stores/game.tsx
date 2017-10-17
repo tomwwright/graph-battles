@@ -1,9 +1,12 @@
 import { observable, action, computed } from "mobx";
+import GameProvider from "game/providers/base";
 import { ID } from "models/utils";
+import Game, { GameData } from "models/game";
 import GameMap, { GameMapData } from "models/map";
 import Player from "models/player";
 import Territory from "models/territory";
 import { TerritoryAction } from "models/values";
+import { ModelAction } from "models/actions";
 
 export enum VisibilityMode {
   VISIBLE,
@@ -12,18 +15,27 @@ export enum VisibilityMode {
 }
 
 export default class GameStore {
-  @observable.ref map: GameMap;
+  @observable.ref game: Game;
+  @observable.ref mapIndex: number = 0;
   @observable currentPlayerId: ID;
   @observable visibility: Map<ID, boolean> = new Map();
+
+  provider: GameProvider;
+  @observable pendingAction: ModelAction;
 
   @computed
   get currentPlayer(): Player {
     return this.map.players.find(player => player.data.id === this.currentPlayerId);
   }
 
+  @computed
+  get map(): GameMap {
+    return new GameMap(this.game.data.maps[this.mapIndex]);
+  }
+
   @action
-  setMap(mapData: GameMapData) {
-    this.map = new GameMap(mapData);
+  setGame(gameData: GameData) {
+    this.game = new Game(gameData);
   }
 
   @action
@@ -37,8 +49,22 @@ export default class GameStore {
   }
 
   @action
-  setTerritoryAction(territory: Territory, action: TerritoryAction) {
-    territory.setTerritoryAction(action);
-    this.setMap(this.map.data);
+  async dispatchModelAction(action: ModelAction) {
+    if (!this.pendingAction) {
+      this.pendingAction = action;
+      const newGame = await this.provider.action(action);
+      this.setGame(newGame.data);
+      this.pendingAction = null;
+    }
+  }
+
+  @action
+  onTerritoryAction(territory: Territory, action: TerritoryAction) {
+    this.dispatchModelAction({
+      type: "territory",
+      playerId: this.currentPlayerId,
+      territoryId: territory.data.id,
+      action: action
+    });
   }
 }

@@ -2,49 +2,38 @@ import GameProvider from "game/providers/base";
 import { include, exclude } from "models/utils";
 import { ModelAction } from "models/actions";
 import Game, { GameData } from "models/game";
+import GameMap from "models/map";
 
-const KEY_PREFIX: string = "phaser-tactics-";
+const KEY_PREFIX: string = "graph-battles-";
 const KEY_GAME_LIST: string = KEY_PREFIX + "gamelist";
 
-export class LocalGameProvider extends GameProvider {
+export default class LocalGameProvider extends GameProvider {
   private constructor(gameId: string, userId: string) {
     super(gameId, userId);
   }
 
-  public get(): Promise<Game> {
-    return new Promise<Game>((resolve, reject) => {
-      resolve(LocalStorage.loadGame(this.gameId));
-    });
+  public async get(): Promise<Game> {
+    return await LocalStorage.loadGame(this.gameId);
   }
 
-  public action(action: ModelAction) {
-    return new Promise<Game>((resolve, reject) => {
-      this.get()
-        .then(game => {
-          game.latestMap.applyAction(action);
-          if (action.type === "ready-player" && game.latestMap.players.every(player => player.data.ready)) {
-            /* TODO bit of a hacky way to handle turn resolution here... */
-            game.resolveTurn();
-          }
-          LocalStorage.saveGame(game);
-          resolve(game);
-        })
-        .catch(error => reject(error));
-    });
+  public async action(action: ModelAction) {
+    const game = await this.get();
+    const map = new GameMap(game.latestMap);
+    map.applyAction(action);
+    if (action.type === "ready-player" && map.players.every(player => player.data.ready)) {
+      /* TODO bit of a hacky way to handle turn resolution here... */
+      game.resolveTurn();
+    }
+    LocalStorage.saveGame(game);
+    return game;
   }
 
-  public wait(condition: (game: Game) => boolean): Promise<Game> {
-    let self = this;
-    return new Promise<Game>((resolve, reject) => {
-      let check = (game: Game) => {
-        if (condition(game)) resolve(game);
-        else LocalStorage.listen(this.gameId).then(check);
-      };
-      // check the state of the game now, just check if it's actually already ready
-      setTimeout(() => {
-        self.get().then(check);
-      }, 2000);
-    });
+  public async wait(condition: (game: Game) => boolean): Promise<Game> {
+    let game;
+    do {
+      game = await LocalStorage.listen(this.gameId);
+    } while (!condition(game));
+    return game;
   }
 
   public static createProvider(gameId: string, userId: string): LocalGameProvider {
@@ -52,7 +41,7 @@ export class LocalGameProvider extends GameProvider {
   }
 }
 
-class LocalStorage {
+export class LocalStorage {
   static saveGame(game: Game): void {
     if (!window) throw new Error("LocalStorage only available in the browser!");
     if (!window.localStorage) throw new Error("LocalStorage not available!");

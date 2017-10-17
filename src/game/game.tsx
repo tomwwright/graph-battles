@@ -6,6 +6,7 @@ import { Provider as ThemeProvider } from "rebass";
 import Root from "game/components/Root";
 import RootStore from "game/stores";
 import { VisibilityMode } from "game/stores/game";
+import LocalGameProvider, { LocalStorage } from "game/providers/local";
 
 import { initialisePhaser, initialiseViews } from "game/phaser";
 import TerritoryView from "game/phaser/territory";
@@ -15,8 +16,11 @@ const stores = new RootStore();
 
 (window as any).stores = stores;
 
-const mapData = require("../../../assets/map.json");
-stores.game.map = new GameMap(mapData);
+const gameData = require("../../../assets/game.json");
+stores.game.setGame(gameData);
+
+LocalStorage.saveGame(stores.game.game);
+stores.game.provider = LocalGameProvider.createProvider("test-game", "User 1");
 
 initialisePhaser(window, "phaser-container", stores);
 

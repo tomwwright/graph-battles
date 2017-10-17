@@ -1,4 +1,4 @@
-import GameMap from "models/map";
+import GameMap, { GameMapData } from "models/map";
 import User, { UserData } from "models/user";
 import { clone } from "models/utils";
 
@@ -6,7 +6,7 @@ export type GameData = {
   id: string;
   maxTurns: number;
   maxVictoryPoints: number;
-  maps: GameMap[];
+  maps: GameMapData[];
   users: UserData[];
 };
 
@@ -24,7 +24,7 @@ export default class Game {
   }
 
   get nextId() {
-    return this.latestMap.data.nextId;
+    return this.latestMap.nextId;
   }
 
   get latestMap() {
@@ -32,8 +32,8 @@ export default class Game {
   }
 
   resolveTurn() {
-    const next = new GameMap(clone(this.latestMap.data));
+    const next = new GameMap(clone(this.latestMap));
     next.resolveTurn();
-    this.data.maps.push(next);
+    this.data.maps.push(next.data);
   }
 }
