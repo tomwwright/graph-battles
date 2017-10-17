@@ -37,13 +37,34 @@ export function contains<T>(array: T[], thing: T): boolean {
   return array.indexOf(thing) !== -1;
 }
 
-export function setAdd<T>(array: T[], thing: T): T[] {
+export function intersection<T>(...arrays: T[][]): T[] {
+  const compare = arrays.splice(0, 1)[0];
+  return compare.filter(item => arrays.every(array => array.indexOf(item) !== -1));
+}
+
+export function include<T>(array: T[], thing: T): T[] {
   if (!contains(array, thing)) array.push(thing);
   return array;
 }
 
-export function setRemove<T>(array: T[], thing: T): T[] {
+export function exclude<T>(array: T[], thing: T): T[] {
   const index = array.indexOf(thing);
   if (index !== -1) array.splice(index, 1);
   return array;
+}
+
+export function sum(numbers: number[]): number {
+  return numbers.reduce((count, number) => count + number, 0);
+}
+
+export function clamp(value: number, min: number, max: number): number {
+  return value < min ? min : value > max ? max : value;
+}
+
+export function unique<T>(things: T[]): T[] {
+  const uniqueThings = [];
+  things.forEach(thing => {
+    if (uniqueThings.indexOf(thing) === -1) uniqueThings.push(thing);
+  });
+  return uniqueThings;
 }

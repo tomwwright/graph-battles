@@ -1,4 +1,4 @@
-import { ID, HasID, Model, setAdd, setRemove } from "models/utils";
+import { ID, HasID, Model, include, exclude } from "models/utils";
 import GameMap from "models/map";
 import Player from "models/player";
 import UnitContainer from "models/unitcontainer";
@@ -10,7 +10,6 @@ export type UnitData = HasID & {
   playerId: ID;
   locationId: ID;
   destinationId: ID;
-  movementEdgeId: ID;
   statuses: Status[];
   foodConsumption: number;
 };
@@ -26,7 +25,7 @@ export default class Unit extends Model<UnitData> {
     return <Territory>this.map.modelMap[this.data.destinationId];
   }
   get movementEdge() {
-    return <Edge>this.map.modelMap[this.data.movementEdgeId];
+    return this.map.findEdge(this.data.locationId, this.data.destinationId);
   }
 
   setDestinaton(destination: Territory) {
@@ -45,20 +44,16 @@ export default class Unit extends Model<UnitData> {
         );
 
       this.data.destinationId = destination.data.id;
-      this.data.movementEdgeId = location.edges.find(
-        edge => edge.other(location).data.id === destination.data.id
-      ).data.id;
     } else {
       this.data.destinationId = null;
-      this.data.movementEdgeId = null;
     }
   }
 
   addStatus(status: Status) {
-    setAdd(this.data.statuses, status);
+    include(this.data.statuses, status);
   }
 
   removeStatus(status: Status) {
-    setRemove(this.data.statuses, status);
+    exclude(this.data.statuses, status);
   }
 }

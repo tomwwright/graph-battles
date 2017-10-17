@@ -1,6 +1,6 @@
-import { ID, Model, clone, setAdd, setRemove } from "models/utils";
+import { ID, clone, include, exclude } from "models/utils";
 import GameMap from "models/map";
-import { UnitContainerData } from "models/unitcontainer";
+import UnitContainer, { UnitContainerData } from "models/unitcontainer";
 import Player from "models/player";
 import Edge from "models/edge";
 import Unit from "models/unit";
@@ -19,7 +19,7 @@ export type TerritoryData = UnitContainerData & {
   currentAction: TerritoryAction;
 };
 
-export default class Territory extends Model<TerritoryData> {
+export default class Territory extends UnitContainer<TerritoryData> {
   get player() {
     return <Player>this.map.modelMap[this.data.playerId];
   }
@@ -33,56 +33,31 @@ export default class Territory extends Model<TerritoryData> {
   }
 
   addProperty(property: TerritoryProperty) {
-    setAdd(this.data.properties, property);
+    include(this.data.properties, property);
   }
 
   removeProperty(property: TerritoryProperty) {
-    setRemove(this.data.properties, property);
+    exclude(this.data.properties, property);
   }
 
   setTerritoryAction(action: TerritoryAction) {
     if (!this.player) throw new Error("setTerritoryAction on Territory without Player");
 
+    const currentAction = TerritoryActionDefinitions[this.data.currentAction];
+    const newAction = TerritoryActionDefinitions[action];
+
     let food = this.data.food;
     let gold = this.player.data.gold;
-
-    let currentAction = TerritoryActionDefinitions[this.data.currentAction];
     if (currentAction) {
       food += currentAction.cost.food;
       gold += currentAction.cost.gold;
     }
-
-    let actionDef = TerritoryActionDefinitions[action];
-    let foodCost = action ? actionDef.cost.food : 0;
-    let goldCost = action ? actionDef.cost.gold : 0;
-
-    if (food < foodCost || gold < goldCost) throw new Error("setTerritoryAction for Action that Player cannot afford");
+    const foodCost = newAction ? newAction.cost.food : 0;
+    const goldCost = newAction ? newAction.cost.gold : 0;
+    if (food < foodCost || gold < goldCost) throw new Error(`Territory ${this.data.id} cannot afford Action ${action}`);
 
     this.data.food = food - foodCost;
     this.player.data.gold = gold - goldCost;
-    this.data.currentAction = action ? actionDef.action : null;
+    this.data.currentAction = action;
   }
-}
-
-export function setTerritoryAction(territory: Territory, action: TerritoryAction) {
-  if (!territory.player) throw new Error("setTerritoryAction on Territory without Player");
-
-  let food = territory.data.food;
-  let gold = territory.player.data.gold;
-
-  let currentAction = TerritoryActionDefinitions[territory.data.currentAction];
-  if (currentAction) {
-    food += currentAction.cost.food;
-    gold += currentAction.cost.gold;
-  }
-
-  let actionDef = TerritoryActionDefinitions[action];
-  let foodCost = action ? actionDef.cost.food : 0;
-  let goldCost = action ? actionDef.cost.gold : 0;
-
-  if (food < foodCost || gold < goldCost) throw new Error("setTerritoryAction for Action that Player cannot afford");
-
-  territory.data.food = food - foodCost;
-  territory.player.data.gold = gold - goldCost;
-  territory.data.currentAction = action ? actionDef.action : null;
 }

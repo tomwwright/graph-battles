@@ -1,5 +1,6 @@
 import GameMap from "models/map";
 import Territory from "models/territory";
+import { contains, intersection } from "models/utils";
 import * as TerritoryActionResolvers from "models/territoryActionResolvers";
 
 export enum Colour {
@@ -103,6 +104,30 @@ export const TerritoryTypeCheckOrder: TerritoryType[] = [
   TerritoryType.SETTLED,
   TerritoryType.UNSETTLED
 ];
+
+export function propsToActions(props: TerritoryProperty[]): TerritoryAction[] {
+  let actions = [];
+  if (props.length == 0) {
+    actions.push(TerritoryAction.BUILD_SETTLEMENT);
+  } else {
+    if (contains(props, TerritoryProperty.FORT)) actions.push(TerritoryAction.CREATE_UNIT);
+    else actions.push(TerritoryAction.BUILD_FORT);
+
+    if (!contains(props, TerritoryProperty.CITY)) actions.push(TerritoryAction.BUILD_CITY);
+
+    if (contains(props, TerritoryProperty.CITY) && contains(props, TerritoryProperty.FORT))
+      actions.push(TerritoryAction.BUILD_CASTLE);
+
+    if (!contains(props, TerritoryProperty.FARM)) actions.push(TerritoryAction.BUILD_FARM);
+  }
+  return actions;
+}
+
+export function propsToType(props: TerritoryProperty[]): TerritoryType {
+  return TerritoryTypeCheckOrder.find(
+    type => intersection(TerritoryPropertyMappings[type], props).length === TerritoryPropertyMappings[type].length
+  );
+}
 
 export type TerritoryActionResolver = (map: GameMap, territory: Territory) => void;
 
