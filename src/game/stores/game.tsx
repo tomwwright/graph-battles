@@ -18,7 +18,7 @@ export default class GameStore {
   @observable.ref game: Game;
   @observable.ref mapIndex: number = 0;
   @observable currentPlayerId: ID;
-  @observable visibility: Map<ID, boolean> = new Map();
+  @observable visibilityMode: VisibilityMode = VisibilityMode.NOT_VISIBLE;
 
   provider: GameProvider;
   @observable pendingAction: ModelAction;
@@ -38,14 +38,35 @@ export default class GameStore {
     this.game = new Game(gameData);
   }
 
+  @computed
+  get visibility() {
+    const visibility: Map<ID, boolean> = new Map();
+    if (this.visibilityMode == VisibilityMode.CURRENT_PLAYER) {
+      const territories = this.map.territories;
+      const edges = this.map.edges;
+
+      territories.forEach(territory => visibility.set(territory.data.id, false));
+      edges.forEach(edge => visibility.set(edge.data.id, false));
+
+      const player = this.map.player(this.currentPlayerId);
+      if (player) {
+        for (const territory of player.territories) {
+          visibility.set(territory.data.id, true);
+          territory.edges.map(edge => edge.data.id).forEach(id => visibility.set(id, true));
+          territory.edges.map(edge => edge.other(territory).data.id).forEach(id => visibility.set(id, true));
+        }
+      }
+    } else {
+      const isVisible = this.visibilityMode == VisibilityMode.VISIBLE;
+      this.map.territories.forEach(territory => visibility.set(territory.data.id, isVisible));
+      this.map.edges.forEach(territory => visibility.set(territory.data.id, isVisible));
+    }
+    return visibility;
+  }
+
   @action
   setVisibility(mode: VisibilityMode) {
-    if (mode == VisibilityMode.CURRENT_PLAYER) {
-    } else {
-      const isVisible = mode == VisibilityMode.VISIBLE;
-      this.map.territories.forEach(territory => this.visibility.set(territory.data.id, isVisible));
-      this.map.edges.forEach(territory => this.visibility.set(territory.data.id, isVisible));
-    }
+    this.visibilityMode = mode;
   }
 
   @action
