@@ -17,13 +17,13 @@
       "playerIds": ["#0", "#1"],
       "territoryIds": ["#2", "#3", "#4"],
       "edgeIds": ["#5", "#6"],
-      "unitIds": ["#7", "#8", "#9", "#a"],
+      "unitIds": ["#7", "#8", "#9", "#a", "#b", "#c"],
       "dataMap": {
         "#0": {
           "id": "#0",
           "colour": 10027263,
           "territoryIds": ["#2"],
-          "unitIds": ["#7"],
+          "unitIds": ["#7", "#b"],
           "gold": 1,
           "goldProduction": 1,
           "ready": false,
@@ -35,7 +35,7 @@
           "id": "#1",
           "colour": 255,
           "territoryIds": ["#4"],
-          "unitIds": ["#8", "#a"],
+          "unitIds": ["#8", "#a", "#c"],
           "gold": 10,
           "goldProduction": 2,
           "ready": false,
@@ -60,7 +60,7 @@
         "#3": {
           "id": "#3",
           "playerId": null,
-          "unitIds": ["#9"],
+          "unitIds": ["#9", "#b", "#c"],
           "edgeIds": ["#5", "#6"],
           "food": 3,
           "foodProduction": 1,
@@ -127,6 +127,22 @@
           "locationId": "#4",
           "destinationId": null,
           "statuses": [0],
+          "foodConsumption": 1
+        },
+        "#b": {
+          "id": "#b",
+          "playerId": "#0",
+          "locationId": "#3",
+          "destinationId": null,
+          "statuses": [0],
+          "foodConsumption": 1
+        },
+        "#c": {
+          "id": "#c",
+          "playerId": "#1",
+          "locationId": "#3",
+          "destinationId": null,
+          "statuses": [],
           "foodConsumption": 1
         }
       }

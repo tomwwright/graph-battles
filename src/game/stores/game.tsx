@@ -3,6 +3,7 @@ import GameProvider from 'game/providers/base';
 import { ID } from 'models/utils';
 import Game, { GameData } from 'models/game';
 import GameMap, { GameMapData } from 'models/map';
+import UnitContainer from 'models/unitcontainer';
 import Player from 'models/player';
 import Territory from 'models/territory';
 import { TerritoryAction } from 'models/values';
@@ -33,11 +34,6 @@ export default class GameStore {
     return new GameMap(this.game.data.maps[this.mapIndex]);
   }
 
-  @action
-  setGame(gameData: GameData) {
-    this.game = new Game(gameData);
-  }
-
   @computed
   get visibility() {
     const visibility: Map<ID, boolean> = new Map();
@@ -64,9 +60,26 @@ export default class GameStore {
     return visibility;
   }
 
+  @computed
+  get combats() {
+    const combats: UnitContainer[] = [];
+    for (const edge of this.map.edges) {
+      if (edge.hasCombat()) combats.push(edge);
+    }
+    for (const territory of this.map.territories) {
+      if (territory.hasCombat()) combats.push(territory);
+    }
+    return combats;
+  }
+
   @action
   setVisibility(mode: VisibilityMode) {
     this.visibilityMode = mode;
+  }
+
+  @action
+  setGame(gameData: GameData) {
+    this.game = new Game(gameData);
   }
 
   @action

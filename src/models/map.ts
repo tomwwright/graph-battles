@@ -1,14 +1,14 @@
-import { ID, HasID, ModelMap, DataMap, Model, toID, clamp, clone, sum, unique, include, exclude } from "models/utils";
-import { Status, TerritoryActionDefinitions, propsToType, propsToActions } from "models/values";
-import Player, { PlayerData } from "models/player";
-import Territory, { TerritoryData } from "models/territory";
-import Edge, { EdgeData } from "models/edge";
-import Unit, { UnitData } from "models/unit";
+import { ID, HasID, ModelMap, DataMap, Model, toID, clamp, clone, sum, unique, include, exclude } from 'models/utils';
+import { Status, TerritoryActionDefinitions, propsToType, propsToActions } from 'models/values';
+import Player, { PlayerData } from 'models/player';
+import Territory, { TerritoryData } from 'models/territory';
+import Edge, { EdgeData } from 'models/edge';
+import Unit, { UnitData } from 'models/unit';
 
-import { ModelAction } from "models/actions";
-import { applyReadyPlayer } from "models/actions/ready";
-import { applyMoveUnits } from "models/actions/move";
-import { applyTerritoryAction } from "models/actions/territory";
+import { ModelAction } from 'models/actions';
+import { applyReadyPlayer } from 'models/actions/ready';
+import { applyMoveUnits } from 'models/actions/move';
+import { applyTerritoryAction } from 'models/actions/territory';
 
 export type GameMapData = HasID & {
   dataMap: DataMap;
@@ -72,13 +72,13 @@ export default class GameMap extends Model<GameMapData> {
 
   applyAction(action: ModelAction) {
     switch (action.type) {
-      case "ready-player":
+      case 'ready-player':
         applyReadyPlayer(this, action);
         break;
-      case "move-units":
+      case 'move-units':
         applyMoveUnits(this, action);
         break;
-      case "territory":
+      case 'territory':
         applyTerritoryAction(this, action);
         break;
     }
@@ -91,7 +91,7 @@ export default class GameMap extends Model<GameMapData> {
       locationId: territory.data.id,
       destinationId: null,
       statuses: [],
-      foodConsumption: 1
+      foodConsumption: 1,
     };
 
     ++this.data.nextId;

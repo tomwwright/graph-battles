@@ -1,5 +1,6 @@
 import * as ReactDOM from 'react-dom';
 import * as React from 'react';
+import Axios from 'axios';
 import { Provider } from 'mobx-react';
 import { when } from 'mobx';
 import { Provider as ThemeProvider } from 'rebass';
@@ -16,29 +17,29 @@ const stores = new RootStore();
 
 (window as any).stores = stores;
 
-const gameData = require('../../../assets/game.json');
-stores.gameStore.setGame(gameData);
+Axios.get('/assets/game.json').then(response => {
+  stores.gameStore.setGame(response.data);
+  LocalStorage.saveGame(stores.gameStore.game);
+  stores.gameStore.provider = LocalGameProvider.createProvider('test-game', 'User 1');
 
-LocalStorage.saveGame(stores.gameStore.game);
-stores.gameStore.provider = LocalGameProvider.createProvider('test-game', 'User 1');
+  initialisePhaser(window, 'phaser-container', stores);
 
-initialisePhaser(window, 'phaser-container', stores);
+  when(
+    () => stores.uiStore.isPhaserInitialised,
+    () => {
+      // phaser is ready!
+      const positions = [{ x: 300, y: 300 }, { x: 550, y: 200 }, { x: 700, y: 400 }];
+      initialiseViews(stores, positions);
+      stores.gameStore.setVisibility(VisibilityMode.VISIBLE);
+    }
+  );
 
-when(
-  () => stores.uiStore.isPhaserInitialised,
-  () => {
-    // phaser is ready!
-    const positions = [{ x: 300, y: 300 }, { x: 550, y: 200 }, { x: 700, y: 400 }];
-    initialiseViews(stores, positions);
-    stores.gameStore.setVisibility(VisibilityMode.VISIBLE);
-  }
-);
-
-ReactDOM.render(
-  <ThemeProvider>
-    <Provider {...stores}>
-      <Root />
-    </Provider>
-  </ThemeProvider>,
-  document.getElementById('react-container')
-);
+  ReactDOM.render(
+    <ThemeProvider>
+      <Provider {...stores}>
+        <Root />
+      </Provider>
+    </ThemeProvider>,
+    document.getElementById('react-container')
+  );
+});
