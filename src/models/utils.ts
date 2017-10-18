@@ -38,7 +38,7 @@ export function contains<T>(array: T[], thing: T): boolean {
 }
 
 export function intersection<T>(...arrays: T[][]): T[] {
-  const compare = arrays.splice(0, 1)[0];
+  const compare = arrays.splice(0, 1)[0] || [];
   return compare.filter(item => arrays.every(array => array.indexOf(item) !== -1));
 }
 
