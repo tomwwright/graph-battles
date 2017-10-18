@@ -95,7 +95,10 @@ export default class TerritoryView {
 
   onUpdateSelected() {
     this.sprite.alpha =
-      this.uiStore.selected && this.uiStore.selected.type === "territory" && this.uiStore.selected.id === this.modelId
+      (this.uiStore.selected &&
+        this.uiStore.selected.type === "territory" &&
+        this.uiStore.selected.id === this.modelId) ||
+      this.uiStore.validDestinationIds.find(destinationId => destinationId === this.modelId)
         ? SELECTED_ALPHA
         : 1;
   }

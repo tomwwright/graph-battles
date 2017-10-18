@@ -1,9 +1,9 @@
-import { ID, intersection } from "models/utils";
-import GameMap from "models/map";
-import Territory from "models/territory";
+import { ID, intersection } from 'models/utils';
+import GameMap from 'models/map';
+import Territory from 'models/territory';
 
 export type MoveUnitsModelAction = {
-  type: "move-units";
+  type: 'move-units';
   playerId: ID;
   unitIds: ID[];
   destinationId: ID;
@@ -12,9 +12,6 @@ export type MoveUnitsModelAction = {
 export function applyMoveUnits(map: GameMap, action: MoveUnitsModelAction) {
   const isPlayerValid = map.data.playerIds.indexOf(action.playerId) > -1;
   if (!isPlayerValid) throw new Error(`Invalid Player ID ${action.playerId}`);
-
-  const destination = map.territories.find(territory => territory.data.id === destination.data.id);
-  if (!destination) throw new Error(`Invalid Territory ID ${action.destinationId}`);
 
   const units = action.unitIds.map(unitId => map.units.find(unit => unit.data.id === unitId));
 
@@ -30,16 +27,25 @@ export function applyMoveUnits(map: GameMap, action: MoveUnitsModelAction) {
   )
     throw new Error(`Units ${JSON.stringify(action.unitIds)} not all on a Territory`);
 
-  const adjacentTerritoryIds = intersection(
-    ...units
-      .map(unit => unit.location as Territory)
-      .map(territory => territory.edges.map(edge => edge.other(territory).data.id))
-  );
+  if (action.destinationId) {
+    const destination = map.territories.find(territory => territory.data.id === action.destinationId);
+    if (!destination) throw new Error(`Invalid Territory ID ${action.destinationId}`);
 
-  if (adjacentTerritoryIds.indexOf(action.destinationId) === -1)
-    throw new Error(`Territory ${action.destinationId} not adjacent to all Units ${JSON.stringify(action.unitIds)}`);
+    const adjacentTerritoryIds = intersection(
+      ...units
+        .map(unit => unit.location as Territory)
+        .map(territory => territory.edges.map(edge => edge.other(territory).data.id))
+    );
 
-  units.forEach(unit => {
-    unit.data.destinationId = action.destinationId;
-  });
+    if (adjacentTerritoryIds.indexOf(action.destinationId) === -1)
+      throw new Error(`Territory ${action.destinationId} not adjacent to all Units ${JSON.stringify(action.unitIds)}`);
+
+    units.forEach(unit => {
+      unit.data.destinationId = action.destinationId;
+    });
+  } else {
+    units.forEach(unit => {
+      unit.data.destinationId = null;
+    });
+  }
 }

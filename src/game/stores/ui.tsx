@@ -1,21 +1,22 @@
-import { observable, action } from "mobx";
-import * as Phaser from "phaser-ce";
-import GameStore from "game/stores/game";
-import TerritoryView from "game/phaser/territory";
-import EdgeView from "game/phaser/edge";
-import UnitView from "game/phaser/unit";
+import { observable, action, computed } from 'mobx';
+import * as Phaser from 'phaser-ce';
+import GameStore from 'game/stores/game';
+import TerritoryView from 'game/phaser/territory';
+import EdgeView from 'game/phaser/edge';
+import UnitView from 'game/phaser/unit';
 
-import { ID } from "models/utils";
-import Unit from "models/unit";
+import { ID, intersection } from 'models/utils';
+import Unit from 'models/unit';
+import Territory from 'models/territory';
 
 type Selected =
   | null
   | {
-      type: "territory";
+      type: 'territory';
       id: ID;
     }
   | {
-      type: "unit";
+      type: 'unit';
       ids: ID[];
     };
 
@@ -34,24 +35,54 @@ export default class UiStore {
     this.game = game;
   }
 
+  @computed
+  get validDestinationIds() {
+    if (!this.selected || this.selected.type !== 'unit') return [];
+
+    const units = this.selected.ids.map(id => this.game.map.unit(id));
+    const destinationIds = intersection(
+      ...units.map(unit =>
+        (unit.location as Territory).edges.map(edge => edge.other(unit.location as Territory).data.id)
+      )
+    );
+
+    return destinationIds;
+  }
+
   @action
   selectTerritory(territoryId: ID) {
-    if (this.selected && this.selected.type === "territory" && this.selected.id === territoryId) {
-      this.selected = null;
-    } else {
+    if (!this.selected) {
       this.selected = {
-        type: "territory",
-        id: territoryId
+        type: 'territory',
+        id: territoryId,
       };
+    } else if (this.selected.type === 'territory') {
+      this.selected =
+        this.selected.id === territoryId
+          ? null
+          : {
+              type: 'territory',
+              id: territoryId,
+            };
+    } else {
+      if (this.validDestinationIds.indexOf(territoryId) === -1) {
+        this.selected = {
+          type: 'territory',
+          id: territoryId,
+        };
+      } else {
+        this.game.onMoveUnits(this.selected.ids, territoryId);
+        this.selected = null;
+      }
     }
   }
 
   @action
   selectUnit(unitId: ID) {
-    if (!this.selected || this.selected.type === "territory") {
+    if (!this.selected || this.selected.type === 'territory') {
       this.selected = {
-        type: "unit",
-        ids: [unitId]
+        type: 'unit',
+        ids: [unitId],
       };
     } else if (this.selected.ids.indexOf(unitId) > -1) {
       this.selected.ids.splice(this.selected.ids.indexOf(unitId), 1);

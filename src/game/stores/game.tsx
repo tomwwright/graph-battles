@@ -1,17 +1,17 @@
-import { observable, action, computed } from "mobx";
-import GameProvider from "game/providers/base";
-import { ID } from "models/utils";
-import Game, { GameData } from "models/game";
-import GameMap, { GameMapData } from "models/map";
-import Player from "models/player";
-import Territory from "models/territory";
-import { TerritoryAction } from "models/values";
-import { ModelAction } from "models/actions";
+import { observable, action, computed } from 'mobx';
+import GameProvider from 'game/providers/base';
+import { ID } from 'models/utils';
+import Game, { GameData } from 'models/game';
+import GameMap, { GameMapData } from 'models/map';
+import Player from 'models/player';
+import Territory from 'models/territory';
+import { TerritoryAction } from 'models/values';
+import { ModelAction } from 'models/actions';
 
 export enum VisibilityMode {
   VISIBLE,
   NOT_VISIBLE,
-  CURRENT_PLAYER
+  CURRENT_PLAYER,
 }
 
 export default class GameStore {
@@ -52,8 +52,12 @@ export default class GameStore {
   async dispatchModelAction(action: ModelAction) {
     if (!this.pendingAction) {
       this.pendingAction = action;
-      const newGame = await this.provider.action(action);
-      this.setGame(newGame.data);
+      try {
+        const newGame = await this.provider.action(action);
+        this.setGame(newGame.data);
+      } catch (e) {
+        console.error(e);
+      }
       this.pendingAction = null;
     }
   }
@@ -61,10 +65,20 @@ export default class GameStore {
   @action
   onTerritoryAction(territory: Territory, action: TerritoryAction) {
     this.dispatchModelAction({
-      type: "territory",
+      type: 'territory',
       playerId: this.currentPlayerId,
       territoryId: territory.data.id,
-      action: action
+      action: action,
+    });
+  }
+
+  @action
+  onMoveUnits(unitIds: ID[], territoryId: ID) {
+    this.dispatchModelAction({
+      type: 'move-units',
+      playerId: this.currentPlayerId,
+      destinationId: territoryId,
+      unitIds: unitIds,
     });
   }
 }
