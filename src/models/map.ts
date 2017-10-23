@@ -187,7 +187,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
 
   resolveMoves() {
     // push all moving units onto their respective Edge
-    const movingUnits = this.units.filter(unit => unit.data.destinationId !== null);
+    const movingUnits = this.units.filter(unit => unit.data.destinationId !== null && unit.movementEdge);
     for (const unit of movingUnits) {
       exclude(unit.location.data.unitIds, unit.data.id);
       include(unit.movementEdge.data.unitIds, unit.data.id);

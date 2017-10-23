@@ -4,21 +4,14 @@ import Territory from 'models/territory';
 
 export type MoveUnitsModelAction = {
   type: 'move-units';
-  playerId: ID;
   unitIds: ID[];
   destinationId: ID;
 };
 
 export function applyMoveUnits(map: GameMap, action: MoveUnitsModelAction) {
-  const isPlayerValid = map.data.playerIds.indexOf(action.playerId) > -1;
-  if (!isPlayerValid) throw new Error(`Invalid Player ID ${action.playerId}`);
-
-  const units = action.unitIds.map(unitId => map.units.find(unit => unit.data.id === unitId));
+  const units = action.unitIds.map(unitId => map.unit(unitId));
 
   if (units.some(unit => unit === undefined)) throw new Error(`Invalid Unit IDs ${JSON.stringify(action.unitIds)}`);
-
-  if (units.some(unit => unit.data.playerId !== action.playerId))
-    throw new Error(`Units ${JSON.stringify(action.unitIds)} not all under actioning Player ${action.playerId}`);
 
   if (
     units.some(
@@ -28,7 +21,7 @@ export function applyMoveUnits(map: GameMap, action: MoveUnitsModelAction) {
     throw new Error(`Units ${JSON.stringify(action.unitIds)} not all on a Territory`);
 
   if (action.destinationId) {
-    const destination = map.territories.find(territory => territory.data.id === action.destinationId);
+    const destination = map.territory(action.destinationId);
     if (!destination) throw new Error(`Invalid Territory ID ${action.destinationId}`);
 
     const adjacentTerritoryIds = intersection(

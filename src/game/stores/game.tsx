@@ -97,6 +97,13 @@ export default class GameStore {
   }
 
   @action
+  resolveMoves() {
+    this.map.resolveMoves();
+
+    this.game = new Game(this.game.data);
+  }
+
+  @action
   resolveCombat(locationId: ID) {
     const combat = this.map.getCombats().find(combat => combat.location.data.id === locationId);
     if (!combat) throw new Error(`No combat on Location ${locationId}`);
