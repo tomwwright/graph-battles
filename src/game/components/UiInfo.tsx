@@ -2,6 +2,7 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Card, Text } from 'rebass';
 
+import PhaserStore from 'game/stores/phaser';
 import GameStore from 'game/stores/game';
 import UiStore from 'game/stores/ui';
 import InfoPane from 'game/components/InfoPane';
@@ -11,9 +12,10 @@ import TerritoryInfo from 'game/components/TerritoryInfo';
 type UiInfoProps = {
   gameStore?: GameStore;
   uiStore?: UiStore;
+  phaserStore?: PhaserStore;
 };
 
-const GameInfo: React.StatelessComponent<UiInfoProps> = ({ gameStore, uiStore }) => {
+const GameInfo: React.StatelessComponent<UiInfoProps> = ({ gameStore, uiStore, phaserStore }) => {
   let selectedComponents;
   if (uiStore.selected && uiStore.selected.type === 'unit') {
     selectedComponents = uiStore.selected.ids.map((id, i) => (
@@ -31,11 +33,11 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ gameStore, uiStore })
   return (
     <div>
       <InfoPane>
-        <Text>Phaser Initialised? {uiStore.isPhaserInitialised ? 'Yes' : 'No'}</Text>
+        <Text>Phaser Initialised? {phaserStore.isInitialised ? 'Yes' : 'No'}</Text>
       </InfoPane>
       {selectedComponents}
     </div>
   );
 };
 
-export default inject('gameStore', 'uiStore')(observer(GameInfo));
+export default inject('gameStore', 'uiStore', 'phaserStore')(observer(GameInfo));

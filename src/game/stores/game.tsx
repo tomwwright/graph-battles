@@ -1,6 +1,7 @@
 import { observable, action, computed } from 'mobx';
+import PhaserStore from 'game/stores/phaser';
 import GameProvider from 'game/providers/base';
-import { ID } from 'models/utils';
+import { ID, clone } from 'models/utils';
 import Game, { GameData } from 'models/game';
 import GameMap, { GameMapData } from 'models/map';
 import UnitContainer from 'models/unitcontainer';
@@ -16,6 +17,8 @@ export enum VisibilityMode {
 }
 
 export default class GameStore {
+  phaserStore: PhaserStore;
+
   @observable.ref game: Game;
   @observable.ref mapIndex: number = 0;
   @observable currentPlayerId: ID;
@@ -23,6 +26,10 @@ export default class GameStore {
 
   provider: GameProvider;
   @observable pendingAction: ModelAction;
+
+  constructor(phaserStore: PhaserStore) {
+    this.phaserStore = phaserStore;
+  }
 
   @computed
   get currentPlayer(): Player {
@@ -62,14 +69,7 @@ export default class GameStore {
 
   @computed
   get combats() {
-    const combats: UnitContainer[] = [];
-    for (const edge of this.map.edges) {
-      if (edge.hasCombat()) combats.push(edge);
-    }
-    for (const territory of this.map.territories) {
-      if (territory.hasCombat()) combats.push(territory);
-    }
-    return combats;
+    return this.map.getCombats();
   }
 
   @action
@@ -94,6 +94,20 @@ export default class GameStore {
       }
       this.pendingAction = null;
     }
+  }
+
+  @action
+  resolveCombat(locationId: ID) {
+    const combat = this.map.getCombats().find(combat => combat.location.data.id === locationId);
+    if (!combat) throw new Error(`No combat on Location ${locationId}`);
+
+    const removedUnits = combat.resolve();
+
+    removedUnits.forEach(unit => {
+      this.phaserStore.destroyUnit(unit.data.id);
+    });
+
+    this.game = new Game(this.game.data);
   }
 
   @action

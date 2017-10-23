@@ -1,33 +1,36 @@
-import { autorun } from "mobx";
-import Territory from "models/territory";
-import { ID } from "models/utils";
-import GameStore from "game/stores/game";
-import UiStore from "game/stores/ui";
+import { autorun } from 'mobx';
+import * as Phaser from 'phaser-ce';
+
+import GameStore from 'game/stores/game';
+import PhaserStore from 'game/stores/phaser';
+import UiStore from 'game/stores/ui';
 import {
   TerritoryAssetStrings,
   TERRITORY_ASSET_PREFIX,
   TERRITORY_ASSET_BACKDROP_SUFFIX,
   TERRITORY_VISIBILITY_OVERLAY_ALPHA,
-  SELECTED_ALPHA
-} from "game/constants";
+  SELECTED_ALPHA,
+} from 'game/constants';
+import Territory from 'models/territory';
+import { ID } from 'models/utils';
 
-import { Colour } from "models/values";
+import { Colour } from 'models/values';
 
 export default class TerritoryView {
   modelId: ID;
   gameStore: GameStore;
+  phaserStore: PhaserStore;
   uiStore: UiStore;
 
-  phaser: Phaser.Game;
   sprite: Phaser.Image;
   spriteBackdrop: Phaser.Image;
   spriteOverlay: Phaser.Image;
   spriteActionIndicator: Phaser.Image;
   spriteGroup: Phaser.Group;
 
-  constructor(phaser: Phaser.Game, gameStore: GameStore, uiStore: UiStore, modelId: string, x: number, y: number) {
+  constructor(phaserStore: PhaserStore, gameStore: GameStore, uiStore: UiStore, modelId: string, x: number, y: number) {
     this.modelId = modelId;
-    this.phaser = phaser;
+    this.phaserStore = phaserStore;
     this.gameStore = gameStore;
     this.uiStore = uiStore;
 
@@ -41,28 +44,28 @@ export default class TerritoryView {
   }
 
   initialiseSprites(x: number, y: number) {
-    this.spriteGroup = this.phaser.add.group();
+    this.spriteGroup = this.phaserStore.phaser.add.group();
     this.spriteGroup.x = x;
     this.spriteGroup.y = y;
 
-    this.sprite = new Phaser.Image(this.phaser, 0, 0, "territory-unsettled");
+    this.sprite = new Phaser.Image(this.phaserStore.phaser, 0, 0, 'territory-unsettled');
     this.sprite.anchor.set(0.5);
 
-    this.spriteBackdrop = new Phaser.Image(this.phaser, 0, 0, "territory-unsettled-backdrop");
+    this.spriteBackdrop = new Phaser.Image(this.phaserStore.phaser, 0, 0, 'territory-unsettled-backdrop');
     this.spriteBackdrop.scale.setTo(1.05);
     this.spriteBackdrop.anchor.set(0.5);
 
-    this.spriteOverlay = new Phaser.Image(this.phaser, 0, 0, "territory-unsettled-backdrop");
+    this.spriteOverlay = new Phaser.Image(this.phaserStore.phaser, 0, 0, 'territory-unsettled-backdrop');
     this.spriteOverlay.scale.setTo(1.05);
     this.spriteOverlay.anchor.set(0.5);
     this.spriteOverlay.tint = 0x555555;
     this.spriteOverlay.alpha = 0;
 
     this.spriteActionIndicator = new Phaser.Image(
-      this.phaser,
+      this.phaserStore.phaser,
       -this.sprite.width * 0.3,
       this.sprite.height * 0.35,
-      "territory-action"
+      'territory-action'
     );
     this.spriteActionIndicator.anchor.set(0.5);
     this.spriteActionIndicator.visible = false;
@@ -96,7 +99,7 @@ export default class TerritoryView {
   onUpdateSelected() {
     this.sprite.alpha =
       (this.uiStore.selected &&
-        this.uiStore.selected.type === "territory" &&
+        this.uiStore.selected.type === 'territory' &&
         this.uiStore.selected.id === this.modelId) ||
       this.uiStore.validDestinationIds.find(destinationId => destinationId === this.modelId)
         ? SELECTED_ALPHA

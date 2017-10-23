@@ -1,6 +1,8 @@
 import { ID, HasID, ModelMap, DataMap, Model, toID, clamp, clone, sum, unique, include, exclude } from 'models/utils';
 import { Status, TerritoryActionDefinitions, propsToType, propsToActions } from 'models/values';
 import Player, { PlayerData } from 'models/player';
+import UnitContainer from 'models/unitcontainer';
+import Combat from 'models/combat';
 import Territory, { TerritoryData } from 'models/territory';
 import Edge, { EdgeData } from 'models/edge';
 import Unit, { UnitData } from 'models/unit';
@@ -19,7 +21,7 @@ export type GameMapData = HasID & {
   nextId: number;
 };
 
-export default class GameMap extends Model<GameMapData> {
+export default class GameMap extends UnitContainer<GameMapData> {
   modelMap: ModelMap = {};
 
   constructor(data: GameMapData) {
@@ -70,6 +72,17 @@ export default class GameMap extends Model<GameMapData> {
     return this.players.find(player => player.data.id === playerId);
   }
 
+  getCombats() {
+    const combatLocations: UnitContainer[] = [];
+    for (const edge of this.edges) {
+      if (edge.hasCombat()) combatLocations.push(edge);
+    }
+    for (const territory of this.territories) {
+      if (territory.hasCombat()) combatLocations.push(territory);
+    }
+    return combatLocations.map(location => new Combat(location));
+  }
+
   applyAction(action: ModelAction) {
     switch (action.type) {
       case 'ready-player':
@@ -106,7 +119,34 @@ export default class GameMap extends Model<GameMapData> {
     return this;
   }
 
-  resolveTurn() {}
+  resolveTurn(): GameMap {
+    const map = new GameMap(clone(this.data));
+
+    map.resolveRemoveDefendStatus();
+
+    // resolve all combats (and then check if more combats occurred)
+    map.resolveMoves();
+    let combats = map.getCombats();
+    while (combats.length > 0) {
+      for (const combat of combats) {
+        combat.resolve();
+      }
+      map.resolveMoves();
+      combats = map.getCombats();
+    }
+
+    map.resolveFood();
+    map.resolveGold();
+
+    map.resolveAddDefendStatus(this);
+
+    map.resolveTerritoryControl(this);
+    map.resolveTerritoryActions();
+
+    map.players.forEach(player => (player.data.ready = false));
+
+    return map;
+  }
 
   resolveGold() {
     this.players.forEach(player => {
@@ -130,11 +170,16 @@ export default class GameMap extends Model<GameMapData> {
     }
   }
 
-  resolveDefendStatus(previous: GameMap) {
+  resolveRemoveDefendStatus() {
+    for (const unit of this.units) {
+      if (unit.destination) unit.removeStatus(Status.DEFEND);
+    }
+  }
+
+  resolveAddDefendStatus(previous: GameMap) {
     for (const unit of this.units) {
       const oldUnit = previous.unit(unit.data.id);
       if (oldUnit && !oldUnit.data.destinationId) unit.addStatus(Status.DEFEND);
-      if (unit.destination) unit.removeStatus(Status.DEFEND);
     }
   }
 

@@ -55,8 +55,8 @@ export function initialisePhaser(window: Window, divId: string, store: RootStore
   function create() {
     phaser.stage.backgroundColor = Colour.BLACK;
 
-    store.uiStore.phaser = phaser;
-    store.uiStore.isPhaserInitialised = true;
+    store.phaserStore.phaser = phaser;
+    store.phaserStore.isInitialised = true;
   }
 
   function update() {}
@@ -65,10 +65,10 @@ export function initialisePhaser(window: Window, divId: string, store: RootStore
 export function initialiseViews(stores: RootStore, territoryPositions: Array<{ x: number; y: number }>) {
   for (let i = 0; i < stores.gameStore.map.territories.length; ++i) {
     const territoryId = stores.gameStore.map.territories[i].data.id;
-    stores.uiStore.territoryViews.set(
+    stores.phaserStore.territoryViews.set(
       territoryId,
       new TerritoryView(
-        stores.uiStore.phaser,
+        stores.phaserStore,
         stores.gameStore,
         stores.uiStore,
         territoryId,
@@ -80,11 +80,14 @@ export function initialiseViews(stores: RootStore, territoryPositions: Array<{ x
 
   for (let edge of stores.gameStore.map.edges) {
     const edgeId = edge.data.id;
-    stores.uiStore.edgeViews.set(edgeId, new EdgeView(stores.uiStore.phaser, stores, edgeId));
+    stores.phaserStore.edgeViews.set(edgeId, new EdgeView(stores.phaserStore, stores.gameStore, edgeId));
   }
 
   for (let unit of stores.gameStore.map.units) {
     const unitId = unit.data.id;
-    stores.uiStore.unitViews.set(unitId, new UnitView(stores.uiStore.phaser, stores.gameStore, stores.uiStore, unitId));
+    stores.phaserStore.unitViews.set(
+      unitId,
+      new UnitView(stores.phaserStore, stores.gameStore, stores.uiStore, unitId)
+    );
   }
 }

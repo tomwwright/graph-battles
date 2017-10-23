@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser-ce';
-import RootStore from 'game/stores';
+import PhaserStore from 'game/stores/phaser';
+import GameStore from 'game/stores/game';
 import { ID } from 'models/utils';
 import Edge from 'models/edge';
 
@@ -7,13 +8,13 @@ export default class EdgeView {
   modelId: ID;
   sprite: Phaser.Image;
 
-  constructor(phaser: Phaser.Game, stores: RootStore, modelId: ID) {
+  constructor(phaserStore: PhaserStore, gameStore: GameStore, modelId: ID) {
     this.modelId = modelId;
 
-    const model = stores.gameStore.map.edge(modelId);
+    const model = gameStore.map.edge(modelId);
 
-    const territoryViewA = stores.uiStore.territoryViews.get(model.territoryA.data.id);
-    const territoryViewB = stores.uiStore.territoryViews.get(model.territoryB.data.id);
+    const territoryViewA = phaserStore.territoryViews.get(model.territoryA.data.id);
+    const territoryViewB = phaserStore.territoryViews.get(model.territoryB.data.id);
 
     const angle = Phaser.Math.angleBetween(
       territoryViewA.spriteGroup.x,
@@ -28,7 +29,7 @@ export default class EdgeView {
       territoryViewB.spriteGroup.y
     );
 
-    this.sprite = phaser.add.image(
+    this.sprite = phaserStore.phaser.add.image(
       (territoryViewA.spriteGroup.x + territoryViewB.spriteGroup.x) / 2,
       (territoryViewA.spriteGroup.y + territoryViewB.spriteGroup.y) / 2,
       'line'

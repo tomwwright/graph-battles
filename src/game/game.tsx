@@ -25,7 +25,7 @@ Axios.get('/assets/game.json').then(response => {
   initialisePhaser(window, 'phaser-container', stores);
 
   when(
-    () => stores.uiStore.isPhaserInitialised,
+    () => stores.phaserStore.isInitialised,
     () => {
       // phaser is ready!
       const positions = [{ x: 300, y: 300 }, { x: 550, y: 200 }, { x: 700, y: 400 }];
