@@ -1,6 +1,8 @@
 import Player from 'models/player';
 import UnitContainer from 'models/unitcontainer';
 import Unit from 'models/unit';
+import { Status } from 'models/values';
+import { sum, contains } from 'models/utils';
 
 export class Combatant {
   player: Player;
@@ -12,7 +14,14 @@ export class Combatant {
   }
 
   get combatRating(): number {
-    return this.units.length;
+    return sum(
+      this.units.map(unit => {
+        let rating = 2;
+        if (contains(unit.data.statuses, Status.DEFEND)) rating++;
+        if (contains(unit.data.statuses, Status.STARVE)) rating--;
+        return rating;
+      })
+    );
   }
 }
 
@@ -45,10 +54,9 @@ export default class Combat {
     let removedUnits: Unit[] = [];
     let combatants = this.combatants;
 
-    // if there is any difference in the two leading combatants, the winner retains that many units
-    let difference = Math.ceil((combatants[0].combatRating - combatants[1].combatRating) / 2);
-    if (difference < combatants[0].units.length) {
-      removedUnits.push(...combatants[0].units.splice(difference, combatants[0].units.length - difference));
+    let unitsRetained = Math.ceil((combatants[0].combatRating - combatants[1].combatRating) / 2);
+    if (unitsRetained < combatants[0].units.length) {
+      removedUnits.push(...combatants[0].units.splice(unitsRetained, combatants[0].units.length - unitsRetained));
     }
 
     for (let i = 1; i < combatants.length; ++i) {
