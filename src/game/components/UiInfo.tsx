@@ -33,7 +33,7 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ gameStore, uiStore, p
   return (
     <div>
       <InfoPane>
-        <Text>Phaser Initialised? {phaserStore.isInitialised ? 'Yes' : 'No'}</Text>
+        <Text>Phaser Initialised? {phaserStore.phaser ? 'Yes' : 'No'}</Text>
       </InfoPane>
       {selectedComponents}
     </div>

@@ -24,16 +24,13 @@ export default class GameStore {
   @observable currentPlayerId: ID;
   @observable visibilityMode: VisibilityMode = VisibilityMode.NOT_VISIBLE;
 
-  provider: GameProvider;
-  @observable pendingAction: ModelAction;
-
   constructor(phaserStore: PhaserStore) {
     this.phaserStore = phaserStore;
   }
 
   @computed
   get currentPlayer(): Player {
-    return this.map.players.find(player => player.data.id === this.currentPlayerId);
+    return this.map.player(this.currentPlayerId);
   }
 
   @computed
@@ -83,17 +80,14 @@ export default class GameStore {
   }
 
   @action
-  async dispatchModelAction(action: ModelAction) {
-    if (!this.pendingAction) {
-      this.pendingAction = action;
-      try {
-        const newGame = await this.provider.action(action);
-        this.setGame(newGame.data);
-      } catch (e) {
-        console.error(e);
-      }
-      this.pendingAction = null;
+  resolveModelAction(action: ModelAction) {
+    const map = new GameMap(this.game.latestMap);
+    map.applyAction(action);
+    if (action.type === 'ready-player' && map.players.every(player => player.data.ready)) {
+      /* TODO bit of a hacky way to handle turn resolution here... */
+      this.game.resolveTurn();
     }
+    this.game = new Game(this.game.data);
   }
 
   @action
@@ -119,7 +113,7 @@ export default class GameStore {
 
   @action
   onTerritoryAction(territory: Territory, action: TerritoryAction) {
-    this.dispatchModelAction({
+    this.resolveModelAction({
       type: 'territory',
       playerId: this.currentPlayerId,
       territoryId: territory.data.id,
@@ -129,7 +123,7 @@ export default class GameStore {
 
   @action
   onMoveUnits(unitIds: ID[], territoryId: ID) {
-    this.dispatchModelAction({
+    this.resolveModelAction({
       type: 'move-units',
       playerId: this.currentPlayerId,
       destinationId: territoryId,

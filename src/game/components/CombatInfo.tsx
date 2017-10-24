@@ -2,7 +2,6 @@ import * as React from 'react';
 import Unit from 'models/unit';
 import { Card, Box, Small, Text, Button } from 'rebass';
 
-import { ASSET_PATH } from 'game/phaser';
 import { ColourStrings } from 'models/values';
 import Combat from 'models/combat';
 

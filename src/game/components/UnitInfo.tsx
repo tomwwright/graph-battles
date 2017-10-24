@@ -2,8 +2,7 @@ import * as React from 'react';
 import Unit from 'models/unit';
 import { Card, BackgroundImage, Box, Subhead, Small, Button, Text } from 'rebass';
 
-import { ASSET_PATH } from 'game/phaser';
-import { StatusDefinitions } from 'game/constants';
+import { StatusDefinitions, ASSET_PATH } from 'game/constants';
 import { ColourStrings } from 'models/values';
 
 type UnitInfoProps = {
