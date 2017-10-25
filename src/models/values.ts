@@ -1,33 +1,33 @@
-import GameMap from "models/map";
-import Territory from "models/territory";
-import { contains, intersection } from "models/utils";
-import * as TerritoryActionResolvers from "models/territoryActionResolvers";
+import GameMap from 'models/map';
+import Territory from 'models/territory';
+import { contains, intersection } from 'models/utils';
+import * as TerritoryActionResolvers from 'models/territoryActionResolvers';
 
 export enum Colour {
   BLACK = 0x000000, // 0
   WHITE = 0xffffff, // 16777215
   RED = 0xff0000, // 16711680
-  BLUE = 0x0000ff,
-  GREEN = 0x00ff00,
-  PURPLE = 0x9900ff,
-  YELLOW = 0xffff00,
-  ORANGE = 0xff9900
+  BLUE = 0x0000ff, // 255
+  GREEN = 0x00ff00, // 65280
+  PURPLE = 0x9900ff, // 10027263
+  YELLOW = 0xffff00, // 16776960
+  ORANGE = 0xff9900, // 16750848
 }
 
 export const ColourStrings = {
-  [Colour.BLACK]: "black",
-  [Colour.WHITE]: "white",
-  [Colour.RED]: "red",
-  [Colour.BLUE]: "blue",
-  [Colour.GREEN]: "green",
-  [Colour.PURPLE]: "purple",
-  [Colour.YELLOW]: "yellow",
-  [Colour.ORANGE]: "orange"
+  [Colour.BLACK]: 'black',
+  [Colour.WHITE]: 'white',
+  [Colour.RED]: 'red',
+  [Colour.BLUE]: 'blue',
+  [Colour.GREEN]: 'green',
+  [Colour.PURPLE]: 'purple',
+  [Colour.YELLOW]: 'yellow',
+  [Colour.ORANGE]: 'orange',
 };
 
 export enum Status {
   DEFEND,
-  STARVE
+  STARVE,
 }
 
 export enum TerritoryAction {
@@ -36,7 +36,7 @@ export enum TerritoryAction {
   BUILD_FARM,
   BUILD_CITY,
   BUILD_FORT,
-  BUILD_CASTLE
+  BUILD_CASTLE,
 }
 
 export enum TerritoryProperty {
@@ -44,7 +44,7 @@ export enum TerritoryProperty {
   FARM,
   CITY,
   FORT,
-  CASTLE
+  CASTLE,
 }
 
 export enum TerritoryType {
@@ -58,7 +58,7 @@ export enum TerritoryType {
   CITY_FORT_FARM,
   FARM,
   FORT,
-  FORT_FARM
+  FORT_FARM,
 }
 
 export const TerritoryPropertyMappings: { [key: number]: TerritoryProperty[] } = {
@@ -74,21 +74,21 @@ export const TerritoryPropertyMappings: { [key: number]: TerritoryProperty[] } =
     TerritoryProperty.SETTLED,
     TerritoryProperty.CITY,
     TerritoryProperty.FORT,
-    TerritoryProperty.FARM
+    TerritoryProperty.FARM,
   ],
   [TerritoryType.CASTLE]: [
     TerritoryProperty.SETTLED,
     TerritoryProperty.CITY,
     TerritoryProperty.FORT,
-    TerritoryProperty.CASTLE
+    TerritoryProperty.CASTLE,
   ],
   [TerritoryType.CASTLE_FARM]: [
     TerritoryProperty.SETTLED,
     TerritoryProperty.CITY,
     TerritoryProperty.FORT,
     TerritoryProperty.CASTLE,
-    TerritoryProperty.FARM
-  ]
+    TerritoryProperty.FARM,
+  ],
 };
 
 export const TerritoryTypeCheckOrder: TerritoryType[] = [
@@ -102,7 +102,7 @@ export const TerritoryTypeCheckOrder: TerritoryType[] = [
   TerritoryType.FARM,
   TerritoryType.CITY,
   TerritoryType.SETTLED,
-  TerritoryType.UNSETTLED
+  TerritoryType.UNSETTLED,
 ];
 
 export function propsToActions(props: TerritoryProperty[]): TerritoryAction[] {
@@ -141,31 +141,31 @@ export const TerritoryActionDefinitions: { [key: number]: TerritoryActionDefinit
   [TerritoryAction.CREATE_UNIT]: {
     action: TerritoryAction.CREATE_UNIT,
     cost: { food: 3, gold: 0 },
-    actionFunction: TerritoryActionResolvers.onCreateUnit
+    actionFunction: TerritoryActionResolvers.onCreateUnit,
   },
   [TerritoryAction.BUILD_FARM]: {
     action: TerritoryAction.BUILD_FARM,
     cost: { food: 1, gold: 1 },
-    actionFunction: TerritoryActionResolvers.onBuildFarm
+    actionFunction: TerritoryActionResolvers.onBuildFarm,
   },
   [TerritoryAction.BUILD_SETTLEMENT]: {
     action: TerritoryAction.BUILD_SETTLEMENT,
     cost: { food: 0, gold: 3 },
-    actionFunction: TerritoryActionResolvers.onBuildSettlement
+    actionFunction: TerritoryActionResolvers.onBuildSettlement,
   },
   [TerritoryAction.BUILD_CITY]: {
     action: TerritoryAction.BUILD_CITY,
     cost: { food: 2, gold: 5 },
-    actionFunction: TerritoryActionResolvers.onBuildCity
+    actionFunction: TerritoryActionResolvers.onBuildCity,
   },
   [TerritoryAction.BUILD_FORT]: {
     action: TerritoryAction.BUILD_FORT,
     cost: { food: 2, gold: 5 },
-    actionFunction: TerritoryActionResolvers.onBuildFort
+    actionFunction: TerritoryActionResolvers.onBuildFort,
   },
   [TerritoryAction.BUILD_CASTLE]: {
     action: TerritoryAction.BUILD_CASTLE,
     cost: { food: 3, gold: 10 },
-    actionFunction: TerritoryActionResolvers.onBuildCastle
-  }
+    actionFunction: TerritoryActionResolvers.onBuildCastle,
+  },
 };
