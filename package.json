@@ -11,8 +11,8 @@
     "build:client": "yarn compile && yarn bundle:client",
     "build:resolver": "yarn compile && yarn bundle:resolver",
     "test": "yarn test:model || yarn test:resolver",
-    "test:model": "NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/Model/**/*Test.js",
-    "test:resolver": "NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/Resolver/**/*Test.js",
+    "test:models": "yarn compile && NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/models/**/*.test.js",
+    "test:resolver": "NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/resolver/**/*.test.js",
     "package:api": "zip -j build/api.zip build/bundle/api.js build/bundle/resolver.js",
     "deploy:api": "yarn serverless deploy --stage dev"
   },
@@ -44,7 +44,6 @@
     "@types/async": "^2.0.40",
     "@types/aws-lambda": "^0.0.10",
     "@types/chai": "^3.5.2",
-    "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.18",
     "@types/react": "^15.0.24",
     "@types/react-dom": "^15.5.0",
@@ -71,7 +70,10 @@
     "webpack": "^2.5.1"
   },
   "babel": {
-    "presets": ["es2015", "react"]
+    "presets": [
+      "es2015",
+      "react"
+    ]
   },
   "prettier": {
     "singleQuote": true,

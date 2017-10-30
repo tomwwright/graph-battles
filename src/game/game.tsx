@@ -4,7 +4,7 @@ import Axios from 'axios';
 import { Provider } from 'mobx-react';
 import { when, useStrict } from 'mobx';
 import { Provider as ThemeProvider } from 'rebass';
-import Root from 'game/components/Root';
+import Root from 'game/components/root';
 import RootStore from 'game/stores';
 import { VisibilityMode } from 'game/stores/game';
 
