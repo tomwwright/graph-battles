@@ -18,7 +18,7 @@ const PlayerInfo: React.StatelessComponent<PlayerInfoProps> = ({ player, isActiv
       <Small>
         <Text>
           Gold {player.data.gold} (+{player.data.goldProduction +
-            player.territories.map(territory => territory.data.goldProduction).reduce((a, b) => a + b, 0)})
+            player.territories.map(territory => territory.goldProduction).reduce((a, b) => a + b, 0)})
         </Text>
         <Text>Victory Points {player.victoryPoints}</Text>
         <Text>{player.data.ready ? 'Ready' : 'Not Ready'}</Text>

@@ -24,14 +24,14 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
         </Subhead>
         <Small>
           <Text>
-            Food {territory.data.food}/{territory.data.maxFood} (+{territory.data.foodProduction})
+            Food {territory.data.food}/{territory.maxFood} (+{territory.foodProduction})
           </Text>
-          <Text>Gold +{territory.data.goldProduction}</Text>
+          <Text>Gold +{territory.goldProduction}</Text>
           <Text>{territory.units.length > 0 ? territory.units.length : 'No'} units</Text>
         </Small>
       </Box>
     </Card>
-    {territory.data.actions.map((action, i) => {
+    {territory.actions.map((action, i) => {
       const isSelected = territory.data.currentAction === action;
       const isAvailable = territory.data.currentAction === null || isSelected;
       return (

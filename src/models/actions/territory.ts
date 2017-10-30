@@ -12,7 +12,7 @@ export function applyTerritoryAction(map: GameMap, action: TerritoryModelAction)
   const territory = map.territories.find(territory => territory.data.id === action.territoryId);
   if (!territory) throw new Error(`Invalid Territory ID ${action.territoryId}`);
 
-  if (action.action && !contains(territory.data.actions, action.action))
+  if (action.action && !contains(territory.actions, action.action))
     throw new Error(`Territory ${action.territoryId} cannot take Action ${action.action}`);
 
   territory.setTerritoryAction(action.action);

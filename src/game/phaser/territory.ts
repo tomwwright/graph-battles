@@ -101,7 +101,7 @@ export default class TerritoryView {
       (this.uiStore.selected &&
         this.uiStore.selected.type === 'territory' &&
         this.uiStore.selected.id === this.modelId) ||
-      this.uiStore.validDestinationIds.find(destinationId => destinationId === this.modelId)
+        this.uiStore.validDestinationIds.find(destinationId => destinationId === this.modelId)
         ? SELECTED_ALPHA
         : 1;
   }
@@ -118,7 +118,7 @@ export default class TerritoryView {
 
   onUpdateTerritorySprite() {
     const model = this.findModel();
-    const assetString = TerritoryAssetStrings[model.data.type];
+    const assetString = TerritoryAssetStrings[model.type];
     this.sprite.loadTexture(TERRITORY_ASSET_PREFIX + assetString);
     this.spriteBackdrop.loadTexture(TERRITORY_ASSET_PREFIX + assetString + TERRITORY_ASSET_BACKDROP_SUFFIX);
     this.spriteOverlay.loadTexture(TERRITORY_ASSET_PREFIX + assetString + TERRITORY_ASSET_BACKDROP_SUFFIX);

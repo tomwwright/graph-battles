@@ -1,21 +1,16 @@
-import { ID, clone, include, exclude } from "models/utils";
+import { ID, clone, include, exclude, contains } from "models/utils";
 import GameMap from "models/map";
 import UnitContainer, { UnitContainerData } from "models/unitcontainer";
 import Player from "models/player";
 import Edge from "models/edge";
 import Unit from "models/unit";
-import { TerritoryProperty, TerritoryAction, TerritoryActionDefinitions, TerritoryType } from "models/values";
+import { TerritoryProperty, TerritoryAction, TerritoryActionDefinitions, TerritoryType, propsToActions, propsToType } from "models/values";
 
 export type TerritoryData = UnitContainerData & {
   edgeIds: ID[];
   playerId: ID;
   food: number;
-  foodProduction: number;
-  maxFood: number;
-  goldProduction: number;
   properties: TerritoryProperty[];
-  actions: TerritoryAction[];
-  type: TerritoryType;
   currentAction: TerritoryAction;
 };
 
@@ -30,6 +25,47 @@ export default class Territory extends UnitContainer<TerritoryData> {
 
   get edges() {
     return this.data.edgeIds.map(id => <Edge>this.map.modelMap[id]);
+  }
+
+  get actions() {
+    return propsToActions(this.data.properties);
+  }
+
+  get type() {
+    return propsToType(this.data.properties);
+  }
+
+  get foodProduction() {
+    return this.hasProperty(TerritoryProperty.FARM) ? 2 : 1;
+  }
+
+  get maxFood() {
+    let maxFood = 3;
+    if (this.hasProperty(TerritoryProperty.SETTLED)) {
+      maxFood = 5;
+      if (this.hasProperty(TerritoryProperty.CITY, TerritoryProperty.FORT)) {
+        maxFood = 7;
+        if (this.hasProperty(TerritoryProperty.CASTLE)) {
+          maxFood = 10;
+        }
+      }
+    }
+    return maxFood;
+  }
+
+  get goldProduction() {
+    let goldProduction = 0;
+    if (this.hasProperty(TerritoryProperty.SETTLED)) {
+      goldProduction += 1;
+      if (this.hasProperty(TerritoryProperty.CITY)) {
+        goldProduction += 1;
+      }
+    }
+    return goldProduction;
+  }
+
+  hasProperty(...properties: TerritoryProperty[]) {
+    return properties.every(property => contains(this.data.properties, property));
   }
 
   addProperty(property: TerritoryProperty) {

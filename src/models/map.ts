@@ -151,13 +151,13 @@ export default class GameMap extends UnitContainer<GameMapData> {
   resolveGold() {
     this.players.forEach(player => {
       player.data.gold +=
-        player.data.goldProduction + sum(player.territories.map(territory => territory.data.goldProduction));
+        player.data.goldProduction + sum(player.territories.map(territory => territory.goldProduction));
     });
   }
 
   resolveFood() {
     for (let territory of this.territories) {
-      territory.data.food += territory.data.foodProduction;
+      territory.data.food += territory.foodProduction;
 
       const consumedFood = sum(territory.units.map(unit => unit.data.foodConsumption));
       territory.data.food -= consumedFood;
@@ -166,7 +166,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
         else unit.removeStatus(Status.STARVE);
       }
 
-      territory.data.food = clamp(territory.data.food, 0, territory.data.maxFood);
+      territory.data.food = clamp(territory.data.food, 0, territory.maxFood);
     }
   }
 
@@ -183,7 +183,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
     }
   }
 
-  resolveCombat() {}
+  resolveCombat() { }
 
   resolveMoves() {
     // push all moving units onto their respective Edge
@@ -214,9 +214,6 @@ export default class GameMap extends UnitContainer<GameMapData> {
       if (action && !territory.hasCombat()) {
         const actionDefinition = TerritoryActionDefinitions[action];
         actionDefinition.actionFunction(this, territory);
-
-        territory.data.type = propsToType(territory.data.properties);
-        territory.data.actions = propsToActions(territory.data.properties);
       }
     }
   }
