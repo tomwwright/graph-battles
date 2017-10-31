@@ -20,7 +20,7 @@ export abstract class Model<T extends HasID = HasID> {
 }
 
 export function toID(id: number): string {
-  return Number(id).toString(16);
+  return '#' + Number(id).toString(16);
 }
 
 export function mapIDs(...objects: Model[]): ModelMap {
@@ -38,19 +38,26 @@ export function contains<T>(array: T[], thing: T): boolean {
 }
 
 export function intersection<T>(...arrays: T[][]): T[] {
-  const compare = arrays.splice(0, 1)[0] || [];
+  const compare = arrays[0] || [];
   return compare.filter(item => arrays.every(array => array.indexOf(item) !== -1));
 }
 
 export function include<T>(array: T[], thing: T): T[] {
-  if (!contains(array, thing)) array.push(thing);
-  return array;
+  const copy = clone(array);
+  if (!contains(copy, thing)) copy.push(thing);
+  return copy;
 }
 
 export function exclude<T>(array: T[], thing: T): T[] {
-  const index = array.indexOf(thing);
-  if (index !== -1) array.splice(index, 1);
-  return array;
+  const copy = [];
+  for (const a of array) {
+    if (a !== thing) copy.push(a);
+  }
+  return copy;
+}
+
+export function collect<T>(...things: T[]): T[] {
+  return things;
 }
 
 export function sum(numbers: number[]): number {
@@ -64,7 +71,7 @@ export function clamp(value: number, min: number, max: number): number {
 export function unique<T>(things: T[]): T[] {
   const uniqueThings = [];
   things.forEach(thing => {
-    if (uniqueThings.indexOf(thing) === -1) uniqueThings.push(thing);
+    if (!contains(uniqueThings, thing)) uniqueThings.push(thing);
   });
   return uniqueThings;
 }

@@ -12,7 +12,7 @@ export default abstract class UnitContainer<T extends UnitContainerData = UnitCo
   }
 
   remove(unitId: ID) {
-    exclude(this.data.unitIds, unitId);
+    this.data.unitIds = exclude(this.data.unitIds, unitId);
   }
 
   hasCombat(): boolean {

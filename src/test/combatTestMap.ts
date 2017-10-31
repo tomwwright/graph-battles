@@ -2,7 +2,7 @@ import { GameMapData } from "models/map";
 import { Status, TerritoryType, TerritoryProperty, TerritoryAction, propsToType, propsToActions } from "models/values";
 
 
-const testMap: GameMapData = {
+const combatTestMap: GameMapData = {
   "id": "test-map",
   "nextId": 0,
   "playerIds": ["#PR", "#PB", "#PG"],
@@ -51,14 +51,14 @@ const testMap: GameMapData = {
       "playerId": "#PB",
       "unitIds": ["#UR1", "#UR2", "#UR3"],
       "edgeIds": ["#E12", "#E13"],
-      "food": 0,
+      "food": 1,
       "properties": [TerritoryProperty.SETTLED, TerritoryProperty.FARM, TerritoryProperty.FORT, TerritoryProperty.CITY, TerritoryProperty.CASTLE],
       "currentAction": TerritoryAction.CREATE_UNIT
     },
     "#T2": {
       "id": "#T2",
       "playerId": "#PR",
-      "unitIds": ["#UR4"],
+      "unitIds": ["#UR3"],
       "edgeIds": ["#E12", "#E23"],
       "food": 2,
       "properties": [],
@@ -67,7 +67,7 @@ const testMap: GameMapData = {
     "#T3": {
       "id": "#T3",
       "playerId": "#PB",
-      "unitIds": ["#UB1", "#UB2", "#UB3", "#UB4"],
+      "unitIds": ["#UB3"],
       "edgeIds": ["#E13", "#E23", "#E34", "#E35"],
       "food": 3,
       "properties": [],
@@ -76,7 +76,7 @@ const testMap: GameMapData = {
     "#T4": {
       "id": "#T4",
       "playerId": null,
-      "unitIds": ["#U1"],
+      "unitIds": ["#UB4", "#UG1", "#U1"],
       "edgeIds": ["#E34", "#E45"],
       "food": 3,
       "properties": [TerritoryProperty.SETTLED, TerritoryProperty.CITY],
@@ -85,9 +85,9 @@ const testMap: GameMapData = {
     "#T5": {
       "id": "#T5",
       "playerId": "#PG",
-      "unitIds": ["#UG1"],
+      "unitIds": [],
       "edgeIds": ["#E35", "#E45"],
-      "food": 5,
+      "food": 3,
       "properties": [TerritoryProperty.SETTLED, TerritoryProperty.FARM],
       "currentAction": null
     },
@@ -105,7 +105,7 @@ const testMap: GameMapData = {
     },
     "#E23": {
       "id": "#E23",
-      "unitIds": [],
+      "unitIds": ["#UR4", "#UB1", "#UB2"],
       "territoryAId": "#T2",
       "territoryBId": "#T3"
     },
@@ -144,28 +144,28 @@ const testMap: GameMapData = {
     "#UR3": {
       "id": "#UR3",
       "playerId": "#PR",
-      "locationId": "#T1",
-      "destinationId": "#T2",
+      "locationId": "#T2",
+      "destinationId": null,
       "statuses": []
     },
     "#UR4": {
       "id": "#UR4",
       "playerId": "#PR",
-      "locationId": "#T2",
+      "locationId": "#E23",
       "destinationId": "#T3",
-      "statuses": [Status.DEFEND]
+      "statuses": []
     },
     "#UB1": {
       "id": "#UB1",
       "playerId": "#PB",
-      "locationId": "#T3",
+      "locationId": "#E23",
       "destinationId": "#T2",
       "statuses": []
     },
     "#UB2": {
       "id": "#UB2",
       "playerId": "#PB",
-      "locationId": "#T3",
+      "locationId": "#E23",
       "destinationId": "#T2",
       "statuses": []
     },
@@ -179,15 +179,15 @@ const testMap: GameMapData = {
     "#UB4": {
       "id": "#UB4",
       "playerId": "#PB",
-      "locationId": "#T3",
-      "destinationId": "#T4",
+      "locationId": "#T4",
+      "destinationId": null,
       "statuses": [Status.STARVE]
     },
     "#UG1": {
       "id": "#UG1",
       "playerId": "#PG",
-      "locationId": "#T5",
-      "destinationId": "#T4",
+      "locationId": "#T4",
+      "destinationId": null,
       "statuses": []
     },
     "#U1": {
@@ -201,4 +201,4 @@ const testMap: GameMapData = {
 };
 
 
-export default testMap;
+export default combatTestMap;

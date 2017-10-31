@@ -16,7 +16,7 @@ export type TerritoryData = UnitContainerData & {
 
 export default class Territory extends UnitContainer<TerritoryData> {
   get player() {
-    return <Player>this.map.modelMap[this.data.playerId];
+    return <Player>this.map.modelMap[this.data.playerId] || null;
   }
 
   get units() {
@@ -69,15 +69,17 @@ export default class Territory extends UnitContainer<TerritoryData> {
   }
 
   addProperty(property: TerritoryProperty) {
-    include(this.data.properties, property);
+    this.data.properties = include(this.data.properties, property);
   }
 
   removeProperty(property: TerritoryProperty) {
-    exclude(this.data.properties, property);
+    this.data.properties = exclude(this.data.properties, property);
   }
 
   setTerritoryAction(action: TerritoryAction) {
     if (!this.player) throw new Error("setTerritoryAction on Territory without Player");
+
+    if (action && !contains(this.actions, action)) throw new Error(`Territory ${this.data.id} does not have Action ${action} available`);
 
     const currentAction = TerritoryActionDefinitions[this.data.currentAction];
     const newAction = TerritoryActionDefinitions[action];

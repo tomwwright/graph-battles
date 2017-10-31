@@ -103,8 +103,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
       playerId: territory.data.playerId,
       locationId: territory.data.id,
       destinationId: null,
-      statuses: [],
-      foodConsumption: 1,
+      statuses: []
     };
 
     ++this.data.nextId;
@@ -115,6 +114,16 @@ export default class GameMap extends UnitContainer<GameMapData> {
     this.data.unitIds.push(unitData.id);
     territory.data.unitIds.push(unitData.id);
     if (territory.player) territory.player.data.unitIds.push(unitData.id);
+
+    return this;
+  }
+
+  removeUnit(unit: Unit): GameMap {
+    if (unit.data.playerId) unit.player.remove(unit.data.id);
+    unit.location.remove(unit.data.id);
+    this.remove(unit.data.id);
+    delete this.data.dataMap[unit.data.id];
+    unit.data.locationId = null;
 
     return this;
   }
@@ -159,7 +168,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
     for (let territory of this.territories) {
       territory.data.food += territory.foodProduction;
 
-      const consumedFood = sum(territory.units.map(unit => unit.data.foodConsumption));
+      const consumedFood = sum(territory.units.map(unit => unit.foodConsumption));
       territory.data.food -= consumedFood;
       for (let unit of territory.units) {
         if (territory.data.food < 0) unit.addStatus(Status.STARVE);
@@ -183,37 +192,24 @@ export default class GameMap extends UnitContainer<GameMapData> {
     }
   }
 
-  resolveCombat() { }
-
   resolveMoves() {
     // push all moving units onto their respective Edge
     const movingUnits = this.units.filter(unit => unit.data.destinationId !== null && unit.movementEdge);
-    for (const unit of movingUnits) {
-      exclude(unit.location.data.unitIds, unit.data.id);
-      include(unit.movementEdge.data.unitIds, unit.data.id);
-      unit.data.locationId = unit.movementEdge.data.id;
-    }
+    movingUnits.forEach(unit => unit.move());
 
     // now safe edges can immediately be resolved
     const safeEdges = this.edges.filter(edge => !edge.hasCombat());
     for (const edge of safeEdges) {
-      for (const unit of edge.units) {
-        include(unit.destination.data.unitIds, unit.data.id);
-        unit.data.locationId = unit.data.destinationId;
-        unit.data.destinationId = null;
-      }
-      edge.data.unitIds = [];
+      edge.units.forEach(unit => unit.move());
     }
   }
 
   resolveTerritoryActions() {
     for (let territory of this.territories) {
-      let action = territory.data.currentAction;
-      territory.data.currentAction = null;
-
-      if (action && !territory.hasCombat()) {
-        const actionDefinition = TerritoryActionDefinitions[action];
+      if (territory.data.currentAction != null) {
+        const actionDefinition = TerritoryActionDefinitions[territory.data.currentAction];
         actionDefinition.actionFunction(this, territory);
+        territory.data.currentAction = null;
       }
     }
   }
@@ -221,19 +217,19 @@ export default class GameMap extends UnitContainer<GameMapData> {
   resolveTerritoryControl(previous: GameMap) {
     const populatedTerritories = this.territories.filter(territory => territory.data.unitIds.length > 0);
     for (const territory of populatedTerritories) {
-      const oldTerritory = previous.territory(territory.data.id);
-      const presentPlayers = unique(territory.units.map(unit => unit.data.playerId));
-      const oldPlayers = unique(oldTerritory.units.map(unit => unit.data.playerId));
+      const previousTerritory = previous.territory(territory.data.id);
+      const presentPlayerIds = unique(territory.units.map(unit => unit.data.playerId));
+      const previousPlayerIds = unique(previousTerritory.units.map(unit => unit.data.playerId));
 
       if (
-        presentPlayers.length == 1 &&
-        oldPlayers.length == 1 &&
-        presentPlayers[0] === oldPlayers[0] &&
-        presentPlayers[0] !== territory.data.playerId
+        presentPlayerIds.length == 1 &&
+        previousPlayerIds.length == 1 &&
+        presentPlayerIds[0] === previousPlayerIds[0] &&
+        presentPlayerIds[0] !== territory.data.playerId
       ) {
-        if (territory.player) exclude(territory.player.data.territoryIds, territory.data.id);
-        territory.data.playerId = presentPlayers[0];
-        include(territory.player.data.territoryIds, territory.data.id);
+        if (territory.player) territory.player.data.territoryIds = exclude(territory.player.data.territoryIds, territory.data.id);
+        territory.data.playerId = presentPlayerIds[0];
+        territory.player.data.territoryIds = include(territory.player.data.territoryIds, territory.data.id);
         territory.data.currentAction = null;
       }
     }

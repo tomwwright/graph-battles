@@ -11,24 +11,46 @@ export type UnitData = HasID & {
   locationId: ID;
   destinationId: ID;
   statuses: Status[];
-  foodConsumption: number;
 };
 
 export default class Unit extends Model<UnitData> {
   get player() {
-    return <Player>this.map.modelMap[this.data.playerId];
+    return <Player>this.map.modelMap[this.data.playerId] || null;
   }
   get location() {
-    return <Edge | Territory>this.map.modelMap[this.data.locationId];
+    return <Edge | Territory>this.map.modelMap[this.data.locationId] || null;
   }
   get destination() {
-    return <Territory>this.map.modelMap[this.data.destinationId];
+    return <Territory>this.map.modelMap[this.data.destinationId] || null;
   }
   get movementEdge() {
-    return this.map.findEdge(this.data.locationId, this.data.destinationId);
+    return this.map.edge(this.data.locationId) || this.map.findEdge(this.data.locationId, this.data.destinationId) || null;
+  }
+  get foodConsumption() {
+    return 1;
   }
 
-  setDestinaton(destination: Territory) {
+  move() {
+    if (!this.data.destinationId)
+      throw new Error(`Unit ${this.data.id} moving without destination set`);
+    if (!this.destination)
+      throw new Error(`Unit ${this.data.id} moving with invalid destination set: ${this.data.destinationId}`);
+    if (!this.movementEdge)
+      throw new Error(`Unit ${this.data.id} moving to non-adjacent destination: ${this.data.destinationId}`);
+
+    this.location.data.unitIds = exclude(this.location.data.unitIds, this.data.id);
+
+    if (this.data.locationId === this.movementEdge.data.id) {
+      this.destination.data.unitIds = include(this.destination.data.unitIds, this.data.id);
+      this.data.locationId = this.destination.data.id;
+      this.data.destinationId = null;
+    } else {
+      this.movementEdge.data.unitIds = include(this.movementEdge.data.unitIds, this.data.id);
+      this.data.locationId = this.movementEdge.data.id;
+    }
+  }
+
+  setDestination(destination: Territory) {
     if (destination) {
       const location: Territory = this.location as Territory;
       if (!location.edges)
@@ -50,10 +72,10 @@ export default class Unit extends Model<UnitData> {
   }
 
   addStatus(status: Status) {
-    include(this.data.statuses, status);
+    this.data.statuses = include(this.data.statuses, status);
   }
 
   removeStatus(status: Status) {
-    exclude(this.data.statuses, status);
+    this.data.statuses = exclude(this.data.statuses, status);
   }
 }

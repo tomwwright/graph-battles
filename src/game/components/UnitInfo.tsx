@@ -22,7 +22,7 @@ const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, onCancelMoveC
       </Subhead>
       <Small>
         <Text>Location {unit.location.data.id}</Text>
-        <Text>Food Consumption {unit.data.foodConsumption}</Text>
+        <Text>Food Consumption {unit.foodConsumption}</Text>
         <Text>{unit.data.statuses.map(status => StatusDefinitions[status].text).join(', ')}</Text>
       </Small>
       {unit.data.destinationId ? <Button onClick={onCancelMoveClick}>Cancel Move</Button> : ''}

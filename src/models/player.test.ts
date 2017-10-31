@@ -13,7 +13,7 @@ describe('Player Model', () => {
     map = new GameMap(clone(testMapData));
   });
 
-  it('has player objects in the test map', () => {
+  it('player objects in the test map', () => {
     expect(map.players.map(player => player.data.id)).to.have.members(["#PR", "#PB", "#PG"]);
   });
 
@@ -31,7 +31,7 @@ describe('Player Model', () => {
 
   it('calculates victory points', () => {
     expect(map.player("#PR").victoryPoints).to.equal(5 + 4 + 1 + 0 + 1 + 2 * 0 + 1, 'red player has correct victory points');
-    expect(map.player("#PB").victoryPoints).to.equal(1 + 4 + 2 + 0 + 1 + 2 * 2 + 3, 'blue player has correct victory points');
+    expect(map.player("#PB").victoryPoints).to.equal(1 + 4 + 2 + 5 + 1 + 2 * 2 + 3, 'blue player has correct victory points');
     expect(map.player("#PG").victoryPoints).to.equal(10 + 1 + 1 + 2 + 0 + 2 * 0 + 0, 'green player has correct victory points');
   });
 });

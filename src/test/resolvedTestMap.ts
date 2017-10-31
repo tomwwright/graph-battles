@@ -8,13 +8,13 @@ const testMap: GameMapData = {
   "playerIds": ["#PR", "#PB", "#PG"],
   "territoryIds": ["#T1", "#T2", "#T3", "#T4", "#T5"],
   "edgeIds": ["#E12", "#E13", "#E23", "#E34", "#E35", "#E45"],
-  "unitIds": ["#UR1", "#UR2", "#UR3", "#UR4", "#UB1", "#UB2", "#UB3", "#UB4", "#UG1", "#U1"],
+  "unitIds": ["#UR1", "#UR2", "#UB3", "#U1"],
   "dataMap": {
     "#PR": {
       "id": "#PR",
       "colour": 16711680,
-      "territoryIds": ["#T2"],
-      "unitIds": ["#UR1", "#UR2", "#UR3", "#UR4"],
+      "territoryIds": ["#T2", "#T1"],
+      "unitIds": ["#UR1", "#UR2"],
       "gold": 5,
       "goldProduction": 0,
       "ready": false,
@@ -25,9 +25,9 @@ const testMap: GameMapData = {
     "#PB": {
       "id": "#PB",
       "colour": 255,
-      "territoryIds": ["#T1", "#T3"],
-      "unitIds": ["#UB1", "#UB2", "#UB3", "#UB4"],
-      "gold": 1,
+      "territoryIds": ["#T3"],
+      "unitIds": ["#UB3"],
+      "gold": 4,
       "goldProduction": 1,
       "ready": false,
       "neutralTerritoryCaptures": 1,
@@ -38,8 +38,8 @@ const testMap: GameMapData = {
       "id": "#PG",
       "colour": 10027263,
       "territoryIds": ["#T5"],
-      "unitIds": ["#UG1"],
-      "gold": 10,
+      "unitIds": [],
+      "gold": 13,
       "goldProduction": 2,
       "ready": false,
       "neutralTerritoryCaptures": 0,
@@ -48,30 +48,30 @@ const testMap: GameMapData = {
     },
     "#T1": {
       "id": "#T1",
-      "playerId": "#PB",
-      "unitIds": ["#UR1", "#UR2", "#UR3"],
+      "playerId": "#PR",
+      "unitIds": ["#UR1", "#UR2"],
       "edgeIds": ["#E12", "#E13"],
       "food": 0,
       "properties": [TerritoryProperty.SETTLED, TerritoryProperty.FARM, TerritoryProperty.FORT, TerritoryProperty.CITY, TerritoryProperty.CASTLE],
-      "currentAction": TerritoryAction.CREATE_UNIT
+      "currentAction": null
     },
     "#T2": {
       "id": "#T2",
       "playerId": "#PR",
-      "unitIds": ["#UR4"],
+      "unitIds": [],
       "edgeIds": ["#E12", "#E23"],
-      "food": 2,
+      "food": 3,
       "properties": [],
       "currentAction": null
     },
     "#T3": {
       "id": "#T3",
       "playerId": "#PB",
-      "unitIds": ["#UB1", "#UB2", "#UB3", "#UB4"],
+      "unitIds": ["#UB3"],
       "edgeIds": ["#E13", "#E23", "#E34", "#E35"],
       "food": 3,
-      "properties": [],
-      "currentAction": TerritoryAction.BUILD_SETTLEMENT
+      "properties": [TerritoryProperty.SETTLED],
+      "currentAction": null
     },
     "#T4": {
       "id": "#T4",
@@ -85,7 +85,7 @@ const testMap: GameMapData = {
     "#T5": {
       "id": "#T5",
       "playerId": "#PG",
-      "unitIds": ["#UG1"],
+      "unitIds": [],
       "edgeIds": ["#E35", "#E45"],
       "food": 5,
       "properties": [TerritoryProperty.SETTLED, TerritoryProperty.FARM],
@@ -132,63 +132,21 @@ const testMap: GameMapData = {
       "playerId": "#PR",
       "locationId": "#T1",
       "destinationId": null,
-      "statuses": []
+      "statuses": [Status.DEFEND]
     },
     "#UR2": {
       "id": "#UR2",
       "playerId": "#PR",
       "locationId": "#T1",
       "destinationId": null,
-      "statuses": []
-    },
-    "#UR3": {
-      "id": "#UR3",
-      "playerId": "#PR",
-      "locationId": "#T1",
-      "destinationId": "#T2",
-      "statuses": []
-    },
-    "#UR4": {
-      "id": "#UR4",
-      "playerId": "#PR",
-      "locationId": "#T2",
-      "destinationId": "#T3",
       "statuses": [Status.DEFEND]
-    },
-    "#UB1": {
-      "id": "#UB1",
-      "playerId": "#PB",
-      "locationId": "#T3",
-      "destinationId": "#T2",
-      "statuses": []
-    },
-    "#UB2": {
-      "id": "#UB2",
-      "playerId": "#PB",
-      "locationId": "#T3",
-      "destinationId": "#T2",
-      "statuses": []
     },
     "#UB3": {
       "id": "#UB3",
       "playerId": "#PB",
       "locationId": "#T3",
       "destinationId": null,
-      "statuses": [Status.STARVE]
-    },
-    "#UB4": {
-      "id": "#UB4",
-      "playerId": "#PB",
-      "locationId": "#T3",
-      "destinationId": "#T4",
-      "statuses": [Status.STARVE]
-    },
-    "#UG1": {
-      "id": "#UG1",
-      "playerId": "#PG",
-      "locationId": "#T5",
-      "destinationId": "#T4",
-      "statuses": []
+      "statuses": [Status.DEFEND]
     },
     "#U1": {
       "id": "#U1",

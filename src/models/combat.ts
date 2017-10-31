@@ -65,9 +65,7 @@ export default class Combat {
     }
 
     for (const unit of removedUnits) {
-      if (unit.player) unit.player.remove(unit.data.id);
-      this.location.remove(unit.data.id);
-      this.location.map.remove(unit.data.id);
+      this.location.map.removeUnit(unit);
       unit.data.locationId = null;
     }
 
