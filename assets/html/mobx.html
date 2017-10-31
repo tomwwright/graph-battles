@@ -1,0 +1,93 @@
+<head>
+  <meta charset="utf-8" />
+  <title>Graph Battles: Mobx | Phaser | React</title>
+  <link rel="stylesheet" href="/node_modules/sweetalert/dist/sweetalert.css">
+  <link href="https://fonts.googleapis.com/css?family=Hammersmith+One" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style type="text/css">
+    body {
+      font-family: 'Hammersmith One', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .info-pane {
+      width: auto;
+      border-color: black;
+      border-style: solid;
+      border-width: 1px;
+      padding: 10px;
+      margin-bottom: 5px;
+      background-color: white;
+    }
+
+    .info-pane ul {
+      margin-top: 0;
+    }
+
+    canvas {
+      display: inline;
+    }
+
+    #game-div {
+      display: inline-block;
+    }
+
+    .top-left {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .top-right {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+
+    .bottom-left {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+    }
+
+    .bottom-right {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+    }
+
+    .col {
+      width: 200px;
+      margin: 5px;
+      vertical-align: top;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 10px;
+    }
+
+    .territory-action button {
+      float: right;
+    }
+
+    .disabled-territory-action {
+      color: gray;
+      border-color: gray;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="react-container">
+  </div>
+
+  <div id="phaser-container">
+  </div>
+  <!-- Main -->
+  <script src="/build/es5/test.js"></script>
+  <script src="/build/bundle/vendor.bundle.js"></script>
+  <!-- <script src="/build/bundle/model.bundle.js"></script> -->
+  <script src="/build/bundle/mobx.bundle.js"></script>
+</body>

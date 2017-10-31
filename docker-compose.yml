@@ -1,0 +1,8 @@
+nginx:
+  container_name: graph-battles-nginx
+  image: nginx
+  ports:
+    - 8081:80
+  volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    - ./:/data/www
