@@ -1,0 +1,20 @@
+{
+  "id": "test-game",
+  "maxTurns": 5,
+  "maxVictoryPoints": 25,
+  "users": [
+    {
+      "name": "User 1",
+      "playerIds": [
+        "#0"
+      ]
+    },
+    {
+      "name": "User 2",
+      "playerIds": [
+        "#1"
+      ]
+    }
+  ],
+  "maps": []
+}
