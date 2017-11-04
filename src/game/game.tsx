@@ -12,6 +12,7 @@ import { ViewData } from 'game/stores/phaser';
 import TerritoryView from 'game/phaser/territory';
 import { GameData } from 'models/game';
 import GameMap, { GameMapData } from 'models/map';
+import { clone } from 'models/utils';
 
 // enable Mobx strict mode (no state mutation outside of @action)
 useStrict(true);
