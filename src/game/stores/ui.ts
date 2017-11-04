@@ -1,8 +1,8 @@
-import { observable, action, computed } from 'mobx';
+import { observable, observe, action, computed } from 'mobx';
 
 import GameStore from 'game/stores/game';
 import PhaserStore from 'game/stores/phaser';
-import { ID, intersection, include, exclude } from 'models/utils';
+import { ID, intersection, include, exclude, flat, clone } from 'models/utils';
 import Territory from 'models/territory';
 
 type Selected =
@@ -17,11 +17,12 @@ type Selected =
   };
 
 export default class UiStore {
+
   gameStore: GameStore;
   phaserStore: PhaserStore;
 
   @observable selected: Selected;
-  @observable turn: number = 1;
+  @observable turn: number;
 
   constructor(gameStore: GameStore, phaserStore: PhaserStore) {
     this.gameStore = gameStore;
@@ -51,7 +52,7 @@ export default class UiStore {
       this.selectTerritory(territoryId);
     } else if (this.selected.type === 'unit') {
       this.gameStore.onMoveUnits(this.selected.ids, territoryId);
-      this.selected = null;
+      this.unselect();
     } else {
       throw new Error('Bad state in UI Store');
     }
@@ -75,6 +76,14 @@ export default class UiStore {
   }
 
   @action
+  setTurn(turn: number) {
+    if (turn < 1 || turn > this.gameStore.game.data.maps.length)
+      throw new Error(`Invalid turn number: ${turn}`);
+    this.gameStore.setMap(clone(this.gameStore.game.data.maps[turn - 1]));
+    this.turn = turn;
+  }
+
+  @action
   selectTerritory(territoryId: ID) {
     const territoryAlreadySelected = this.selected && this.selected.type === 'territory' && this.selected.id === territoryId;
     this.selected = territoryAlreadySelected ? null : {
@@ -90,4 +99,8 @@ export default class UiStore {
       ids: unitIds
     };
   }
+
+  @action
+  unselect() { this.selected = null; }
+
 }

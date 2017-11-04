@@ -128,33 +128,31 @@ export default class GameMap extends UnitContainer<GameMapData> {
     return this;
   }
 
-  resolveTurn(): GameMap {
-    const map = new GameMap(clone(this.data));
+  resolveTurn() {
+    const previous = new GameMap(clone(this.data));
 
-    map.resolveRemoveDefendStatus();
+    this.resolveRemoveDefendStatus();
 
     // resolve all combats (and then check if more combats occurred)
-    map.resolveMoves();
-    let combats = map.getCombats();
+    this.resolveMoves();
+    let combats = this.getCombats();
     while (combats.length > 0) {
       for (const combat of combats) {
         combat.resolve();
       }
-      map.resolveMoves();
-      combats = map.getCombats();
+      this.resolveMoves();
+      combats = this.getCombats();
     }
 
-    map.resolveFood();
-    map.resolveGold();
+    this.resolveFood();
+    this.resolveGold();
 
-    map.resolveAddDefendStatus(this);
+    this.resolveAddDefendStatus(previous);
 
-    map.resolveTerritoryControl(this);
-    map.resolveTerritoryActions();
+    this.resolveTerritoryControl(previous);
+    this.resolveTerritoryActions();
 
-    map.players.forEach(player => (player.data.ready = false));
-
-    return map;
+    this.players.forEach(player => (player.data.ready = false));
   }
 
   resolveGold() {

@@ -22,7 +22,7 @@ export default class GameStore {
   phaserStore: PhaserStore;
 
   @observable.ref game: Game;
-  @observable.ref map: GameMap;
+  @observable.ref map: GameMap = null;
   @observable currentPlayerId: ID;
   @observable visibilityMode: VisibilityMode = VisibilityMode.NOT_VISIBLE;
 

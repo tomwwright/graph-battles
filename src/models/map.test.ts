@@ -74,9 +74,9 @@ describe('Map Model', () => {
   });
 
   it('resolve turn', () => {
-    const resolved = map.resolveTurn();
+    map.resolveTurn();
 
-    expect(resolved.data).to.deep.equal(resolvedMapData);
+    expect(map.data).to.deep.equal(resolvedMapData);
   });
 
   it('resolve gold', () => {

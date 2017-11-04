@@ -8,6 +8,7 @@ import UiStore from 'game/stores/ui';
 import InfoPane from 'game/components/InfoPane';
 import UnitInfo from 'game/components/UnitInfo';
 import TerritoryInfo from 'game/components/TerritoryInfo';
+import TurnSelect from 'game/components/TurnSelect';
 
 type UiInfoProps = {
   gameStore?: GameStore;
@@ -36,6 +37,7 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ gameStore, uiStore, p
       <InfoPane>
         <Text>Phaser Initialised? {phaserStore.phaser ? 'Yes' : 'No'}</Text>
       </InfoPane>
+      <TurnSelect currentTurn={uiStore.turn} numTurns={gameStore.game.data.maps.length} onClick={(turn: number) => uiStore.setTurn(turn)} />
       {selectedComponents}
     </div>
   );
