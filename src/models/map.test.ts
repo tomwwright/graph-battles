@@ -5,9 +5,9 @@ import { clone } from "models/utils";
 import { expect } from 'chai';
 import { describe, it, beforeEach } from "mocha";
 
-import testMapData from "test/testMap";
-import resolvedMapData from "test/resolvedTestMap";
-import combatTestMapData from "test/combatTestMap";
+import testMapData from "models/test/testMap";
+import resolvedMapData from "models/test/resolvedTestMap";
+import combatTestMapData from "models/test/combatTestMap";
 
 let map: GameMap;
 let combatMap: GameMap;
