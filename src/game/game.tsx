@@ -33,30 +33,28 @@ Promise.all([
 
     gameData.maps.push(mapData);
 
-    stores.gameStore.setGame(gameData);
-    stores.gameStore.setMap(mapData);
     const nextTurn = new GameMap(clone(mapData));
     nextTurn.resolveTurn();
     gameData.maps.push(nextTurn.data);
 
-    stores.phaserStore.initialise(window, 'phaser-container');
+    stores.phaserStore.initialise(window, 'phaser-container', stores.gameStore, stores.uiStore, viewData);
+    stores.gameStore.setGame(gameData);
 
     when(
       () => stores.phaserStore.phaser !== null,
       () => {
-        stores.phaserStore.initialiseViews(stores, viewData);
         stores.uiStore.setTurn(1);
         stores.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER);
         stores.gameStore.setCurrentPlayer(mapData.playerIds[0]);
-      }
-    );
 
-    ReactDOM.render(
-      <ThemeProvider>
-        <Provider {...stores}>
-          <Root />
-        </Provider>
-      </ThemeProvider>,
-      document.getElementById('react-container')
+        ReactDOM.render(
+          <ThemeProvider>
+            <Provider {...stores}>
+              <Root />
+            </Provider>
+          </ThemeProvider>,
+          document.getElementById('react-container')
+        );
+      }
     );
   });

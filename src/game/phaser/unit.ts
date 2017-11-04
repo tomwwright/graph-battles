@@ -42,10 +42,6 @@ export default class UnitView {
     this.initialiseAutoruns();
   }
 
-  findModel(): Unit {
-    return this.gameStore.map.units.find(unit => unit.data.id === this.modelId);
-  }
-
   initialiseSprites() {
     this.sprite = new Phaser.Image(this.phaserStore.phaser, 0, 0, 'units', 0);
     this.sprite.anchor.set(0.5);
@@ -86,99 +82,108 @@ export default class UnitView {
   }
 
   initialiseAutoruns() {
-    this.disposeStatusAutorun = autorun(this.onUpdateStatuses.bind(this));
-    this.disposeVisibilityAutorun = autorun(this.onUpdateVisibility.bind(this));
-    this.disposePositionAutorun = autorun(this.onUpdatePosition.bind(this));
-    this.disposeDestinationAutorun = autorun(this.onUpdateDestinationLine.bind(this));
-    this.disposeControllerAutorun = autorun(this.onUpdateController.bind(this));
-    this.disposeSelectedAutorun = autorun(this.onUpdateSelected.bind(this));
+    this.disposeStatusAutorun = autorun(`Unit ${this.modelId} View: status autorun`, this.onUpdateStatuses.bind(this));
+    this.disposeVisibilityAutorun = autorun(`Unit ${this.modelId} View: visibility autorun`, this.onUpdateVisibility.bind(this));
+    this.disposePositionAutorun = autorun(`Unit ${this.modelId} View: position autorun`, this.onUpdatePosition.bind(this));
+    this.disposeDestinationAutorun = autorun(`Unit ${this.modelId} View: destination autorun`, this.onUpdateDestinationLine.bind(this));
+    this.disposeControllerAutorun = autorun(`Unit ${this.modelId} View: controller autorun`, this.onUpdateController.bind(this));
+    this.disposeSelectedAutorun = autorun(`Unit ${this.modelId} View: selected autorun`, this.onUpdateSelected.bind(this));
   }
 
   onUpdateStatuses() {
-    const model = this.findModel();
-
-    this.spriteStatusesGroup.removeAll();
-    if (model.data.statuses.length > 0) {
-      let x = 0;
-      for (let status of model.data.statuses) {
-        let statusDef = StatusDefinitions[status];
-        let statusSprite = new Phaser.Image(this.phaserStore.phaser, x, 0, statusDef.assetString);
-        statusSprite.anchor.set(0.5);
-        x += 16;
-        this.spriteStatusesGroup.add(statusSprite);
+    const model = this.gameStore.map.unit(this.modelId);
+    if (model) {
+      this.spriteStatusesGroup.removeAll();
+      if (model.data.statuses.length > 0) {
+        let x = 0;
+        for (let status of model.data.statuses) {
+          let statusDef = StatusDefinitions[status];
+          let statusSprite = new Phaser.Image(this.phaserStore.phaser, x, 0, statusDef.assetString);
+          statusSprite.anchor.set(0.5);
+          x += 16;
+          this.spriteStatusesGroup.add(statusSprite);
+        }
       }
     }
   }
 
   onUpdateVisibility() {
-    const model = this.findModel();
-    this.spriteGroup.visible = this.gameStore.visibility.get(model.location.data.id);
+    const model = this.gameStore.map.unit(this.modelId);
+    if (model) {
+      this.spriteGroup.visible = this.gameStore.visibility.get(model.location.data.id);
+    }
   }
 
   onUpdateDestinationLine() {
-    const model = this.findModel();
-    const playerIsActive = model.data.playerId && model.data.playerId === this.gameStore.currentPlayerId;
+    const model = this.gameStore.map.unit(this.modelId);
+    if (model) {
+      const playerIsActive = model.data.playerId && model.data.playerId === this.gameStore.currentPlayerId;
 
-    if (model.destination && playerIsActive) {
-      const destinationView = this.phaserStore.territoryViews.get(model.destination.data.id);
+      if (model.destination && playerIsActive) {
+        const destinationView = this.phaserStore.territoryViews.get(model.destination.data.id);
 
-      const destPos = destinationView.spriteGroup.position;
-      const unitPos = this.spriteGroup.position;
-      const positionOffset = destPos.clone().subtract(unitPos.x, unitPos.y);
-      const angle = new Phaser.Point().angle(positionOffset);
-      const dist = positionOffset.getMagnitude() - destinationView.sprite.width * 0.4; // offset from centre of destination by 40% of territory sprite width
-      positionOffset.normalize().multiply(dist, dist); // rescale position offset to new dist
+        const destPos = destinationView.spriteGroup.position;
+        const unitPos = this.spriteGroup.position;
+        const positionOffset = destPos.clone().subtract(unitPos.x, unitPos.y);
+        const angle = new Phaser.Point().angle(positionOffset);
+        const dist = positionOffset.getMagnitude() - destinationView.sprite.width * 0.4; // offset from centre of destination by 40% of territory sprite width
+        positionOffset.normalize().multiply(dist, dist); // rescale position offset to new dist
 
-      this.spriteLine.width = dist;
-      this.spriteLine.angle = Phaser.Math.radToDeg(angle);
+        this.spriteLine.width = dist;
+        this.spriteLine.angle = Phaser.Math.radToDeg(angle);
 
-      this.spriteArrow.angle = this.spriteLine.angle;
-      this.spriteArrow.position.set(positionOffset.x, positionOffset.y);
+        this.spriteArrow.angle = this.spriteLine.angle;
+        this.spriteArrow.position.set(positionOffset.x, positionOffset.y);
 
-      this.spriteLine.exists = true;
-      this.spriteArrow.exists = true;
-    } else {
-      this.spriteLine.exists = false;
-      this.spriteArrow.exists = false;
+        this.spriteLine.exists = true;
+        this.spriteArrow.exists = true;
+      } else {
+        this.spriteLine.exists = false;
+        this.spriteArrow.exists = false;
+      }
     }
   }
 
   onUpdatePosition() {
-    const model = this.findModel();
+    const model = this.gameStore.map.unit(this.modelId);
+    if (model) {
 
-    let rootPosition: Phaser.Point;
-    const territoryView = this.phaserStore.territoryViews.get(model.data.locationId);
-    if (territoryView) {
-      rootPosition = territoryView.spriteGroup.position;
-    } else {
-      const edgeView = this.phaserStore.edgeViews.get(model.data.locationId);
-      rootPosition = edgeView.sprite.position;
+      let rootPosition: Phaser.Point;
+      const territoryView = this.phaserStore.territoryViews.get(model.data.locationId);
+      if (territoryView) {
+        rootPosition = territoryView.spriteGroup.position;
+      } else {
+        const edgeView = this.phaserStore.edgeViews.get(model.data.locationId);
+        rootPosition = edgeView.sprite.position;
+      }
+
+      const numUnits = model.location.units.length,
+        numRows = Math.ceil(numUnits / UNITS_PER_ROW),
+        numCols = Math.min(numUnits, UNITS_PER_ROW),
+        index = model.location.units.findIndex(unit => unit.data.id === model.data.id),
+        row = Math.floor(index / UNITS_PER_ROW),
+        col = index % UNITS_PER_ROW,
+        totalWidth = (numCols - 1) * this.sprite.width * (1 + UNITS_SPACING),
+        totalHeight = (numRows - 1) * this.sprite.height * (1 + UNITS_SPACING),
+        x = col * this.sprite.width * (1 + UNITS_SPACING),
+        y = row * this.sprite.height * (1 + UNITS_SPACING);
+
+      this.spriteGroup.x = rootPosition.x + x - totalWidth * 0.5;
+      this.spriteGroup.y = rootPosition.y + y - totalHeight * 0.5;
+
+      this.onUpdateDestinationLine();
     }
-
-    const numUnits = model.location.units.length,
-      numRows = Math.ceil(numUnits / UNITS_PER_ROW),
-      numCols = Math.min(numUnits, UNITS_PER_ROW),
-      index = model.location.units.findIndex(unit => unit.data.id === model.data.id),
-      row = Math.floor(index / UNITS_PER_ROW),
-      col = index % UNITS_PER_ROW,
-      totalWidth = (numCols - 1) * this.sprite.width * (1 + UNITS_SPACING),
-      totalHeight = (numRows - 1) * this.sprite.height * (1 + UNITS_SPACING),
-      x = col * this.sprite.width * (1 + UNITS_SPACING),
-      y = row * this.sprite.height * (1 + UNITS_SPACING);
-
-    this.spriteGroup.x = rootPosition.x + x - totalWidth * 0.5;
-    this.spriteGroup.y = rootPosition.y + y - totalHeight * 0.5;
-
-    this.onUpdateDestinationLine();
   }
 
   onUpdateController() {
-    const model = this.findModel();
+    const model = this.gameStore.map.unit(this.modelId);
+    if (model) {
 
-    const colour = model.player ? model.player.data.colour : Colour.WHITE;
-    this.spriteBackdrop.tint = colour;
-    this.spriteLine.tint = colour;
-    this.spriteArrow.tint = colour;
+      const colour = model.player ? model.player.data.colour : Colour.WHITE;
+      this.spriteBackdrop.tint = colour;
+      this.spriteLine.tint = colour;
+      this.spriteArrow.tint = colour;
+    }
   }
 
   onUpdateSelected() {

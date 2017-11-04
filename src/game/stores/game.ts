@@ -98,11 +98,7 @@ export default class GameStore {
     const combat = this.map.getCombats().find(combat => combat.location.data.id === locationId);
     if (!combat) throw new Error(`No combat on Location ${locationId}`);
 
-    const removedUnits = combat.resolve();
-
-    removedUnits.forEach(unit => {
-      this.phaserStore.destroyUnit(unit.data.id);
-    });
+    combat.resolve();
 
     this.setMap(this.map.data);
   }
