@@ -1,9 +1,9 @@
-import { clone, sum, intersection, include, exclude, unique, clamp, collect, contains } from "models/utils";
+import { clone, sum, intersection, include, exclude, unique, clamp, collect, contains, flat } from "models/utils";
 import { expect } from 'chai';
 import { describe, it, beforeEach } from "mocha";
 
-import testMapData from "test/testMap";
-import combatTestMapData from "test/testMap";
+import testMapData from "models/test/testMap";
+import combatTestMapData from "models/test/testMap";
 
 describe('Utils', () => {
 
@@ -92,6 +92,19 @@ describe('Utils', () => {
       []
     )).to.have.members([]);
   });
+
+  it('flat', () => {
+    expect(flat([
+      [1, 2, 3],
+      4,
+      [
+        [5, 6],
+        [7],
+        [8, 9, 10],
+        11
+      ]
+    ])).to.have.members([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  })
 });
 
 
