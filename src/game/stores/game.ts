@@ -80,6 +80,11 @@ export default class GameStore {
   }
 
   @action
+  setCurrentPlayer(playerId: ID) {
+    this.currentPlayerId = playerId;
+  }
+
+  @action
   resolveModelAction(action: ModelAction) {
     const map = new GameMap(this.game.latestMap);
     map.applyAction(action);

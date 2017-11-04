@@ -17,6 +17,14 @@ import {
   ASSET_PATH,
 } from 'game/constants';
 
+type TerritoryViewData = {
+  position: {
+    x: number;
+    y: number;
+  }
+};
+export type ViewData = { [id: string]: TerritoryViewData };
+
 export default class PhaserStore {
   @observable.ref phaser: Phaser.Game = null;
   territoryViews: Map<ID, TerritoryView> = new Map();
@@ -84,11 +92,11 @@ export default class PhaserStore {
       self.setPhaser(phaser);
     }
 
-    function update() {}
+    function update() { }
   }
 
   @action
-  initialiseViews(stores: RootStore, territoryPositions: Array<{ x: number; y: number }>) {
+  initialiseViews(stores: RootStore, viewData: ViewData) {
     for (let i = 0; i < stores.gameStore.map.territories.length; ++i) {
       const territoryId = stores.gameStore.map.territories[i].data.id;
       stores.phaserStore.territoryViews.set(
@@ -98,8 +106,8 @@ export default class PhaserStore {
           stores.gameStore,
           stores.uiStore,
           territoryId,
-          territoryPositions[i].x,
-          territoryPositions[i].y
+          viewData[territoryId].position.x,
+          viewData[territoryId].position.y
         )
       );
     }
