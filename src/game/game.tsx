@@ -39,12 +39,12 @@ Promise.all([
 
     stores.phaserStore.initialise(window, 'phaser-container', stores.gameStore, stores.uiStore, viewData);
     stores.gameStore.setGame(gameData);
+    stores.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
 
     when(
       () => stores.phaserStore.phaser !== null,
       () => {
         stores.uiStore.setTurn(1);
-        stores.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER);
         stores.gameStore.setCurrentPlayer(mapData.playerIds[0]);
 
         ReactDOM.render(

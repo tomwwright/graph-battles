@@ -16,6 +16,7 @@ export enum VisibilityMode {
   VISIBLE,
   NOT_VISIBLE,
   CURRENT_PLAYER,
+  CURRENT_PLAYER_REPLAY
 }
 
 export default class GameStore {
@@ -38,7 +39,7 @@ export default class GameStore {
   @computed
   get visibility() {
     const visibility: Map<ID, boolean> = new Map();
-    if (this.visibilityMode == VisibilityMode.CURRENT_PLAYER) {
+    if (this.visibilityMode == VisibilityMode.CURRENT_PLAYER || this.visibilityMode == VisibilityMode.CURRENT_PLAYER_REPLAY) {
       const territories = this.map.territories;
       const edges = this.map.edges;
 
@@ -51,6 +52,9 @@ export default class GameStore {
           visibility.set(territory.data.id, true);
           territory.edges.map(edge => edge.data.id).forEach(id => visibility.set(id, true));
           territory.edges.map(edge => edge.other(territory).data.id).forEach(id => visibility.set(id, true));
+        }
+        for (const unit of player.units) {
+          visibility.set(unit.location.data.id, true);
         }
       }
     } else {

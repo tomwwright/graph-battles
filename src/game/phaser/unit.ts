@@ -2,12 +2,13 @@ import { autorun, IReactionDisposer } from 'mobx';
 import * as Phaser from 'phaser-ce';
 
 import PhaserStore from 'game/stores/phaser';
-import GameStore from 'game/stores/game';
+import GameStore, { VisibilityMode } from 'game/stores/game';
 import UiStore from 'game/stores/ui';
 import { StatusDefinitions, SELECTED_ALPHA, UNITS_PER_ROW, UNITS_SPACING } from 'game/constants';
 
 import { ID } from 'models/utils';
 import Unit from 'models/unit';
+import GameMap from 'models/map';
 import { Colour } from 'models/values';
 
 export default class UnitView {
@@ -110,7 +111,17 @@ export default class UnitView {
   onUpdateVisibility() {
     const model = this.gameStore.map.unit(this.modelId);
     if (model) {
-      this.spriteGroup.visible = this.gameStore.visibility.get(model.location.data.id);
+      const locationVisibility = this.gameStore.visibility.get(model.location.data.id);
+      this.spriteGroup.visible = locationVisibility;
+
+      // when in replay mode, units are visible if they occupy a visible location OR occupy a currently visible location NEXT turn
+      if (this.gameStore.visibilityMode == VisibilityMode.CURRENT_PLAYER_REPLAY && model.data.destinationId) {
+        const futureModel = new GameMap(this.gameStore.game.data.maps[this.uiStore.turn]).unit(this.modelId);
+        if (futureModel) {
+          const futureLocationVisibility = this.gameStore.visibility.get(futureModel.location.data.id);
+          this.spriteGroup.visible = locationVisibility || futureLocationVisibility;
+        }
+      }
     }
   }
 
@@ -119,7 +130,7 @@ export default class UnitView {
     if (model) {
       const playerIsActive = model.data.playerId && model.data.playerId === this.gameStore.currentPlayerId;
 
-      if (model.destination && playerIsActive) {
+      if (model.destination && (playerIsActive || this.uiStore.displayOpposingMovement)) {
         const destinationView = this.phaserStore.territoryViews.get(model.destination.data.id);
 
         const destPos = destinationView.spriteGroup.position;

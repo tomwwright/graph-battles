@@ -1,6 +1,6 @@
 import { observable, observe, action, computed } from 'mobx';
 
-import GameStore from 'game/stores/game';
+import GameStore, { VisibilityMode } from 'game/stores/game';
 import PhaserStore from 'game/stores/phaser';
 import { ID, intersection, include, exclude, flat, clone } from 'models/utils';
 import Territory from 'models/territory';
@@ -16,6 +16,14 @@ type Selected =
     ids: ID[];
   };
 
+export const enum TurnState {
+  NEXT_PLAYER = 'next-player',
+  MOVE = 'move',
+  COMBAT = 'combat',
+  POST_REPLAY = 'post-replay',
+  PLAN = 'plan'
+};
+
 export default class UiStore {
 
   gameStore: GameStore;
@@ -23,10 +31,21 @@ export default class UiStore {
 
   @observable selected: Selected;
   @observable turn: number;
+  @observable turnState: TurnState = TurnState.NEXT_PLAYER;
 
   constructor(gameStore: GameStore, phaserStore: PhaserStore) {
     this.gameStore = gameStore;
     this.phaserStore = phaserStore;
+  }
+
+  @computed
+  get displayOpposingMovement() {
+    return this.turn < this.gameStore.game.turn;
+  }
+
+  @computed
+  get displayOpposingTerritoryAction() {
+    return this.turn < this.gameStore.game.turn;
   }
 
   @computed
@@ -76,11 +95,62 @@ export default class UiStore {
   }
 
   @action
+  onClickNextPlayerGo() {
+    this.setTurn(Math.max(1, this.turn - 1));
+  }
+
+  @action
+  onClickResolveMoves() {
+    this.gameStore.resolveMoves();
+    if (this.gameStore.combats.length == 0)
+      this.turnState = TurnState.POST_REPLAY;
+    else
+      this.turnState = TurnState.COMBAT;
+  }
+
+  @action
+  onClickResolveCombat(locationId: ID) {
+    this.gameStore.resolveCombat(locationId);
+    if (this.gameStore.combats.length == 0) {
+      if (this.gameStore.map.units.some(unit => unit.data.destinationId != null))
+        this.turnState = TurnState.MOVE;
+      else
+        this.turnState = TurnState.POST_REPLAY;
+    }
+  }
+
+  @action
+  onClickReady() {
+    const playerIds = this.gameStore.map.data.playerIds;
+    const currentPlayerIdx = playerIds.indexOf(this.gameStore.currentPlayerId);
+    if (currentPlayerIdx < playerIds.length - 1) {
+      this.gameStore.setCurrentPlayer(playerIds[currentPlayerIdx + 1]);
+    } else {
+      this.gameStore.resolveTurn();
+      this.setTurn(this.turn + 1);
+      this.gameStore.setCurrentPlayer(playerIds[0]);
+    }
+    this.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
+    this.unselect();
+    this.turnState = TurnState.NEXT_PLAYER;
+  }
+
+  @action
   setTurn(turn: number) {
     if (turn < 1 || turn > this.gameStore.game.data.maps.length)
       throw new Error(`Invalid turn number: ${turn}`);
-    this.gameStore.setMap(clone(this.gameStore.game.data.maps[turn - 1]));
     this.turn = turn;
+    this.unselect();
+    if (this.turn === this.gameStore.game.turn) {
+      this.turnState = TurnState.PLAN;
+      this.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER);
+      this.gameStore.setMap(this.gameStore.game.data.maps[turn - 1]); // don't clone, we need to apply model actions to the real copy!
+    } else {
+      this.turnState = TurnState.MOVE;
+      this.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER_REPLAY);
+      this.gameStore.setMap(clone(this.gameStore.game.data.maps[turn - 1]));
+    }
+
   }
 
   @action

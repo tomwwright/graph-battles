@@ -14,7 +14,7 @@ const TurnSelect: React.StatelessComponent<TurnSelectProps> = (props) => {
     turnButtons.push(<Button key={i} onClick={() => props.onClick(i)} disabled={i === props.currentTurn} bg={i === props.numTurns ? 'green' : 'blue'} >{i}</Button>);
   }
   return <InfoPane>
-    <Small><Text>Turns</Text></Small>
+    <Text>Turns <Small>{props.currentTurn < props.numTurns ? '(Replaying)' : ''}</Small></Text>
     {turnButtons}
   </InfoPane>
 };
