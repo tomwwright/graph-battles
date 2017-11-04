@@ -81,9 +81,8 @@ export default class UnitView {
     this.sprite.inputEnabled = true;
     const self = this;
     this.sprite.events.onInputUp.add((obj: Phaser.Image, pointer: Phaser.Pointer) => {
-      self.uiStore.selectUnit(obj.data.modelId);
+      self.uiStore.onClickUnit(self.modelId);
     });
-    this.sprite.data.modelId = this.modelId;
   }
 
   initialiseAutoruns() {
@@ -118,8 +117,9 @@ export default class UnitView {
 
   onUpdateDestinationLine() {
     const model = this.findModel();
+    const playerIsActive = model.data.playerId && model.data.playerId === this.gameStore.currentPlayerId;
 
-    if (model.destination) {
+    if (model.destination && playerIsActive) {
       const destinationView = this.phaserStore.territoryViews.get(model.destination.data.id);
 
       const destPos = destinationView.spriteGroup.position;
@@ -168,6 +168,8 @@ export default class UnitView {
 
     this.spriteGroup.x = rootPosition.x + x - totalWidth * 0.5;
     this.spriteGroup.y = rootPosition.y + y - totalHeight * 0.5;
+
+    this.onUpdateDestinationLine();
   }
 
   onUpdateController() {
@@ -182,8 +184,8 @@ export default class UnitView {
   onUpdateSelected() {
     this.sprite.alpha =
       this.uiStore.selected &&
-      this.uiStore.selected.type === 'unit' &&
-      this.uiStore.selected.ids.indexOf(this.modelId) != -1
+        this.uiStore.selected.type === 'unit' &&
+        this.uiStore.selected.ids.indexOf(this.modelId) != -1
         ? SELECTED_ALPHA
         : 1;
   }

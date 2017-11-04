@@ -83,9 +83,8 @@ export default class TerritoryView {
 
     const self = this;
     this.sprite.events.onInputUp.add((obj: Phaser.Image, pointer: Phaser.Pointer) => {
-      self.uiStore.selectTerritory(obj.data.modelId);
+      self.uiStore.onClickTerritory(self.modelId);
     });
-    this.sprite.data.modelId = this.modelId;
   }
 
   initialiseAutoruns() {
