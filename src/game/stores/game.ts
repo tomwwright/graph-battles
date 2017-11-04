@@ -87,6 +87,13 @@ export default class GameStore {
   }
 
   @action
+  resolveTurn() {
+    const next = new GameMap(clone(this.map.data));
+    next.resolveTurn();
+    this.game.data.maps.push(next.data);
+  }
+
+  @action
   resolveMoves() {
     this.map.resolveMoves();
 
@@ -106,10 +113,7 @@ export default class GameStore {
   @action
   resolveModelAction(action: ModelAction) {
     this.map.applyAction(action);
-    if (action.type === 'ready-player' && this.map.players.every(player => player.data.ready)) {
-      /* TODO bit of a hacky way to handle turn resolution here... */
-      this.game.resolveTurn();
-    }
+
     this.setMap(this.map.data);
   }
 

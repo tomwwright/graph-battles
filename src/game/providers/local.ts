@@ -22,7 +22,7 @@ export default class LocalGameProvider extends GameProvider {
     map.applyAction(action);
     if (action.type === "ready-player" && map.players.every(player => player.data.ready)) {
       /* TODO bit of a hacky way to handle turn resolution here... */
-      game.resolveTurn();
+      //game.resolveTurn();
     }
     LocalStorage.saveGame(game);
     return game;

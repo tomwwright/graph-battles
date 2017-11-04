@@ -30,10 +30,4 @@ export default class Game {
   get latestMap() {
     return this.data.maps[this.data.maps.length - 1];
   }
-
-  resolveTurn() {
-    const next = new GameMap(clone(this.latestMap));
-    next.resolveTurn();
-    this.data.maps.push(next.data);
-  }
 }
