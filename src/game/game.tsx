@@ -33,6 +33,7 @@ Promise.all([
     gameData.maps.push(mapData);
 
     stores.gameStore.setGame(gameData);
+    stores.gameStore.setMap(mapData);
 
     stores.phaserStore.initialise(window, 'phaser-container');
 

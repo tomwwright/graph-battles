@@ -1,3 +1,5 @@
+import { MoveUnitsModelAction } from 'models/actions/move';
+import { TerritoryModelAction } from 'models/actions/territory';
 import { observable, action, computed } from 'mobx';
 import PhaserStore from 'game/stores/phaser';
 import GameProvider from 'game/providers/base';
@@ -20,7 +22,7 @@ export default class GameStore {
   phaserStore: PhaserStore;
 
   @observable.ref game: Game;
-  @observable.ref mapIndex: number = 0;
+  @observable.ref map: GameMap;
   @observable currentPlayerId: ID;
   @observable visibilityMode: VisibilityMode = VisibilityMode.NOT_VISIBLE;
 
@@ -31,11 +33,6 @@ export default class GameStore {
   @computed
   get currentPlayer(): Player {
     return this.map.player(this.currentPlayerId);
-  }
-
-  @computed
-  get map(): GameMap {
-    return new GameMap(this.game.data.maps[this.mapIndex]);
   }
 
   @computed
@@ -80,26 +77,20 @@ export default class GameStore {
   }
 
   @action
-  setCurrentPlayer(playerId: ID) {
-    this.currentPlayerId = playerId;
+  setMap(mapData: GameMapData) {
+    this.map = new GameMap(mapData);
   }
 
   @action
-  resolveModelAction(action: ModelAction) {
-    const map = new GameMap(this.game.latestMap);
-    map.applyAction(action);
-    if (action.type === 'ready-player' && map.players.every(player => player.data.ready)) {
-      /* TODO bit of a hacky way to handle turn resolution here... */
-      this.game.resolveTurn();
-    }
-    this.game = new Game(this.game.data);
+  setCurrentPlayer(playerId: ID) {
+    this.currentPlayerId = playerId;
   }
 
   @action
   resolveMoves() {
     this.map.resolveMoves();
 
-    this.game = new Game(this.game.data);
+    this.setMap(this.map.data);
   }
 
   @action
@@ -113,7 +104,17 @@ export default class GameStore {
       this.phaserStore.destroyUnit(unit.data.id);
     });
 
-    this.game = new Game(this.game.data);
+    this.setMap(this.map.data);
+  }
+
+  @action
+  resolveModelAction(action: ModelAction) {
+    this.map.applyAction(action);
+    if (action.type === 'ready-player' && this.map.players.every(player => player.data.ready)) {
+      /* TODO bit of a hacky way to handle turn resolution here... */
+      this.game.resolveTurn();
+    }
+    this.setMap(this.map.data);
   }
 
   @action
@@ -123,7 +124,7 @@ export default class GameStore {
       playerId: this.currentPlayerId,
       territoryId: territory.data.id,
       action: action,
-    });
+    } as TerritoryModelAction);
   }
 
   @action
@@ -133,6 +134,6 @@ export default class GameStore {
       playerId: this.currentPlayerId,
       destinationId: territoryId,
       unitIds: unitIds,
-    });
+    } as MoveUnitsModelAction);
   }
 }
