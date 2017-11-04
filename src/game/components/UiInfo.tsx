@@ -26,6 +26,7 @@ const GameInfo: React.StatelessComponent<UiInfoProps> = ({ gameStore, uiStore, p
     selectedComponents = (
       <TerritoryInfo
         territory={territory}
+        currentPlayer={gameStore.currentPlayer}
         setTerritoryAction={action => gameStore.onTerritoryAction(territory, action)}
       />
     );
