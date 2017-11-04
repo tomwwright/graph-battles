@@ -115,7 +115,7 @@ export function propsToActions(props: TerritoryProperty[]): TerritoryAction[] {
 
     if (!contains(props, TerritoryProperty.CITY)) actions.push(TerritoryAction.BUILD_CITY);
 
-    if (contains(props, TerritoryProperty.CITY) && contains(props, TerritoryProperty.FORT))
+    if (contains(props, TerritoryProperty.CITY) && contains(props, TerritoryProperty.FORT) && !contains(props, TerritoryProperty.CASTLE))
       actions.push(TerritoryAction.BUILD_CASTLE);
 
     if (!contains(props, TerritoryProperty.FARM)) actions.push(TerritoryAction.BUILD_FARM);
