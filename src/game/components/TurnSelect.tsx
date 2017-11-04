@@ -11,7 +11,7 @@ type TurnSelectProps = {
 const TurnSelect: React.StatelessComponent<TurnSelectProps> = (props) => {
   const turnButtons = [];
   for (let i = 1; i <= props.numTurns; ++i) {
-    turnButtons.push(<Button key={i} onClick={() => props.onClick(i)} disabled={i === props.currentTurn} >{i}</Button>);
+    turnButtons.push(<Button key={i} onClick={() => props.onClick(i)} disabled={i === props.currentTurn} bg={i === props.numTurns ? 'green' : 'blue'} >{i}</Button>);
   }
   return <InfoPane>
     <Small><Text>Turns</Text></Small>

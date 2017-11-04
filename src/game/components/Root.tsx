@@ -1,11 +1,11 @@
 import * as React from "react";
-import UiInfo from "game/components/UiInfo";
+import SelectedInfo from "game/components/SelectedInfo";
 import GameInfo from "game/components/GameInfo";
 
 const Root: React.StatelessComponent<{}> = () => (
   <div>
     <GameInfo />
-    <UiInfo />
+    <SelectedInfo />
   </div>
 );
 
