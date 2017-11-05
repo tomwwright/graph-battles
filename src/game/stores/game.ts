@@ -24,6 +24,8 @@ export default class GameStore {
 
   @observable.ref game: Game;
   @observable.ref map: GameMap = null;
+
+  @observable turn: number;
   @observable currentPlayerId: ID;
   @observable visibilityMode: VisibilityMode = VisibilityMode.NOT_VISIBLE;
 
@@ -88,6 +90,21 @@ export default class GameStore {
   @action
   setCurrentPlayer(playerId: ID) {
     this.currentPlayerId = playerId;
+  }
+
+  @action
+  setTurn(turn: number) {
+    if (turn < 1 || turn > this.game.data.maps.length)
+      throw new Error(`Invalid turn number: ${turn}`);
+    this.turn = turn;
+    if (this.turn === this.game.turn) {
+      this.setVisibility(VisibilityMode.CURRENT_PLAYER);
+      this.setMap(this.game.data.maps[turn - 1]); // don't clone, we need to apply model actions to the real copy!
+    } else {
+      this.setVisibility(VisibilityMode.CURRENT_PLAYER_REPLAY);
+      this.setMap(clone(this.game.data.maps[turn - 1]));
+    }
+
   }
 
   @action

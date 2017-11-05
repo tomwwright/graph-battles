@@ -25,7 +25,7 @@ const Span = Styled.span`
 
 const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore }) => (
   <div>
-    <TurnSelect currentTurn={uiStore.turn} numTurns={gameStore.game.data.maps.length} onClick={(turn: number) => uiStore.setTurn(turn)} />
+    <TurnSelect currentTurn={gameStore.turn} numTurns={gameStore.game.data.maps.length} onClick={(turn: number) => uiStore.setTurn(turn)} />
     {gameStore.map.players.map((player, i) => (
       <PlayerInfo key={i} player={player} isActive={gameStore.currentPlayerId === player.data.id} />
     ))}
@@ -33,7 +33,7 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
       <div>
         <Fixed top right bottom left />
         <Overlay>
-          <Heading>Turn {uiStore.turn}/{gameStore.game.data.maxTurns}</Heading>
+          <Heading>Turn {gameStore.turn}/{gameStore.game.data.maxTurns}</Heading>
           <Text><Span color={ColourStrings[gameStore.currentPlayer.data.colour]}>Player {gameStore.currentPlayer.data.id}</Span> you're up!</Text>
           <Button onClick={() => uiStore.onClickNextPlayerGo()}>Go</Button>
         </Overlay>
@@ -52,7 +52,7 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
       ))
     )}
     {uiStore.turnState === TurnState.POST_REPLAY && (
-      <Button onClick={() => uiStore.setTurn(uiStore.turn + 1)}>Next Turn</Button>
+      <Button onClick={() => uiStore.setTurn(gameStore.turn + 1)}>Next Turn</Button>
     )}
     {uiStore.turnState === TurnState.PLAN && (
       <Button onClick={() => uiStore.onClickReady()} bg='green'>Ready!</Button>

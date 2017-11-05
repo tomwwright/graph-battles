@@ -30,7 +30,6 @@ export default class UiStore {
   phaserStore: PhaserStore;
 
   @observable selected: Selected;
-  @observable turn: number;
   @observable turnState: TurnState = TurnState.NEXT_PLAYER;
 
   constructor(gameStore: GameStore, phaserStore: PhaserStore) {
@@ -40,12 +39,12 @@ export default class UiStore {
 
   @computed
   get displayOpposingMovement() {
-    return this.turn < this.gameStore.game.turn;
+    return this.gameStore.turn < this.gameStore.game.turn;
   }
 
   @computed
   get displayOpposingTerritoryAction() {
-    return this.turn < this.gameStore.game.turn;
+    return this.gameStore.turn < this.gameStore.game.turn;
   }
 
   @computed
@@ -96,7 +95,7 @@ export default class UiStore {
 
   @action
   onClickNextPlayerGo() {
-    this.setTurn(Math.max(1, this.turn - 1));
+    this.setTurn(Math.max(1, this.gameStore.turn - 1));
   }
 
   @action
@@ -127,7 +126,7 @@ export default class UiStore {
       this.gameStore.setCurrentPlayer(playerIds[currentPlayerIdx + 1]);
     } else {
       this.gameStore.resolveTurn();
-      this.setTurn(this.turn + 1);
+      this.setTurn(this.gameStore.turn + 1);
       this.gameStore.setCurrentPlayer(playerIds[0]);
     }
     this.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
@@ -139,18 +138,9 @@ export default class UiStore {
   setTurn(turn: number) {
     if (turn < 1 || turn > this.gameStore.game.data.maps.length)
       throw new Error(`Invalid turn number: ${turn}`);
-    this.turn = turn;
+    this.gameStore.setTurn(turn);
     this.unselect();
-    if (this.turn === this.gameStore.game.turn) {
-      this.turnState = TurnState.PLAN;
-      this.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER);
-      this.gameStore.setMap(this.gameStore.game.data.maps[turn - 1]); // don't clone, we need to apply model actions to the real copy!
-    } else {
-      this.turnState = TurnState.MOVE;
-      this.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER_REPLAY);
-      this.gameStore.setMap(clone(this.gameStore.game.data.maps[turn - 1]));
-    }
-
+    this.turnState = this.gameStore.turn === this.gameStore.game.turn ? TurnState.PLAN : TurnState.MOVE;
   }
 
   @action
