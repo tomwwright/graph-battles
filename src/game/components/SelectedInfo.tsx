@@ -3,7 +3,7 @@ import { inject, observer } from 'mobx-react';
 import { Card, Text } from 'rebass';
 
 import GameStore from 'game/stores/game';
-import UiStore from 'game/stores/ui';
+import UiStore, { TurnState } from 'game/stores/ui';
 import InfoPane from 'game/components/InfoPane';
 import UnitInfo from 'game/components/UnitInfo';
 import TerritoryInfo from 'game/components/TerritoryInfo';
@@ -17,7 +17,10 @@ const SelectedInfo: React.StatelessComponent<SelectedInfoProps> = ({ gameStore, 
   let selectedComponents;
   if (uiStore.selected && uiStore.selected.type === 'unit') {
     selectedComponents = uiStore.selected.ids.map((id, i) => (
-      <UnitInfo key={i} unit={gameStore.map.unit(id)} onCancelMoveClick={() => gameStore.onMoveUnits([id], null)} />
+      <UnitInfo key={i}
+        unit={gameStore.map.unit(id)}
+        isPlanning={uiStore.turnState === TurnState.PLAN}
+        onCancelMoveClick={() => gameStore.onMoveUnits([id], null)} />
     ));
   } else if (uiStore.selected && uiStore.selected.type === 'territory') {
     const territory = gameStore.map.territory(uiStore.selected.id);
@@ -25,6 +28,7 @@ const SelectedInfo: React.StatelessComponent<SelectedInfoProps> = ({ gameStore, 
       <TerritoryInfo
         territory={territory}
         currentPlayer={gameStore.currentPlayer}
+        isPlanning={uiStore.turnState === TurnState.PLAN}
         setTerritoryAction={action => gameStore.onTerritoryAction(territory, action)}
       />
     );

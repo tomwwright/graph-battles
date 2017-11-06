@@ -3,6 +3,7 @@ import Territory from 'models/territory';
 import Player from 'models/player';
 import { Card, BackgroundImage, Box, Subhead, Small, Text } from 'rebass';
 import TerritoryAction from 'game/components/TerritoryAction';
+import SelectedTerritoryAction from 'game/components/SelectedTerritoryAction';
 import { TerritoryAction as TerritoryActionEnum, ColourStrings } from 'models/values';
 
 import { ASSET_PATH } from 'game/constants';
@@ -10,11 +11,13 @@ import { ASSET_PATH } from 'game/constants';
 type TerritoryInfoProps = {
   territory: Territory;
   currentPlayer: Player;
+  isPlanning: boolean;
   setTerritoryAction: (action: TerritoryActionEnum) => void;
 };
 
-const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory, currentPlayer, setTerritoryAction }) => {
+const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory, currentPlayer, isPlanning, setTerritoryAction }) => {
   const isControlledByCurrentPlayer = currentPlayer && territory.data.playerId === currentPlayer.data.id;
+
   return (
     <div>
       <Card width={256}>
@@ -35,13 +38,19 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
           </Small>
         </Box>
       </Card>
-      {isControlledByCurrentPlayer ? territory.actions.map((action, i) => (
-        <TerritoryAction
-          key={i}
-          onClick={setTerritoryAction}
-          action={action}
-          territory={territory}
-        />)) : null
+      {isControlledByCurrentPlayer && isPlanning ? territory.actions.map((action, i) => (
+        territory.data.currentAction === action ?
+          <SelectedTerritoryAction action={action} onClickUnbuy={setTerritoryAction} />
+          :
+          <TerritoryAction
+            key={i}
+            onClickBuy={setTerritoryAction}
+            action={action}
+            territory={territory}
+          />
+      ))
+        :
+        territory.data.currentAction != null && <SelectedTerritoryAction action={territory.data.currentAction} onClickUnbuy={null} />
       }
     </div>
   )

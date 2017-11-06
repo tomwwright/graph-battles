@@ -7,18 +7,15 @@ import { TerritoryAction, TerritoryActionDefinitions } from "models/values";
 
 type TerritoryActionProps = {
   action: TerritoryAction;
-  territory: Territory;
-  onClickBuy?: (action: TerritoryAction) => void;
+  onClickUnbuy?: (action: TerritoryAction) => void;
 };
 
-const TerritoryActionComponent: React.StatelessComponent<TerritoryActionProps> = ({
+const SelectedTerritoryActionComponent: React.StatelessComponent<TerritoryActionProps> = ({
   action,
-  territory,
-  onClickBuy
+  onClickUnbuy
 }) => {
   const definition = TerritoryActionDefinitions[action];
   const text = TerritoryActionTexts[action];
-  const playerCanAfford = territory.player && territory.player.data.gold >= definition.cost.gold && territory.data.food >= definition.cost.food;
   return (
     <InfoPane>
       <Row>
@@ -30,12 +27,13 @@ const TerritoryActionComponent: React.StatelessComponent<TerritoryActionProps> =
             </Text>
           </Small>
         </Column>
-        {onClickBuy && <Column>
-          <Button onClick={onClickBuy} disabled={!playerCanAfford}>Buy</Button>
-        </Column>}
+        {onClickUnbuy &&
+          <Column>
+            <Button onClick={() => onClickUnbuy(null)}>Unbuy</Button>
+          </Column>}
       </Row>
     </InfoPane>
   );
 };
 
-export default TerritoryActionComponent;
+export default SelectedTerritoryActionComponent;

@@ -66,7 +66,8 @@ export default class UiStore {
 
   @action
   onClickTerritory(territoryId: ID) {
-    if (!this.selected || this.selected.type === 'territory' || this.validDestinationIds.indexOf(territoryId) === -1) {
+
+    if (!this.selected || this.selected.type === 'territory' || this.turnState !== TurnState.PLAN || this.validDestinationIds.indexOf(territoryId) === -1) {
       this.selectTerritory(territoryId);
     } else if (this.selected.type === 'unit') {
       this.gameStore.onMoveUnits(this.selected.ids, territoryId);

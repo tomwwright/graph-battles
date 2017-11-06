@@ -7,10 +7,11 @@ import { ColourStrings } from 'models/values';
 
 type UnitInfoProps = {
   unit: Unit;
+  isPlanning: boolean;
   onCancelMoveClick: () => void;
 };
 
-const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, onCancelMoveClick, children }) => (
+const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, isPlanning, onCancelMoveClick, children }) => (
   <Card width={256}>
     <BackgroundImage src={`${ASSET_PATH}unit-portrait.jpg`} />
     <Box p={2}>
@@ -25,7 +26,7 @@ const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, onCancelMoveC
         <Text>Food Consumption {unit.foodConsumption}</Text>
         <Text>{unit.data.statuses.map(status => StatusDefinitions[status].text).join(', ')}</Text>
       </Small>
-      {unit.data.destinationId ? <Button onClick={onCancelMoveClick}>Cancel Move</Button> : ''}
+      {unit.data.destinationId && isPlanning ? <Button onClick={onCancelMoveClick}>Cancel Move</Button> : ''}
     </Box>
   </Card>
 );
