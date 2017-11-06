@@ -147,18 +147,28 @@ export default class UiStore {
   @action
   selectTerritory(territoryId: ID) {
     const territoryAlreadySelected = this.selected && this.selected.type === 'territory' && this.selected.id === territoryId;
-    this.selected = territoryAlreadySelected ? null : {
-      type: 'territory',
-      id: territoryId,
-    };
+    if (territoryAlreadySelected) {
+      this.selected = null;
+    } else {
+      this.selected = {
+        type: 'territory',
+        id: territoryId,
+      };
+      this.phaserStore.focusOn([territoryId]);
+    }
   }
 
   @action
   selectUnits(unitIds: ID[]) {
-    this.selected = unitIds.length == 0 ? null : {
-      type: 'unit',
-      ids: unitIds
-    };
+    if (unitIds.length == 0) {
+      this.selected = null;
+    } else {
+      this.selected = {
+        type: 'unit',
+        ids: unitIds
+      };
+      this.phaserStore.focusOn(unitIds);
+    }
   }
 
   @action

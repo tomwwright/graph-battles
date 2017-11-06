@@ -7,7 +7,7 @@ import TerritoryView from 'game/phaser/territory';
 import EdgeView from 'game/phaser/edge';
 import UnitView from 'game/phaser/unit';
 
-import { ID } from 'models/utils';
+import { ID, sum } from 'models/utils';
 import { GameMapData } from 'models/map';
 import { TerritoryTypeCheckOrder, Colour } from 'models/values';
 import {
@@ -26,10 +26,14 @@ type TerritoryViewData = {
 export type ViewData = { [id: string]: TerritoryViewData };
 
 export default class PhaserStore {
+
   @observable.ref phaser: Phaser.Game = null;
+
   territoryViews: Map<ID, TerritoryView> = new Map();
   edgeViews: Map<ID, EdgeView> = new Map();
   unitViews: Map<ID, UnitView> = new Map();
+
+  cameraTween: Phaser.Tween;
 
   gameStore: GameStore;
   uiStore: UiStore;
@@ -67,6 +71,8 @@ export default class PhaserStore {
           this.edgeViews.set(edgeId, new EdgeView(this, this.gameStore, edgeId));
         }
 
+        this.centreCamera();
+
         autorun(() => {
           this.unitViews.forEach((unitView: UnitView, id: ID) => unitView.destroy());
           for (const unitId of this.gameStore.map.data.unitIds)
@@ -77,6 +83,58 @@ export default class PhaserStore {
         });
       }
     )
+  }
+
+  @action
+  centreCamera() {
+    if (this.gameStore.map.data.territoryIds.length == 0)
+      throw new Error('No territories exist, cannot centre camera!');
+    this.focusOn(this.gameStore.map.data.territoryIds);
+  }
+
+  @action
+  focusOn(ids: ID[]) {
+    if (ids.length == 0) {
+      this.centreCamera();
+      return;
+    }
+
+    const positions: Phaser.Point[] = [];
+    ids.forEach(id => {
+      if (this.territoryViews.get(id))
+        positions.push(this.territoryViews.get(id).spriteGroup.position);
+      else if (this.unitViews.get(id))
+        positions.push(this.unitViews.get(id).spriteGroup.position);
+    });
+
+    const x = sum(positions.map(position => position.x)) / positions.length;
+    const y = sum(positions.map(position => position.y)) / positions.length;
+
+    this.tweenCamera(x, y);
+  }
+
+  @action
+  tweenCamera(x: number, y: number) {
+    if (this.cameraTween) {
+      this.cameraTween.stop();
+    }
+    const centreX = x - this.phaser.camera.width / 2;
+    const centreY = y - this.phaser.camera.height / 2;
+    this.cameraTween = this.phaser.add.tween(this.phaser.camera).to({ x: centreX, y: centreY }, 500, Phaser.Easing.Quadratic.Out);
+    this.cameraTween.onComplete.add(() => {
+      this.cameraTween = null;
+    });
+    this.cameraTween.start();
+  }
+
+  @action
+  setCamera(x: number, y: number) {
+    if (this.cameraTween) {
+      this.cameraTween.stop();
+      this.cameraTween = null;
+    }
+    this.phaser.camera.x = x - this.phaser.camera.width / 2;
+    this.phaser.camera.y = y - this.phaser.camera.height / 2;
   }
 
   @action
@@ -125,6 +183,8 @@ export default class PhaserStore {
 
     function create() {
       phaser.stage.backgroundColor = Colour.BLACK;
+      phaser.stage.disableVisibilityChange = true;
+      phaser.camera.bounds = null;
 
       self.setPhaser(phaser);
     }

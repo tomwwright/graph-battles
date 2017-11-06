@@ -26,6 +26,7 @@ const Span = Styled.span`
 const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore }) => (
   <div>
     <TurnSelect currentTurn={gameStore.turn} numTurns={gameStore.game.data.maps.length} onClick={(turn: number) => uiStore.setTurn(turn)} />
+    <Button onClick={() => uiStore.phaserStore.centreCamera()}>Reset Camera</Button>
     {gameStore.map.players.map((player, i) => (
       <PlayerInfo key={i} player={player} isActive={gameStore.currentPlayerId === player.data.id} />
     ))}
