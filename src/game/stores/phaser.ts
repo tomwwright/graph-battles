@@ -6,6 +6,7 @@ import UiStore from 'game/stores/ui';
 import TerritoryView from 'game/phaser/territory';
 import EdgeView from 'game/phaser/edge';
 import UnitView from 'game/phaser/unit';
+import KineticScroller from 'game/phaser/kineticScroller';
 
 import { ID, sum } from 'models/utils';
 import { GameMapData } from 'models/map';
@@ -53,6 +54,10 @@ export default class PhaserStore {
     when(
       () => this.gameStore.map !== null,
       () => {
+
+        const kineticScroller = new KineticScroller(this);
+        this.phaser.world.add(kineticScroller.sprite);
+
         for (const territoryId of this.gameStore.map.data.territoryIds) {
           this.territoryViews.set(
             territoryId,

@@ -154,7 +154,6 @@ export default class UiStore {
         type: 'territory',
         id: territoryId,
       };
-      this.phaserStore.focusOn([territoryId]);
     }
   }
 
@@ -167,7 +166,6 @@ export default class UiStore {
         type: 'unit',
         ids: unitIds
       };
-      this.phaserStore.focusOn(unitIds);
     }
   }
 
