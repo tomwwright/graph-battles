@@ -5,7 +5,7 @@ var glob = require("glob");
 module.exports = {
   entry: {
     game: ["babel-polyfill", "./build/es5/game/game.js"],
-    vendor: ["react", "react-dom", "mobx", "mobx-react"]
+    vendor: ["react", "react-dom", "mobx", "mobx-react", "phaser-ce", "rebass"]
   },
 
   // Enable sourcemaps for debugging webpack's output.

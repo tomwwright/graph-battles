@@ -31,7 +31,7 @@ const TerritoryActionComponent: React.StatelessComponent<TerritoryActionProps> =
           </Small>
         </Column>
         {onClickBuy && <Column>
-          <Button onClick={onClickBuy} disabled={!playerCanAfford}>Buy</Button>
+          <Button onClick={() => onClickBuy(action)} disabled={!playerCanAfford}>Buy</Button>
         </Column>}
       </Row>
     </InfoPane>
