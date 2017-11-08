@@ -72,6 +72,11 @@ export default class GameStore {
     return this.map.getCombats();
   }
 
+  @computed
+  get winners() {
+    return this.map.winningPlayers(this.game.data.maxVictoryPoints);
+  }
+
   @action
   setVisibility(mode: VisibilityMode) {
     this.visibilityMode = mode;
