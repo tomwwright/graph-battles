@@ -91,14 +91,14 @@ export default class PhaserStore {
   }
 
   @action
-  centreCamera() {
+  centreCamera(): Promise<{}> {
     if (this.gameStore.map.data.territoryIds.length == 0)
       throw new Error('No territories exist, cannot centre camera!');
-    this.focusOn(this.gameStore.map.data.territoryIds);
+    return this.focusOn(this.gameStore.map.data.territoryIds);
   }
 
   @action
-  focusOn(ids: ID[]) {
+  focusOn(ids: ID[]): Promise<{}> {
     if (ids.length == 0) {
       this.centreCamera();
       return;
@@ -108,6 +108,8 @@ export default class PhaserStore {
     ids.forEach(id => {
       if (this.territoryViews.get(id))
         positions.push(this.territoryViews.get(id).spriteGroup.position);
+      else if (this.edgeViews.get(id))
+        positions.push(this.edgeViews.get(id).sprite.position);
       else if (this.unitViews.get(id))
         positions.push(this.unitViews.get(id).spriteGroup.position);
     });
@@ -115,21 +117,25 @@ export default class PhaserStore {
     const x = sum(positions.map(position => position.x)) / positions.length;
     const y = sum(positions.map(position => position.y)) / positions.length;
 
-    this.tweenCamera(x, y);
+    return this.tweenCamera(x, y);
   }
 
   @action
-  tweenCamera(x: number, y: number) {
+  tweenCamera(x: number, y: number): Promise<{}> {
     if (this.cameraTween) {
       this.cameraTween.stop();
     }
-    const centreX = x - this.phaser.camera.width / 2;
-    const centreY = y - this.phaser.camera.height / 2;
-    this.cameraTween = this.phaser.add.tween(this.phaser.camera).to({ x: centreX, y: centreY }, 500, Phaser.Easing.Quadratic.Out);
-    this.cameraTween.onComplete.add(() => {
-      this.cameraTween = null;
+    const promise = new Promise((resolve, reject) => {
+      const centreX = x - this.phaser.camera.width / 2;
+      const centreY = y - this.phaser.camera.height / 2;
+      this.cameraTween = this.phaser.add.tween(this.phaser.camera).to({ x: centreX, y: centreY }, 500, Phaser.Easing.Quadratic.Out);
+      this.cameraTween.onComplete.add(() => {
+        this.cameraTween = null;
+        resolve();
+      });
+      this.cameraTween.start();
     });
-    this.cameraTween.start();
+    return promise;
   }
 
   @action

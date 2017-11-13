@@ -64,19 +64,19 @@ describe('Unit Model', () => {
 
   it('move', () => {
     expect(map.unit("#UR1").data.locationId).to.equal("#T1", "Unit #UR1 initial location");
-    expect(map.unit("#UR1").move.bind(map.unit("#UR1")), 'error on trying to move unit without destination').to.throw();
+    expect(map.unit("#UR1").resolveMove.bind(map.unit("#UR1")), 'error on trying to move unit without destination').to.throw();
 
     expect(map.unit("#UR3").data.locationId).to.equal("#T1", "Unit #UR3 initial location");
     expect(map.unit("#UR3").data.destinationId).to.equal("#T2", "Unit #UR3 initial destination");
     expect(map.unit("#UR3").movementEdge.data.id).to.equal("#E12", "Unit #UR3 initial movement edge");
     expect(map.unit("#UR3").location.data.unitIds).to.contain("#UR3", "Unit #UR3 present in initial location");
-    map.unit("#UR3").move();
+    map.unit("#UR3").resolveMove();
     expect(map.territory("#T1").data.unitIds).to.not.contain("#UR3", "Unit #UR3 not present in initial location post-move");
     expect(map.unit("#UR3").data.locationId).to.equal("#E12", "Unit #UR3 post-move location");
     expect(map.unit("#UR3").data.destinationId).to.equal("#T2", "Unit #UR3 post-move destination");
     expect(map.unit("#UR3").movementEdge.data.id).to.equal("#E12", "Unit #UR3 post-move movement edge");
     expect(map.unit("#UR3").location.data.unitIds).to.contain("#UR3", "Unit #UR3 present in post-move edge location");
-    map.unit("#UR3").move();
+    map.unit("#UR3").resolveMove();
     expect(map.edge("#E12").data.unitIds).to.not.contain("#UR3", "Unit #UR3 not present in edge location post-post-move");
     expect(map.unit("#UR3").data.locationId).to.equal("#T2", "Unit #UR3 post-post-move location is destination");
     expect(map.unit("#UR3").data.destinationId).to.equal(null, "Unit #UR3 has no destination post-post-move");

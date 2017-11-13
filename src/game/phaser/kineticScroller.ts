@@ -45,10 +45,12 @@ export default class KineticScroller {
   }
 
   onScrollEnd() {
-    this.scrollVelocity.divide(4, 4);
-    const cameraCenter = this.phaserStore.phaser.camera.position.clone().add(this.phaserStore.phaser.camera.width / 2, this.phaserStore.phaser.camera.height / 2);
-    const flingPosition = cameraCenter.subtract(this.scrollVelocity.x, this.scrollVelocity.y);
-    this.phaserStore.tweenCamera(flingPosition.x, flingPosition.y);
+    if (this.scrollVelocity) {
+      this.scrollVelocity.divide(4, 4);
+      const cameraCenter = this.phaserStore.phaser.camera.position.clone().add(this.phaserStore.phaser.camera.width / 2, this.phaserStore.phaser.camera.height / 2);
+      const flingPosition = cameraCenter.subtract(this.scrollVelocity.x, this.scrollVelocity.y);
+      this.phaserStore.tweenCamera(flingPosition.x, flingPosition.y);
+    }
 
     this.phaserStore.phaser.input.deleteMoveCallback(this.onScroll, this);
     this.phaserStore.phaser.input.onUp.remove(this.onScrollEnd, this);

@@ -32,4 +32,8 @@ export default class Player extends UnitContainer<PlayerData> {
       this.data.unitsDestroyed
     );
   }
+
+  resolveGold() {
+    this.data.gold += this.data.goldProduction + sum(this.territories.map(territory => territory.goldProduction));
+  }
 }

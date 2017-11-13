@@ -10,6 +10,7 @@ import UnitInfo from 'game/components/UnitInfo';
 import PlayerInfo from 'game/components/PlayerInfo';
 import CombatInfo from 'game/components/CombatInfo';
 import TurnSelect from 'game/components/TurnSelect';
+import ResolveInfo from 'game/components/ResolveInfo';
 
 import Combat from 'models/combat';
 import { ColourStrings } from 'models/values';
@@ -40,22 +41,10 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
         </Overlay>
       </div>
     )}
-    {uiStore.turnState === TurnState.MOVE && (
-      <Button onClick={() => uiStore.onClickResolveMoves()}>Resolve Moves</Button>
+    {uiStore.turnState === TurnState.REPLAYING && (
+      <ResolveInfo gameStore={gameStore} uiStore={uiStore} />
     )}
-    {uiStore.turnState === TurnState.COMBAT && (
-      gameStore.combats.map((combat, i) => (
-        <CombatInfo
-          key={i}
-          combat={combat}
-          onClick={(combat: Combat) => uiStore.onClickResolveCombat(combat.location.data.id)}
-        />
-      ))
-    )}
-    {uiStore.turnState === TurnState.POST_REPLAY && (
-      <Button onClick={() => uiStore.setTurn(gameStore.turn + 1)}>Next Turn</Button>
-    )}
-    {uiStore.turnState === TurnState.PLAN && (
+    {uiStore.turnState === TurnState.PLANNING && (
       <Button onClick={() => uiStore.onClickReady()} bg='green'>Ready!</Button>
     )}
   </div>
