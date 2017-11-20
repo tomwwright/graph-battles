@@ -25,6 +25,8 @@ export default class UnitView {
   spriteStatusesGroup: Phaser.Group;
   spriteStatuses: Phaser.Image[] = [];
 
+  updateLocationTween: Phaser.Tween;
+
   disposeStatusAutorun: IReactionDisposer;
   disposeVisibilityAutorun: IReactionDisposer;
   disposePositionAutorun: IReactionDisposer;
@@ -149,8 +151,7 @@ export default class UnitView {
         this.spriteLine.exists = true;
         this.spriteArrow.exists = true;
       } else {
-        this.spriteLine.exists = false;
-        this.spriteArrow.exists = false;
+        this.disableDestinationLine();
       }
     }
   }
@@ -179,10 +180,25 @@ export default class UnitView {
         x = col * this.sprite.width * (1 + UNITS_SPACING),
         y = row * this.sprite.height * (1 + UNITS_SPACING);
 
-      this.spriteGroup.x = rootPosition.x + x - totalWidth * 0.5;
-      this.spriteGroup.y = rootPosition.y + y - totalHeight * 0.5;
+      if (this.updateLocationTween) {
+        this.updateLocationTween.stop();
+      }
 
-      this.onUpdateDestinationLine();
+      const newPosition = {
+        x: rootPosition.x + x - totalWidth * 0.5,
+        y: rootPosition.y + y - totalHeight * 0.5
+      };
+
+      if (Phaser.Point.distance(this.spriteGroup.position, newPosition) > 1) {
+        this.updateLocationTween = this.phaserStore.phaser.add.tween(this.spriteGroup).to(newPosition, 500, Phaser.Easing.Quadratic.Out);
+        this.updateLocationTween.onStart.add(() => {
+          this.disableDestinationLine();
+        })
+        this.updateLocationTween.onComplete.add(() => {
+          this.onUpdateDestinationLine();
+        });
+        this.updateLocationTween.start();
+      }
     }
   }
 
@@ -204,6 +220,11 @@ export default class UnitView {
         this.uiStore.selected.ids.indexOf(this.modelId) != -1
         ? SELECTED_ALPHA
         : 1;
+  }
+
+  disableDestinationLine() {
+    this.spriteArrow.exists = false;
+    this.spriteLine.exists = false;
   }
 
   destroy() {

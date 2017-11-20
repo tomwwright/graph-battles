@@ -8,7 +8,7 @@ import EdgeView from 'game/phaser/edge';
 import UnitView from 'game/phaser/unit';
 import KineticScroller from 'game/phaser/kineticScroller';
 
-import { ID, sum } from 'models/utils';
+import { ID, sum, contains } from 'models/utils';
 import { GameMapData } from 'models/map';
 import { TerritoryTypeCheckOrder, Colour } from 'models/values';
 import {
@@ -78,14 +78,7 @@ export default class PhaserStore {
 
         this.centreCamera();
 
-        autorun(() => {
-          this.unitViews.forEach((unitView: UnitView, id: ID) => unitView.destroy());
-          for (const unitId of this.gameStore.map.data.unitIds)
-            this.unitViews.set(
-              unitId,
-              new UnitView(this, this.gameStore, this.uiStore, unitId)
-            );
-        });
+        autorun(() => this.initialiseUnitViews());
       }
     )
   }
@@ -146,6 +139,28 @@ export default class PhaserStore {
     }
     this.phaser.camera.x = x - this.phaser.camera.width / 2;
     this.phaser.camera.y = y - this.phaser.camera.height / 2;
+  }
+
+
+  private initialiseUnitViews() {
+
+    this.unitViews.forEach((unitView: UnitView, id: ID) => {
+      if (!contains(this.gameStore.map.data.unitIds, unitView.modelId)) {
+        this.unitViews.delete(unitView.modelId);
+        unitView.destroy();
+      }
+    });
+
+    this.gameStore.map.data.unitIds.forEach(unitId => {
+      const unitView = this.unitViews.get(unitId);
+      if (!unitView) {
+        this.unitViews.set(
+          unitId,
+          new UnitView(this, this.gameStore, this.uiStore, unitId)
+        );
+      }
+    });
+
   }
 
   @action
