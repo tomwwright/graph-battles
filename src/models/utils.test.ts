@@ -1,4 +1,4 @@
-import { clone, sum, intersection, include, exclude, unique, clamp, collect, contains, flat } from "models/utils";
+import { clone, sum, intersection, include, exclude, excludeAll, unique, clamp, collect, contains, flat } from "models/utils";
 import { expect } from 'chai';
 import { describe, it, beforeEach } from "mocha";
 
@@ -59,6 +59,19 @@ describe('Utils', () => {
 
     const original = [1, 2, 3];
     const excluded = exclude(original, 1);
+    expect(original).to.not.equal(excluded);
+    expect(original).to.have.members([1, 2, 3]);
+  });
+
+  it('excludeAll', () => {
+    expect(excludeAll([1, 2, 3], [3, 3])).to.have.members([1, 2]);
+    expect(excludeAll([1, 2, 3], [2, 3])).to.have.members([1]);
+    expect(excludeAll([1, 2, 3, 2, 4], [2, 5])).to.have.members([1, 3, 4]);
+    expect(excludeAll([1, 2, 3], [5, 6])).to.have.members([1, 2, 3]);
+    expect(excludeAll([1, 2, null, 3], [2])).to.have.members([1, null, 3]);
+
+    const original = [1, 2, 3];
+    const excluded = excludeAll(original, [1, 2]);
     expect(original).to.not.equal(excluded);
     expect(original).to.have.members([1, 2, 3]);
   });

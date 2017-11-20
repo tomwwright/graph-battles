@@ -4,7 +4,7 @@ import { TerritoryModelAction } from 'models/actions/territory';
 import { observable, action, computed } from 'mobx';
 import PhaserStore from 'game/stores/phaser';
 import GameProvider from 'game/providers/base';
-import { ID, clone, contains, exclude } from 'models/utils';
+import { ID, clone, contains, exclude, excludeAll } from 'models/utils';
 import Game, { GameData } from 'models/game';
 import GameMap, { GameMapData } from 'models/map';
 import UnitContainer from 'models/unitcontainer';
@@ -73,8 +73,12 @@ export default class GameStore {
       if (player) {
         for (const territory of player.territories) {
           visibility.set(territory.data.id, true);
-          territory.edges.map(edge => edge.data.id).forEach(id => visibility.set(id, true));
           territory.edges.map(edge => edge.other(territory).data.id).forEach(id => visibility.set(id, true));
+        }
+        for (const edge of edges) {
+          if (visibility.get(edge.data.territoryAId) && visibility.get(edge.data.territoryBId)) {
+            visibility.set(edge.data.id, true);
+          }
         }
         for (const unit of player.units) {
           visibility.set(unit.location.data.id, true);
@@ -303,21 +307,41 @@ export default class GameStore {
 
   private toMovesState() {
     this.resolveIds = this.map.units.filter(unit => unit.data.destinationId).map(unit => unit.data.id);
+
+    const invisibleResolveIds = this.resolveIds.filter(unitId => !this.isUnitVisible(unitId));
+    invisibleResolveIds.forEach(unitId => this.resolveMove(unitId));
+    this.resolveIds = excludeAll(this.resolveIds, invisibleResolveIds);
+
     this.resolveState = ResolveState.MOVES;
   }
 
   private toEdgeMovesState() {
     this.resolveIds = this.map.units.filter(unit => unit.data.destinationId && !unit.location.hasCombat()).map(unit => unit.data.id);
+
+    const invisibleResolveIds = this.resolveIds.filter(unitId => !this.isUnitVisible(unitId));
+    invisibleResolveIds.forEach(unitId => this.resolveMove(unitId));
+    this.resolveIds = excludeAll(this.resolveIds, invisibleResolveIds);
+
     this.resolveState = ResolveState.EDGE_MOVES;
   }
 
   private toCombatsState() {
     this.resolveIds = this.map.getCombats().map(combat => combat.location.data.id);
+
+    const invisibleResolveIds = this.resolveIds.filter(locationId => !this.isLocationVisible(locationId));
+    invisibleResolveIds.forEach(locationId => this.resolveCombat(locationId));
+    this.resolveIds = excludeAll(this.resolveIds, invisibleResolveIds);
+
     this.resolveState = ResolveState.COMBATS;
   }
 
   private toAddDefendState() {
     this.resolveIds = this.map.units.filter(unit => !contains(unit.data.statuses, Status.DEFEND)).map(unit => unit.data.id);
+
+    const invisibleResolveIds = this.resolveIds.filter(unitId => !this.isUnitVisible(unitId));
+    invisibleResolveIds.forEach(unitId => this.resolveAddDefend(unitId));
+    this.resolveIds = excludeAll(this.resolveIds, invisibleResolveIds);
+
     this.resolveState = ResolveState.ADD_DEFEND;
   }
 
@@ -328,16 +352,52 @@ export default class GameStore {
 
   private toFoodState() {
     this.resolveIds = clone(this.map.data.territoryIds);
+
+    const invisibleResolveIds = this.resolveIds.filter(territoryId => !this.isLocationVisible(territoryId));
+    invisibleResolveIds.forEach(territoryId => this.resolveFood(territoryId));
+    this.resolveIds = excludeAll(this.resolveIds, invisibleResolveIds);
+
     this.resolveState = ResolveState.FOOD;
   }
 
   private toTerritoryControlState() {
     this.resolveIds = clone(this.map.data.territoryIds);
+
+    const invisibleResolveIds = this.resolveIds.filter(territoryId => !this.isLocationVisible(territoryId));
+    invisibleResolveIds.forEach(territoryId => this.resolveTerritoryControl(territoryId));
+    this.resolveIds = excludeAll(this.resolveIds, invisibleResolveIds);
+
     this.resolveState = ResolveState.TERRITORY_CONTROL;
   }
 
   private toTerritoryActionState() {
     this.resolveIds = this.map.territories.filter(territory => territory.data.currentAction != null).map(territory => territory.data.id);
+
+    const invisibleResolveIds = this.resolveIds.filter(territoryId => !this.isLocationVisible(territoryId));
+    invisibleResolveIds.forEach(territoryId => this.resolveTerritoryAction(territoryId));
+    this.resolveIds = excludeAll(this.resolveIds, invisibleResolveIds);
+
     this.resolveState = ResolveState.TERRITORY_ACTIONS;
+  }
+
+  public isUnitVisible(unitId: ID): boolean {
+    const model = this.map.unit(unitId);
+    const locationVisibility = this.visibility.get(model.location.data.id);
+    let visible = locationVisibility;
+
+    // when in replay mode, units are visible if they occupy a visible location OR occupy a currently visible location NEXT turn
+    if (this.isReplaying && model.data.destinationId) {
+      const futureModel = new GameMap(this.game.data.maps[this.turn]).unit(unitId);
+      if (futureModel) {
+        const futureLocationVisibility = this.visibility.get(futureModel.location.data.id);
+        visible = locationVisibility || futureLocationVisibility;
+      }
+    }
+
+    return visible;
+  }
+
+  public isLocationVisible(locationId): boolean {
+    return this.visibility.get(locationId);
   }
 }

@@ -113,17 +113,7 @@ export default class UnitView {
   onUpdateVisibility() {
     const model = this.gameStore.map.unit(this.modelId);
     if (model) {
-      const locationVisibility = this.gameStore.visibility.get(model.location.data.id);
-      this.spriteGroup.visible = locationVisibility;
-
-      // when in replay mode, units are visible if they occupy a visible location OR occupy a currently visible location NEXT turn
-      if (this.gameStore.isReplaying && model.data.destinationId) {
-        const futureModel = new GameMap(this.gameStore.game.data.maps[this.gameStore.turn]).unit(this.modelId);
-        if (futureModel) {
-          const futureLocationVisibility = this.gameStore.visibility.get(futureModel.location.data.id);
-          this.spriteGroup.visible = locationVisibility || futureLocationVisibility;
-        }
-      }
+      this.spriteGroup.visible = this.gameStore.isUnitVisible(this.modelId);
     }
   }
 

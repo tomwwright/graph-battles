@@ -96,8 +96,8 @@ export default class UiStore {
 
   @action
   onClickNextPlayerGo() {
-    this.setTurn(Math.max(1, this.gameStore.turn - 1));
     this.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER);
+    this.setTurn(Math.max(1, this.gameStore.turn - 1));
   }
 
   @action

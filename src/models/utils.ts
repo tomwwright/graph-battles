@@ -56,6 +56,14 @@ export function exclude<T>(array: T[], thing: T): T[] {
   return copy;
 }
 
+export function excludeAll<T>(array: T[], things: T[]): T[] {
+  const copy = [];
+  for (const a of array) {
+    if (!contains(things, a)) copy.push(a);
+  }
+  return copy;
+}
+
 export function flat<T>(arrays: (T | T[])[]): T[] {
   const flattened: T[] = [];
   const flatten = (elementOrArray: T | T[]) => {
