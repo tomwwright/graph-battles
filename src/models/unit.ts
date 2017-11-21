@@ -7,6 +7,7 @@ import Edge from "models/edge";
 import { Status } from "models/values";
 
 export type UnitData = HasID & {
+  type: "unit";
   playerId: ID;
   locationId: ID;
   destinationId: ID;

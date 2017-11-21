@@ -6,6 +6,7 @@ import Unit from "models/unit";
 import { Colour } from "models/values";
 
 export type PlayerData = UnitContainerData & {
+  type: "player";
   colour: Colour;
   territoryIds: ID[];
   gold: number;

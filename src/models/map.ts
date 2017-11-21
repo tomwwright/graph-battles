@@ -13,6 +13,7 @@ import { applyMoveUnits } from 'models/actions/move';
 import { applyTerritoryAction } from 'models/actions/territory';
 
 export type GameMapData = HasID & {
+  type: "map";
   dataMap: DataMap;
   territoryIds: ID[];
   playerIds: ID[];
@@ -107,6 +108,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
 
   addUnit(territory: Territory): GameMap {
     const unitData: UnitData = {
+      type: "unit",
       id: toID(this.data.nextId),
       playerId: territory.data.playerId,
       locationId: territory.data.id,

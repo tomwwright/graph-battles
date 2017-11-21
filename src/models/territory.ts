@@ -7,6 +7,7 @@ import Unit from "models/unit";
 import { TerritoryProperty, TerritoryAction, TerritoryActionDefinitions, TerritoryType, propsToActions, propsToType, Status } from "models/values";
 
 export type TerritoryData = UnitContainerData & {
+  type: "territory";
   edgeIds: ID[];
   playerId: ID;
   food: number;

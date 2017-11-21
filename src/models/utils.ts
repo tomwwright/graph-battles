@@ -7,6 +7,7 @@ export type DataMap = { [id: string]: HasID };
 
 export type HasID = {
   id: ID;
+  type: "unit" | "territory" | "edge" | "player" | "map"
 };
 
 export abstract class Model<T extends HasID = HasID> {

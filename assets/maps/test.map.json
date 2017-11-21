@@ -1,5 +1,6 @@
 {
   "id": "test-map",
+  "type": "map",
   "nextId": 0,
   "playerIds": [
     "#PR",
@@ -36,6 +37,7 @@
   "dataMap": {
     "#PR": {
       "id": "#PR",
+      "type": "player",
       "colour": 16711680,
       "territoryIds": [
         "#T2"
@@ -55,6 +57,7 @@
     },
     "#PB": {
       "id": "#PB",
+      "type": "player",
       "colour": 255,
       "territoryIds": [
         "#T1",
@@ -75,6 +78,7 @@
     },
     "#PG": {
       "id": "#PG",
+      "type": "player",
       "colour": 10027263,
       "territoryIds": [
         "#T5"
@@ -91,6 +95,7 @@
     },
     "#T1": {
       "id": "#T1",
+      "type": "territory",
       "playerId": "#PB",
       "unitIds": [
         "#UR1",
@@ -113,6 +118,7 @@
     },
     "#T2": {
       "id": "#T2",
+      "type": "territory",
       "playerId": "#PR",
       "unitIds": [
         "#UR4"
@@ -127,6 +133,7 @@
     },
     "#T3": {
       "id": "#T3",
+      "type": "territory",
       "playerId": "#PB",
       "unitIds": [
         "#UB1",
@@ -146,6 +153,7 @@
     },
     "#T4": {
       "id": "#T4",
+      "type": "territory",
       "playerId": null,
       "unitIds": [
         "#U1"
@@ -163,6 +171,7 @@
     },
     "#T5": {
       "id": "#T5",
+      "type": "territory",
       "playerId": "#PG",
       "unitIds": [
         "#UG1"
@@ -180,42 +189,49 @@
     },
     "#E12": {
       "id": "#E12",
+      "type": "edge",
       "unitIds": [],
       "territoryAId": "#T1",
       "territoryBId": "#T2"
     },
     "#E13": {
       "id": "#E13",
+      "type": "edge",
       "unitIds": [],
       "territoryAId": "#T1",
       "territoryBId": "#T3"
     },
     "#E23": {
       "id": "#E23",
+      "type": "edge",
       "unitIds": [],
       "territoryAId": "#T2",
       "territoryBId": "#T3"
     },
     "#E34": {
       "id": "#E34",
+      "type": "edge",
       "unitIds": [],
       "territoryAId": "#T3",
       "territoryBId": "#T4"
     },
     "#E35": {
       "id": "#E35",
+      "type": "edge",
       "unitIds": [],
       "territoryAId": "#T3",
       "territoryBId": "#T5"
     },
     "#E45": {
       "id": "#E45",
+      "type": "edge",
       "unitIds": [],
       "territoryAId": "#T4",
       "territoryBId": "#T5"
     },
     "#UR1": {
       "id": "#UR1",
+      "type": "unit",
       "playerId": "#PR",
       "locationId": "#T1",
       "destinationId": null,
@@ -223,6 +239,7 @@
     },
     "#UR2": {
       "id": "#UR2",
+      "type": "unit",
       "playerId": "#PR",
       "locationId": "#T1",
       "destinationId": null,
@@ -230,6 +247,7 @@
     },
     "#UR3": {
       "id": "#UR3",
+      "type": "unit",
       "playerId": "#PR",
       "locationId": "#T1",
       "destinationId": "#T2",
@@ -237,6 +255,7 @@
     },
     "#UR4": {
       "id": "#UR4",
+      "type": "unit",
       "playerId": "#PR",
       "locationId": "#T2",
       "destinationId": "#T3",
@@ -246,6 +265,7 @@
     },
     "#UB1": {
       "id": "#UB1",
+      "type": "unit",
       "playerId": "#PB",
       "locationId": "#T3",
       "destinationId": "#T2",
@@ -260,6 +280,7 @@
     },
     "#UB3": {
       "id": "#UB3",
+      "type": "unit",
       "playerId": "#PB",
       "locationId": "#T3",
       "destinationId": null,
@@ -269,6 +290,7 @@
     },
     "#UB4": {
       "id": "#UB4",
+      "type": "unit",
       "playerId": "#PB",
       "locationId": "#T3",
       "destinationId": "#T4",
@@ -278,6 +300,7 @@
     },
     "#UG1": {
       "id": "#UG1",
+      "type": "unit",
       "playerId": "#PG",
       "locationId": "#T5",
       "destinationId": "#T4",
@@ -285,6 +308,7 @@
     },
     "#U1": {
       "id": "#U1",
+      "type": "unit",
       "playerId": null,
       "locationId": "#T4",
       "destinationId": null,
