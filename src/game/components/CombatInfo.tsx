@@ -7,10 +7,9 @@ import Combat from 'models/combat';
 
 type CombatInfoProps = {
   combat: Combat;
-  onClick: (combat: Combat) => void;
 };
 
-const CombatInfo: React.StatelessComponent<CombatInfoProps> = ({ combat, onClick }) => (
+const CombatInfo: React.StatelessComponent<CombatInfoProps> = ({ combat }) => (
   <Card width={256}>
     <Box p={2}>
       <Text>Combat {combat.location.data.id} </Text>
@@ -22,7 +21,6 @@ const CombatInfo: React.StatelessComponent<CombatInfoProps> = ({ combat, onClick
           </Text>
         </Small>
       ))}
-      <Button onClick={() => onClick(combat)}>Resolve</Button>
     </Box>
   </Card>
 );

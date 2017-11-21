@@ -8,7 +8,7 @@ import { ColourStrings } from 'models/values';
 type UnitInfoProps = {
   unit: Unit;
   isPlanning: boolean;
-  onCancelMoveClick: () => void;
+  onCancelMoveClick?: () => void;
 };
 
 const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, isPlanning, onCancelMoveClick, children }) => (
