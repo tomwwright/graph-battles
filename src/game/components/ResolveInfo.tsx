@@ -20,12 +20,26 @@ type ResolveInfoProps = {
 };
 
 const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, uiStore }) => {
+  const resolveStateTexts = {
+    [ResolveState.ADD_DEFEND]: 'Defenders',
+    [ResolveState.COMBATS]: 'Combats',
+    [ResolveState.EDGE_MOVES]: 'Movement',
+    [ResolveState.MOVES]: 'Movement',
+    [ResolveState.FOOD]: 'Food',
+    [ResolveState.GOLD]: 'Gold',
+    [ResolveState.TERRITORY_ACTIONS]: 'Territory Actions',
+    [ResolveState.TERRITORY_CONTROL]: 'Territory Captures',
+    [ResolveState.NONE]: '---',
+  };
+
   return (
     <div>
       <InfoPane>
         <Text>
-          Resolving: {gameStore.resolveState}
+          <Small>Replaying</Small>
         </Text>
+        <Text>{resolveStateTexts[gameStore.resolveState]}</Text>
+        <Button onClick={() => uiStore.onClickResolve(gameStore.resolveIds[0])}>Resolve Next</Button>
       </InfoPane>
 
       {gameStore.resolveIds.map((id, i) => {
@@ -38,11 +52,18 @@ const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, ui
             case ResolveState.FOOD:
             case ResolveState.TERRITORY_ACTIONS:
             case ResolveState.TERRITORY_CONTROL:
-              return <TerritoryInfo key={i} territory={gameStore.map.territory(id)} currentPlayer={gameStore.currentPlayer} isPlanning={false} />;
+              return (
+                <TerritoryInfo
+                  key={i}
+                  territory={gameStore.map.territory(id)}
+                  currentPlayer={gameStore.currentPlayer}
+                  isPlanning={false}
+                />
+              );
             case ResolveState.GOLD:
-              return <PlayerInfo key={i} player={gameStore.map.player(id)} isActive={false} />
+              return <PlayerInfo key={i} player={gameStore.map.player(id)} isActive={false} />;
             case ResolveState.COMBATS:
-              return <CombatInfo key={i} combat={gameStore.combats.find(combat => combat.location.data.id === id)} />
+              return <CombatInfo key={i} combat={gameStore.combats.find(combat => combat.location.data.id === id)} />;
           }
         } else {
           switch (gameStore.resolveState) {
@@ -55,14 +76,14 @@ const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, ui
             case ResolveState.TERRITORY_CONTROL:
               return <TerritoryListItem key={i} territory={gameStore.map.territory(id)} />;
             case ResolveState.GOLD:
-              return <PlayerListItem key={i} player={gameStore.map.player(id)} />
+              return <PlayerListItem key={i} player={gameStore.map.player(id)} />;
             case ResolveState.COMBATS:
-              return <CombatListItem key={i} combat={gameStore.combats.find(combat => combat.location.data.id === id)} />
+              return (
+                <CombatListItem key={i} combat={gameStore.combats.find(combat => combat.location.data.id === id)} />
+              );
           }
         }
       })}
-
-      <Button onClick={() => uiStore.onClickResolve(gameStore.resolveIds[0])}>Resolve</Button>
     </div>
   );
 };
