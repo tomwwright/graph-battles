@@ -26,7 +26,11 @@ const Span = Styled.span`
 
 const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore }) => (
   <div>
-    <TurnSelect currentTurn={gameStore.turn} numTurns={gameStore.game.data.maps.length} onClick={(turn: number) => uiStore.setTurn(turn)} />
+    <TurnSelect
+      currentTurn={gameStore.turn}
+      numTurns={gameStore.game.data.maps.length}
+      onClick={(turn: number) => uiStore.setTurn(turn)}
+    />
     <Button onClick={() => uiStore.phaserStore.centreCamera()}>Reset Camera</Button>
     {gameStore.map.players.map((player, i) => (
       <PlayerInfo key={i} player={player} isActive={gameStore.currentPlayerId === player.data.id} />
@@ -35,17 +39,24 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
       <div>
         <Fixed top right bottom left />
         <Overlay>
-          <Heading>Turn {gameStore.turn}/{gameStore.game.data.maxTurns}</Heading>
-          <Text><Span color={ColourStrings[gameStore.currentPlayer.data.colour]}>Player {gameStore.currentPlayer.data.id}</Span> you're up!</Text>
+          <Heading>
+            Turn {gameStore.turn}/{gameStore.game.data.maxTurns}
+          </Heading>
+          <Text>
+            <Span color={ColourStrings[gameStore.currentPlayer.data.colour]}>
+              Player {gameStore.currentPlayer.data.id}
+            </Span>{' '}
+            you're up!
+          </Text>
           <Button onClick={() => uiStore.onClickNextPlayerGo()}>Go</Button>
         </Overlay>
       </div>
     )}
-    {uiStore.turnState === TurnState.REPLAYING && (
-      <ResolveInfo gameStore={gameStore} uiStore={uiStore} />
-    )}
+    {uiStore.turnState === TurnState.REPLAYING && <ResolveInfo gameStore={gameStore} uiStore={uiStore} />}
     {uiStore.turnState === TurnState.PLANNING && (
-      <Button onClick={() => uiStore.onClickReady()} bg='green'>Ready!</Button>
+      <Button onClick={() => uiStore.onClickReady()} bg="green">
+        Ready!
+      </Button>
     )}
   </div>
 );
