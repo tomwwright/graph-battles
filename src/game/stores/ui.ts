@@ -2,8 +2,10 @@ import { observable, observe, action, computed, runInAction } from 'mobx';
 
 import GameStore, { ResolveState, VisibilityMode } from 'game/stores/game';
 import PhaserStore from 'game/stores/phaser';
+import { GameProvider } from 'game/providers/base';
 import { ID, intersection, include, exclude, flat, clone } from 'models/utils';
 import Territory from 'models/territory';
+import { ReadyPlayerModelAction } from 'models/actions/ready';
 
 type Selected =
   | null
@@ -26,6 +28,7 @@ export default class UiStore {
 
   gameStore: GameStore;
   phaserStore: PhaserStore;
+  provider: GameProvider;
 
   @observable selected: Selected;
   @observable turnState: TurnState = TurnState.NEXT_PLAYER;
@@ -105,6 +108,12 @@ export default class UiStore {
     const playerIds = this.gameStore.map.data.playerIds;
     const currentPlayerIdx = playerIds.indexOf(this.gameStore.currentPlayerId);
     if (currentPlayerIdx < playerIds.length - 1) {
+      const readyPlayerAction: ReadyPlayerModelAction = {
+        type: "ready-player",
+        playerId: this.gameStore.currentPlayerId,
+        isReady: true
+      };
+      this.gameStore.applyModelAction(readyPlayerAction);
       this.gameStore.setCurrentPlayer(playerIds[currentPlayerIdx + 1]);
     } else {
       this.gameStore.resolveTurn();

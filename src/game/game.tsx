@@ -4,10 +4,13 @@ import Axios from 'axios';
 import { Provider } from 'mobx-react';
 import { when, useStrict } from 'mobx';
 import { Provider as ThemeProvider } from 'rebass';
+import * as QueryString from 'query-string';
+
 import Root from 'game/components/Root';
 import RootStore from 'game/stores';
 import { VisibilityMode } from 'game/stores/game';
 import { ViewData } from 'game/stores/phaser';
+import { LocalGameProvider, LocalStorage } from 'game/providers/local';
 
 import TerritoryView from 'game/phaser/territory';
 import { GameData } from 'models/game';
@@ -21,40 +24,45 @@ const stores = new RootStore();
 
 (window as any).stores = stores;
 
-Promise.all([
-  Axios.get('/assets/maps/test.game.json'),
-  Axios.get('/assets/maps/test.map.json'),
-  Axios.get('/assets/maps/test.view.json')
-])
-  .then(responses => {
-    const gameData: GameData = responses[0].data;
-    const mapData: GameMapData = responses[1].data;
-    const viewData: ViewData = responses[2].data;
+// parse the query string
+type AppParameters = {
+  gameId: string
+};
 
-    gameData.maps.push(mapData);
+const params: AppParameters = QueryString.parse(location.search);
+let savedGame;
+try {
+  savedGame = LocalStorage.loadGame(params.gameId);
+} catch (e) {
+  console.error(e);
+}
 
-    const nextTurn = new GameMap(clone(mapData));
-    nextTurn.resolveTurn();
-    gameData.maps.push(nextTurn.data);
+if (savedGame) {
+  stores.phaserStore.initialise(window, 'phaser-container', stores.gameStore, stores.uiStore, savedGame.viewData);
+  stores.gameStore.setGame(savedGame.gameData);
+  stores.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
 
-    stores.phaserStore.initialise(window, 'phaser-container', stores.gameStore, stores.uiStore, viewData);
-    stores.gameStore.setGame(gameData);
-    stores.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
+  stores.uiStore.provider = LocalGameProvider.createProvider(savedGame.gameData.id, 'xxx')
 
-    when(
-      () => stores.phaserStore.phaser !== null,
-      () => {
-        stores.uiStore.setTurn(1);
-        stores.uiStore.setPlayer(stores.gameStore.map.data.playerIds[0]);
+  when(
+    () => stores.phaserStore.phaser !== null,
+    () => {
+      stores.uiStore.setTurn(1);
+      stores.uiStore.setPlayer(stores.gameStore.map.data.playerIds[0]);
 
-        ReactDOM.render(
-          <ThemeProvider>
-            <Provider {...stores}>
-              <Root />
-            </Provider>
-          </ThemeProvider>,
-          document.getElementById('react-container')
-        );
-      }
-    );
-  });
+      ReactDOM.render(
+        <ThemeProvider>
+          <Provider {...stores}>
+            <Root />
+          </Provider>
+        </ThemeProvider>,
+        document.getElementById('react-container')
+      );
+    }
+  );
+} else {
+  ReactDOM.render(
+    <p>Unable to load game '{params.gameId}', does it exist?</p>,
+    document.getElementById('react-container')
+  );
+}

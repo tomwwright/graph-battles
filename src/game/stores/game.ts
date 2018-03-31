@@ -3,7 +3,6 @@ import { MoveUnitsModelAction } from 'models/actions/move';
 import { TerritoryModelAction } from 'models/actions/territory';
 import { observable, action, computed } from 'mobx';
 import PhaserStore from 'game/stores/phaser';
-import GameProvider from 'game/providers/base';
 import { ID, clone, contains, exclude, excludeAll } from 'models/utils';
 import Game, { GameData } from 'models/game';
 import GameMap, { GameMapData } from 'models/map';
