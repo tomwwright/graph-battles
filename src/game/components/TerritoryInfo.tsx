@@ -12,7 +12,7 @@ type TerritoryInfoProps = {
   territory: Territory;
   currentPlayer: Player;
   isPlanning: boolean;
-  setTerritoryAction: (action: TerritoryActionEnum) => void;
+  setTerritoryAction?: (action: TerritoryActionEnum) => void;
 };
 
 const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory, currentPlayer, isPlanning, setTerritoryAction }) => {

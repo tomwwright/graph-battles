@@ -45,7 +45,7 @@ Promise.all([
       () => stores.phaserStore.phaser !== null,
       () => {
         stores.uiStore.setTurn(1);
-        stores.gameStore.setCurrentPlayer(mapData.playerIds[0]);
+        stores.uiStore.setPlayer(stores.gameStore.map.data.playerIds[0]);
 
         ReactDOM.render(
           <ThemeProvider>

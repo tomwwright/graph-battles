@@ -4,6 +4,7 @@ import UnitContainer, { UnitContainerData } from "models/unitcontainer";
 import Territory from "models/territory";
 
 export type EdgeData = UnitContainerData & {
+  type: "edge";
   territoryAId: ID;
   territoryBId: ID;
 };

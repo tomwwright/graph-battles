@@ -1,12 +1,13 @@
-import { ID, clone, include, exclude, contains } from "models/utils";
+import { ID, clone, include, exclude, contains, sum, clamp, unique } from "models/utils";
 import GameMap from "models/map";
 import UnitContainer, { UnitContainerData } from "models/unitcontainer";
 import Player from "models/player";
 import Edge from "models/edge";
 import Unit from "models/unit";
-import { TerritoryProperty, TerritoryAction, TerritoryActionDefinitions, TerritoryType, propsToActions, propsToType } from "models/values";
+import { TerritoryProperty, TerritoryAction, TerritoryActionDefinitions, TerritoryType, propsToActions, propsToType, Status } from "models/values";
 
 export type TerritoryData = UnitContainerData & {
+  type: "territory";
   edgeIds: ID[];
   playerId: ID;
   food: number;
@@ -97,5 +98,43 @@ export default class Territory extends UnitContainer<TerritoryData> {
     this.data.food = food - foodCost;
     this.player.data.gold = gold - goldCost;
     this.data.currentAction = action;
+  }
+
+  resolveFood() {
+    this.data.food += this.foodProduction;
+
+    const consumedFood = sum(this.units.map(unit => unit.foodConsumption));
+    this.data.food -= consumedFood;
+    for (let unit of this.units) {
+      if (this.data.food < 0) unit.addStatus(Status.STARVE);
+      else unit.removeStatus(Status.STARVE);
+    }
+
+    this.data.food = clamp(this.data.food, 0, this.maxFood);
+  }
+
+  resolveTerritoryAction() {
+    if (this.data.currentAction != null) {
+      const actionDefinition = TerritoryActionDefinitions[this.data.currentAction];
+      actionDefinition.actionFunction(this.map, this);
+      this.data.currentAction = null;
+    }
+  }
+
+  resolveTerritoryControl(previous: Territory) {
+    const presentPlayerIds = unique(this.units.map(unit => unit.data.playerId));
+    const previousPlayerIds = unique(previous.units.map(unit => unit.data.playerId));
+
+    if (
+      presentPlayerIds.length == 1 &&
+      previousPlayerIds.length == 1 &&
+      presentPlayerIds[0] === previousPlayerIds[0] &&
+      presentPlayerIds[0] !== this.data.playerId
+    ) {
+      if (this.player) this.player.data.territoryIds = exclude(this.player.data.territoryIds, this.data.id);
+      this.data.playerId = presentPlayerIds[0];
+      this.player.data.territoryIds = include(this.player.data.territoryIds, this.data.id);
+      this.data.currentAction = null;
+    }
   }
 }

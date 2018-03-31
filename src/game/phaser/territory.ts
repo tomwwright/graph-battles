@@ -106,7 +106,7 @@ export default class TerritoryView {
   }
 
   onUpdateVisibility() {
-    this.spriteOverlay.alpha = this.gameStore.visibility.get(this.modelId) ? 0 : TERRITORY_VISIBILITY_OVERLAY_ALPHA;
+    this.spriteOverlay.alpha = this.gameStore.isLocationVisible(this.modelId) ? 0 : TERRITORY_VISIBILITY_OVERLAY_ALPHA;
   }
 
   onUpdateActionIndicator() {

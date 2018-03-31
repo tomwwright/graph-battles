@@ -19,7 +19,7 @@ const SelectedInfo: React.StatelessComponent<SelectedInfoProps> = ({ gameStore, 
     selectedComponents = uiStore.selected.ids.map((id, i) => (
       <UnitInfo key={i}
         unit={gameStore.map.unit(id)}
-        isPlanning={uiStore.turnState === TurnState.PLAN}
+        isPlanning={uiStore.turnState === TurnState.PLANNING}
         onCancelMoveClick={() => gameStore.onMoveUnits([id], null)} />
     ));
   } else if (uiStore.selected && uiStore.selected.type === 'territory') {
@@ -28,7 +28,7 @@ const SelectedInfo: React.StatelessComponent<SelectedInfoProps> = ({ gameStore, 
       <TerritoryInfo
         territory={territory}
         currentPlayer={gameStore.currentPlayer}
-        isPlanning={uiStore.turnState === TurnState.PLAN}
+        isPlanning={uiStore.turnState === TurnState.PLANNING}
         setTerritoryAction={action => gameStore.onTerritoryAction(territory, action)}
       />
     );

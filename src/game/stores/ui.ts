@@ -1,6 +1,6 @@
-import { observable, observe, action, computed } from 'mobx';
+import { observable, observe, action, computed, runInAction } from 'mobx';
 
-import GameStore, { VisibilityMode } from 'game/stores/game';
+import GameStore, { ResolveState, VisibilityMode } from 'game/stores/game';
 import PhaserStore from 'game/stores/phaser';
 import { ID, intersection, include, exclude, flat, clone } from 'models/utils';
 import Territory from 'models/territory';
@@ -17,11 +17,9 @@ type Selected =
   };
 
 export const enum TurnState {
-  NEXT_PLAYER = 'next-player',
-  MOVE = 'move',
-  COMBAT = 'combat',
-  POST_REPLAY = 'post-replay',
-  PLAN = 'plan'
+  NEXT_PLAYER = "next-player",
+  REPLAYING = "replaying",
+  PLANNING = "planning"
 };
 
 export default class UiStore {
@@ -31,6 +29,8 @@ export default class UiStore {
 
   @observable selected: Selected;
   @observable turnState: TurnState = TurnState.NEXT_PLAYER;
+
+  @observable isResolving = false;
 
   constructor(gameStore: GameStore, phaserStore: PhaserStore) {
     this.gameStore = gameStore;
@@ -67,7 +67,7 @@ export default class UiStore {
   @action
   onClickTerritory(territoryId: ID) {
 
-    if (!this.selected || this.selected.type === 'territory' || this.turnState !== TurnState.PLAN || this.validDestinationIds.indexOf(territoryId) === -1) {
+    if (!this.selected || this.selected.type === 'territory' || this.gameStore.isReplaying || this.validDestinationIds.indexOf(territoryId) === -1) {
       this.selectTerritory(territoryId);
     } else if (this.selected.type === 'unit') {
       this.gameStore.onMoveUnits(this.selected.ids, territoryId);
@@ -96,27 +96,8 @@ export default class UiStore {
 
   @action
   onClickNextPlayerGo() {
+    this.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER);
     this.setTurn(Math.max(1, this.gameStore.turn - 1));
-  }
-
-  @action
-  onClickResolveMoves() {
-    this.gameStore.resolveMoves();
-    if (this.gameStore.combats.length == 0)
-      this.turnState = TurnState.POST_REPLAY;
-    else
-      this.turnState = TurnState.COMBAT;
-  }
-
-  @action
-  onClickResolveCombat(locationId: ID) {
-    this.gameStore.resolveCombat(locationId);
-    if (this.gameStore.combats.length == 0) {
-      if (this.gameStore.map.units.some(unit => unit.data.destinationId != null))
-        this.turnState = TurnState.MOVE;
-      else
-        this.turnState = TurnState.POST_REPLAY;
-    }
   }
 
   @action
@@ -136,12 +117,19 @@ export default class UiStore {
   }
 
   @action
+  setPlayer(playerId: ID) {
+    this.gameStore.setCurrentPlayer(playerId);
+    this.unselect();
+    this.turnState = TurnState.NEXT_PLAYER;
+  }
+
+  @action
   setTurn(turn: number) {
     if (turn < 1 || turn > this.gameStore.game.data.maps.length)
       throw new Error(`Invalid turn number: ${turn}`);
     this.gameStore.setTurn(turn);
     this.unselect();
-    this.turnState = this.gameStore.turn === this.gameStore.game.turn ? TurnState.PLAN : TurnState.MOVE;
+    this.turnState = this.gameStore.isReplaying ? TurnState.REPLAYING : TurnState.PLANNING;
   }
 
   @action
@@ -172,4 +160,22 @@ export default class UiStore {
   @action
   unselect() { this.selected = null; }
 
+  @action
+  onClickResolve(id: ID) {
+    if (this.isResolving) {
+      return;
+    }
+    const focusIds = (this.gameStore.resolveState === ResolveState.GOLD) ? this.gameStore.map.data.territoryIds : [id];
+    this.isResolving = true;
+    this.phaserStore.focusOn(focusIds).then(() => {
+      runInAction(() => {
+        this.gameStore.resolve(id);
+        this.isResolving = false;
+
+        if (this.gameStore.resolveState == ResolveState.NONE) {
+          this.setTurn(this.gameStore.turn + 1);
+        }
+      })
+    });
+  }
 }

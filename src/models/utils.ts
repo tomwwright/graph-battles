@@ -7,6 +7,7 @@ export type DataMap = { [id: string]: HasID };
 
 export type HasID = {
   id: ID;
+  type: "unit" | "territory" | "edge" | "player" | "map"
 };
 
 export abstract class Model<T extends HasID = HasID> {
@@ -52,6 +53,14 @@ export function exclude<T>(array: T[], thing: T): T[] {
   const copy = [];
   for (const a of array) {
     if (a !== thing) copy.push(a);
+  }
+  return copy;
+}
+
+export function excludeAll<T>(array: T[], things: T[]): T[] {
+  const copy = [];
+  for (const a of array) {
+    if (!contains(things, a)) copy.push(a);
   }
   return copy;
 }

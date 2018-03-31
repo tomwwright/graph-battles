@@ -7,6 +7,7 @@ import Edge from "models/edge";
 import { Status } from "models/values";
 
 export type UnitData = HasID & {
+  type: "unit";
   playerId: ID;
   locationId: ID;
   destinationId: ID;
@@ -30,7 +31,7 @@ export default class Unit extends Model<UnitData> {
     return 1;
   }
 
-  move() {
+  resolveMove() {
     if (!this.data.destinationId)
       throw new Error(`Unit ${this.data.id} moving without destination set`);
     if (!this.destination)
@@ -48,6 +49,14 @@ export default class Unit extends Model<UnitData> {
       this.movementEdge.data.unitIds = include(this.movementEdge.data.unitIds, this.data.id);
       this.data.locationId = this.movementEdge.data.id;
     }
+  }
+
+  resolveRemoveDefendStatus() {
+    if (this.destination) this.removeStatus(Status.DEFEND);
+  }
+
+  resolveAddDefendStatus(previous: Unit) {
+    if (previous && !previous.data.destinationId) this.addStatus(Status.DEFEND);
   }
 
   setDestination(destination: Territory) {

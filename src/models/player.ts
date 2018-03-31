@@ -6,6 +6,7 @@ import Unit from "models/unit";
 import { Colour } from "models/values";
 
 export type PlayerData = UnitContainerData & {
+  type: "player";
   colour: Colour;
   territoryIds: ID[];
   gold: number;
@@ -31,5 +32,9 @@ export default class Player extends UnitContainer<PlayerData> {
       2 * this.data.opponentTerritoryCaptures +
       this.data.unitsDestroyed
     );
+  }
+
+  resolveGold() {
+    this.data.gold += this.data.goldProduction + sum(this.territories.map(territory => territory.goldProduction));
   }
 }

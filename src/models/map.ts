@@ -13,6 +13,7 @@ import { applyMoveUnits } from 'models/actions/move';
 import { applyTerritoryAction } from 'models/actions/territory';
 
 export type GameMapData = HasID & {
+  type: "map";
   dataMap: DataMap;
   territoryIds: ID[];
   playerIds: ID[];
@@ -107,6 +108,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
 
   addUnit(territory: Territory): GameMap {
     const unitData: UnitData = {
+      type: "unit",
       id: toID(this.data.nextId),
       playerId: territory.data.playerId,
       locationId: territory.data.id,
@@ -152,10 +154,10 @@ export default class GameMap extends UnitContainer<GameMapData> {
       combats = this.getCombats();
     }
 
+    this.resolveAddDefendStatus(previous);
+
     this.resolveFood();
     this.resolveGold();
-
-    this.resolveAddDefendStatus(previous);
 
     this.resolveTerritoryControl(previous);
     this.resolveTerritoryActions();
@@ -164,59 +166,43 @@ export default class GameMap extends UnitContainer<GameMapData> {
   }
 
   resolveGold() {
-    this.players.forEach(player => {
-      player.data.gold +=
-        player.data.goldProduction + sum(player.territories.map(territory => territory.goldProduction));
-    });
+    this.players.forEach(player => player.resolveGold());
   }
 
   resolveFood() {
     for (let territory of this.territories) {
-      territory.data.food += territory.foodProduction;
-
-      const consumedFood = sum(territory.units.map(unit => unit.foodConsumption));
-      territory.data.food -= consumedFood;
-      for (let unit of territory.units) {
-        if (territory.data.food < 0) unit.addStatus(Status.STARVE);
-        else unit.removeStatus(Status.STARVE);
-      }
-
-      territory.data.food = clamp(territory.data.food, 0, territory.maxFood);
+      territory.resolveFood();
     }
   }
 
   resolveRemoveDefendStatus() {
     for (const unit of this.units) {
-      if (unit.destination) unit.removeStatus(Status.DEFEND);
+      unit.resolveRemoveDefendStatus();
     }
   }
 
   resolveAddDefendStatus(previous: GameMap) {
     for (const unit of this.units) {
-      const oldUnit = previous.unit(unit.data.id);
-      if (oldUnit && !oldUnit.data.destinationId) unit.addStatus(Status.DEFEND);
+      const previousUnit = previous.unit(unit.data.id);
+      unit.resolveAddDefendStatus(previousUnit);
     }
   }
 
   resolveMoves() {
     // push all moving units onto their respective Edge
     const movingUnits = this.units.filter(unit => unit.data.destinationId !== null && unit.movementEdge);
-    movingUnits.forEach(unit => unit.move());
+    movingUnits.forEach(unit => unit.resolveMove());
 
     // now safe edges can immediately be resolved
     const safeEdges = this.edges.filter(edge => !edge.hasCombat());
     for (const edge of safeEdges) {
-      edge.units.forEach(unit => unit.move());
+      edge.units.forEach(unit => unit.resolveMove());
     }
   }
 
   resolveTerritoryActions() {
     for (let territory of this.territories) {
-      if (territory.data.currentAction != null) {
-        const actionDefinition = TerritoryActionDefinitions[territory.data.currentAction];
-        actionDefinition.actionFunction(this, territory);
-        territory.data.currentAction = null;
-      }
+      territory.resolveTerritoryAction();
     }
   }
 
@@ -224,20 +210,7 @@ export default class GameMap extends UnitContainer<GameMapData> {
     const populatedTerritories = this.territories.filter(territory => territory.data.unitIds.length > 0);
     for (const territory of populatedTerritories) {
       const previousTerritory = previous.territory(territory.data.id);
-      const presentPlayerIds = unique(territory.units.map(unit => unit.data.playerId));
-      const previousPlayerIds = unique(previousTerritory.units.map(unit => unit.data.playerId));
-
-      if (
-        presentPlayerIds.length == 1 &&
-        previousPlayerIds.length == 1 &&
-        presentPlayerIds[0] === previousPlayerIds[0] &&
-        presentPlayerIds[0] !== territory.data.playerId
-      ) {
-        if (territory.player) territory.player.data.territoryIds = exclude(territory.player.data.territoryIds, territory.data.id);
-        territory.data.playerId = presentPlayerIds[0];
-        territory.player.data.territoryIds = include(territory.player.data.territoryIds, territory.data.id);
-        territory.data.currentAction = null;
-      }
+      territory.resolveTerritoryControl(previousTerritory);
     }
   }
 }
