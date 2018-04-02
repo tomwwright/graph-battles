@@ -142,6 +142,7 @@ export default class GameStore {
   private async applyModelAction(action: ModelAction) {
     const game = await this.provider.action(action);
     this.setGame(game.data);
+    this.setMap(clone(game.latestMap));
   }
 
   @action
