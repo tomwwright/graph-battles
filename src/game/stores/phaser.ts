@@ -51,7 +51,7 @@ export default class PhaserStore {
 
     this.initialisePhaser(window, divId);
 
-    when(
+    when('game map is initialised',
       () => this.gameStore.map !== null,
       () => {
 
@@ -78,7 +78,7 @@ export default class PhaserStore {
 
         this.centreCamera();
 
-        autorun(() => this.initialiseUnitViews());
+        autorun('phaser store: initialise unit views', () => this.initialiseUnitViews());
       }
     )
   }
