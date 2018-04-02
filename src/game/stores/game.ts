@@ -40,7 +40,7 @@ export default class GameStore {
   @observable unresolvedMap: GameMap = null;
   @observable resolveIds: ID[] = [];
 
-  @observable turn: number;
+  @observable turn: number = 1;
   @observable currentPlayerId: ID;
   @observable visibilityMode: VisibilityMode = VisibilityMode.NOT_VISIBLE;
 
@@ -94,11 +94,6 @@ export default class GameStore {
   @computed
   get combats() {
     return this.map.getCombats();
-  }
-
-  @computed
-  get winners() {
-    return this.map.winningPlayers(this.game.data.maxVictoryPoints);
   }
 
   @action

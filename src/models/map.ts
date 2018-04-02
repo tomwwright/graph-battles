@@ -84,12 +84,17 @@ export default class GameMap extends UnitContainer<GameMapData> {
     return combatLocations.map(location => new Combat(location));
   }
 
-  winningPlayers(requiredVictoryPoints: number) {
+  winningPlayers(requiredVictoryPoints: number, isGameOver: boolean) {
     const territoryControllers = unique(this.territories.map(territory => territory.player ? territory.player.data.id : null));
     if (territoryControllers.length == 1)
       return territoryControllers.map(id => this.player(id));
 
-    return this.players.filter(player => player.victoryPoints >= requiredVictoryPoints).sort((a, b) => a.victoryPoints - b.victoryPoints);
+    const highestVictoryPoints = Math.max(...this.players.map(player => player.victoryPoints));
+    const leadingPlayers = this.players.filter(player => player.victoryPoints == highestVictoryPoints);
+    if (isGameOver)
+      return leadingPlayers;
+    else
+      return leadingPlayers.filter(player => player.victoryPoints >= requiredVictoryPoints);
   }
 
   applyAction(action: ModelAction) {

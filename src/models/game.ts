@@ -30,4 +30,16 @@ export default class Game {
   get latestMap() {
     return this.data.maps[this.data.maps.length - 1];
   }
+
+  get winners() {
+    return new GameMap(this.latestMap).winningPlayers(this.data.maxVictoryPoints, this.turn > this.data.maxTurns);
+  }
+
+  resolveTurn() {
+    if (this.winners.length > 0)
+      throw new Error('Unable to resolve turn -- game is in a completed state!');
+    const next = new GameMap(clone(this.latestMap));
+    next.resolveTurn();
+    this.data.maps.push(next.data);
+  }
 }

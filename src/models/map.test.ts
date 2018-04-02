@@ -39,6 +39,13 @@ describe('Map Model', () => {
     }
   });
 
+  it('winning players', () => {
+    expect(map.winningPlayers(10, false).map(player => player.data.id)).to.have.members(['#PB']);
+    expect(map.winningPlayers(15, false).map(player => player.data.id)).to.have.members(['#PB']);
+    expect(map.winningPlayers(25, false).map(player => player.data.id)).to.be.empty;
+    expect(map.winningPlayers(25, true).map(player => player.data.id)).to.have.members(['#PB']);
+  });
+
   it('add unit', () => {
     expect(map.territory("#T4").data.unitIds).to.have.members(["#U1"], 'Territory #T4 units correct');
     expect(map.data.nextId).to.equal(0, 'Map starting ID counter correct');
