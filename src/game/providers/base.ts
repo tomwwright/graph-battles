@@ -1,7 +1,7 @@
 import Game from "models/game";
 import { ModelAction } from "models/actions";
 
-export default abstract class GameProvider {
+export abstract class GameProvider {
   protected gameId: string;
   protected userId: string;
 

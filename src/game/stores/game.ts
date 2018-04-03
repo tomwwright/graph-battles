@@ -3,7 +3,7 @@ import { MoveUnitsModelAction } from 'models/actions/move';
 import { TerritoryModelAction } from 'models/actions/territory';
 import { observable, action, computed } from 'mobx';
 import PhaserStore from 'game/stores/phaser';
-import GameProvider from 'game/providers/base';
+import { GameProvider } from 'game/providers/base';
 import { ID, clone, contains, exclude, excludeAll } from 'models/utils';
 import Game, { GameData } from 'models/game';
 import GameMap, { GameMapData } from 'models/map';
@@ -13,6 +13,7 @@ import Territory from 'models/territory';
 import { TerritoryAction, Status } from 'models/values';
 import { ModelAction } from 'models/actions';
 import { lchmod } from 'fs';
+import { ReadyPlayerModelAction } from 'models/actions/ready';
 
 export enum VisibilityMode {
   VISIBLE,
@@ -21,6 +22,7 @@ export enum VisibilityMode {
 }
 
 export enum ResolveState {
+  START = "start",
   NONE = "none",
   MOVES = "moves",
   EDGE_MOVES = "edge-moves",
@@ -34,6 +36,7 @@ export enum ResolveState {
 
 export default class GameStore {
   phaserStore: PhaserStore;
+  provider: GameProvider;
 
   @observable.ref game: Game;
   @observable.ref map: GameMap = null;
@@ -41,7 +44,7 @@ export default class GameStore {
   @observable unresolvedMap: GameMap = null;
   @observable resolveIds: ID[] = [];
 
-  @observable turn: number;
+  @observable turn: number = 1;
   @observable currentPlayerId: ID;
   @observable visibilityMode: VisibilityMode = VisibilityMode.NOT_VISIBLE;
 
@@ -97,11 +100,6 @@ export default class GameStore {
     return this.map.getCombats();
   }
 
-  @computed
-  get winners() {
-    return this.map.winningPlayers(this.game.data.maxVictoryPoints);
-  }
-
   @action
   setVisibility(mode: VisibilityMode) {
     this.visibilityMode = mode;
@@ -113,7 +111,7 @@ export default class GameStore {
   }
 
   @action
-  setMap(mapData: GameMapData) {
+  private setMap(mapData: GameMapData) {
     this.map = new GameMap(mapData);
   }
 
@@ -130,7 +128,8 @@ export default class GameStore {
     if (this.isReplaying) {
       this.setMap(clone(this.game.data.maps[turn - 1]));
       this.unresolvedMap = new GameMap(clone(this.game.data.maps[turn - 1]));
-      this.toMovesState();
+      this.resolveState = ResolveState.START;
+      this.changeResolveState();
     } else {
       this.setMap(this.game.data.maps[turn - 1]); // don't clone, we need to apply model actions to the real copy!
       this.unresolvedMap = null;
@@ -140,30 +139,15 @@ export default class GameStore {
   }
 
   @action
-  resolveTurn() {
-    const next = new GameMap(clone(this.map.data));
-    next.resolveTurn();
-    this.game.data.maps.push(next.data);
+  private async applyModelAction(action: ModelAction) {
+    const game = await this.provider.action(action);
+    this.setGame(game.data);
+    this.setMap(clone(game.latestMap));
   }
 
   @action
-  resolveMoves() {
-    this.map.resolveMoves();
-
-    this.resolveState = ResolveState.COMBATS;
-    this.setMap(this.map.data);
-  }
-
-  @action
-  applyModelAction(action: ModelAction) {
-    this.map.applyAction(action);
-
-    this.setMap(this.map.data);
-  }
-
-  @action
-  onTerritoryAction(territory: Territory, action: TerritoryAction) {
-    this.applyModelAction({
+  async onTerritoryAction(territory: Territory, action: TerritoryAction) {
+    await this.applyModelAction({
       type: 'territory',
       playerId: this.currentPlayerId,
       territoryId: territory.data.id,
@@ -172,13 +156,22 @@ export default class GameStore {
   }
 
   @action
-  onMoveUnits(unitIds: ID[], territoryId: ID) {
-    this.applyModelAction({
+  async onMoveUnits(unitIds: ID[], territoryId: ID) {
+    await this.applyModelAction({
       type: 'move-units',
       playerId: this.currentPlayerId,
       destinationId: territoryId,
       unitIds: unitIds,
     } as MoveUnitsModelAction);
+  }
+
+  @action
+  async onReadyPlayer(isReady: boolean) {
+    await this.applyModelAction({
+      type: 'ready-player',
+      playerId: this.currentPlayerId,
+      isReady: isReady
+    });
   }
 
   @action
@@ -214,41 +207,52 @@ export default class GameStore {
     }
 
     if (this.resolveIds.length == 0) {
-      switch (this.resolveState) {
-        case ResolveState.MOVES:
-          this.toEdgeMovesState();
-          break;
-        case ResolveState.EDGE_MOVES:
-          this.toCombatsState();
-          if (this.resolveIds.length == 0) {
-            this.toAddDefendState();
-          }
-          break;
-        case ResolveState.COMBATS:
-          this.toEdgeMovesState();
-          if (this.resolveIds.length == 0) {
-            this.toAddDefendState();
-          }
-          break;
-        case ResolveState.ADD_DEFEND:
-          this.toFoodState();
-          break;
-        case ResolveState.FOOD:
-          this.toGoldState();
-          break;
-        case ResolveState.GOLD:
-          this.toTerritoryControlState();
-          break;
-        case ResolveState.TERRITORY_CONTROL:
-          this.toTerritoryActionState();
-          break;
-        case ResolveState.TERRITORY_ACTIONS:
-          this.resolveState = ResolveState.NONE;
-          break;
-      }
+      this.changeResolveState();
     }
 
     this.setMap(this.map.data);
+  }
+
+  private changeResolveState() {
+    switch (this.resolveState) {
+      case ResolveState.START:
+        this.toMovesState();
+        break;
+      case ResolveState.MOVES:
+        this.toEdgeMovesState();
+        break;
+      case ResolveState.EDGE_MOVES:
+        this.toCombatsState();
+        if (this.resolveIds.length == 0) {
+          this.toAddDefendState();
+        }
+        break;
+      case ResolveState.COMBATS:
+        this.toEdgeMovesState();
+        if (this.resolveIds.length == 0) {
+          this.toAddDefendState();
+        }
+        break;
+      case ResolveState.ADD_DEFEND:
+        this.toFoodState();
+        break;
+      case ResolveState.FOOD:
+        this.toGoldState();
+        break;
+      case ResolveState.GOLD:
+        this.toTerritoryControlState();
+        break;
+      case ResolveState.TERRITORY_CONTROL:
+        this.toTerritoryActionState();
+        break;
+      case ResolveState.TERRITORY_ACTIONS:
+        this.resolveState = ResolveState.NONE;
+        break;
+    }
+
+    if (this.resolveState != ResolveState.NONE && this.resolveIds.length == 0) {
+      this.changeResolveState();
+    }
   }
 
   private resolveMove(unitId: ID) {

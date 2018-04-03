@@ -40,7 +40,7 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
       </Card>
       {isControlledByCurrentPlayer && isPlanning ? territory.actions.map((action, i) => (
         territory.data.currentAction === action ?
-          <SelectedTerritoryAction action={action} onClickUnbuy={setTerritoryAction} />
+          <SelectedTerritoryAction key={i} action={action} onClickUnbuy={setTerritoryAction} />
           :
           <TerritoryAction
             key={i}

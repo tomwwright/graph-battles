@@ -2,8 +2,10 @@ import { observable, observe, action, computed, runInAction } from 'mobx';
 
 import GameStore, { ResolveState, VisibilityMode } from 'game/stores/game';
 import PhaserStore from 'game/stores/phaser';
+import { GameProvider } from 'game/providers/base';
 import { ID, intersection, include, exclude, flat, clone } from 'models/utils';
 import Territory from 'models/territory';
+import { ReadyPlayerModelAction } from 'models/actions/ready';
 
 type Selected =
   | null
@@ -19,7 +21,8 @@ type Selected =
 export const enum TurnState {
   NEXT_PLAYER = "next-player",
   REPLAYING = "replaying",
-  PLANNING = "planning"
+  PLANNING = "planning",
+  VICTORY = "victory"
 };
 
 export default class UiStore {
@@ -97,23 +100,40 @@ export default class UiStore {
   @action
   onClickNextPlayerGo() {
     this.gameStore.setVisibility(VisibilityMode.CURRENT_PLAYER);
-    this.setTurn(Math.max(1, this.gameStore.turn - 1));
+    this.setTurn(Math.max(1, this.gameStore.game.turn - 1));
   }
 
   @action
-  onClickReady() {
+  onClickReplayVictory() {
+    this.gameStore.setVisibility(VisibilityMode.VISIBLE);
+    this.setTurn(Math.max(1, this.gameStore.game.turn - 1));
+  }
+
+  @action
+  async onClickReady() {
+    this.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
+    await this.gameStore.onReadyPlayer(true);
+
     const playerIds = this.gameStore.map.data.playerIds;
     const currentPlayerIdx = playerIds.indexOf(this.gameStore.currentPlayerId);
     if (currentPlayerIdx < playerIds.length - 1) {
-      this.gameStore.setCurrentPlayer(playerIds[currentPlayerIdx + 1]);
+      this.setPlayer(playerIds[currentPlayerIdx + 1]);
     } else {
-      this.gameStore.resolveTurn();
-      this.setTurn(this.gameStore.turn + 1);
-      this.gameStore.setCurrentPlayer(playerIds[0]);
+      const winners = this.gameStore.game.winners;
+      if (winners.length == 0) {
+        this.setPlayer(playerIds[0]);
+      } else {
+        this.onVictory();
+      }
     }
-    this.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
+  }
+
+  @action
+  onVictory() {
+    this.gameStore.setCurrentPlayer(null);
     this.unselect();
-    this.turnState = TurnState.NEXT_PLAYER;
+    this.gameStore.setVisibility(VisibilityMode.VISIBLE);
+    this.turnState = TurnState.VICTORY;
   }
 
   @action
@@ -172,7 +192,7 @@ export default class UiStore {
         this.gameStore.resolve(id);
         this.isResolving = false;
 
-        if (this.gameStore.resolveState == ResolveState.NONE) {
+        if (this.gameStore.resolveState == ResolveState.NONE && this.gameStore.game.winners.length == 0) {
           this.setTurn(this.gameStore.turn + 1);
         }
       })
