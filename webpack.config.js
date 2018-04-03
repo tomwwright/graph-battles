@@ -4,6 +4,7 @@ var glob = require("glob");
 
 module.exports = {
   entry: {
+    lobby: ["babel-polyfill", "./build/es5/lobby/lobby.js"],
     game: ["babel-polyfill", "./build/es5/game/game.js"],
     vendor: ["react", "react-dom", "mobx", "mobx-react", "phaser-ce", "rebass"]
   },
