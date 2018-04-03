@@ -44,7 +44,7 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
       <NextPlayerPopup player={gameStore.currentPlayer} turn={gameStore.game.turn} maxTurns={gameStore.game.data.maxTurns} onClick={() => uiStore.onClickNextPlayerGo()} />
     )}
     {uiStore.turnState === TurnState.REPLAYING && <ResolveInfo gameStore={gameStore} uiStore={uiStore} />}
-    {uiStore.turnState === TurnState.PLANNING && (
+    {uiStore.turnState === TurnState.PLANNING && gameStore.currentPlayerId != null && (
       <Button onClick={() => uiStore.onClickReady()} bg="green">
         Ready!
       </Button>
