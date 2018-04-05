@@ -2,6 +2,7 @@ import GameMap from 'models/map';
 import Territory from 'models/territory';
 import { contains, intersection } from 'models/utils';
 import * as TerritoryActionResolvers from 'models/territoryActionResolvers';
+import { Color } from 'phaser-ce';
 
 export enum Colour {
   BLACK = 0x000000, // 0

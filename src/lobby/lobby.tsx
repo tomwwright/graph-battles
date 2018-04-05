@@ -5,7 +5,7 @@ import { useStrict } from 'mobx';
 import { Provider as ThemeProvider } from 'rebass';
 
 import { RootStore } from 'lobby/stores';
-import { Root } from 'lobby/components/Root';
+import { Root } from 'lobby/containers/Root';
 
 // enable Mobx strict mode (no state mutation outside of @action)
 useStrict(true);

@@ -19,6 +19,7 @@
   "homepage": "https://github.com/tomwwright/graph-battles#readme",
   "dependencies": {
     "@types/query-string": "^5.1.0",
+    "@types/react-color": "^2.13.4",
     "async": "^2.4.1",
     "axios": "^0.16.1",
     "emojis-list": "^2.0.1",
@@ -30,6 +31,7 @@
     "phaser-ce": "^2.7.9",
     "query-string": "^6.0.0",
     "react": "^15.3.1",
+    "react-color": "^2.14.0",
     "react-dom": "^15.3.1",
     "rebass": "^1.0.4",
     "underscore": "^1.8.3",
