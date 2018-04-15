@@ -2,10 +2,17 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Subhead, Text, Button, Row, Column, Slider } from 'rebass';
 import { GithubPicker } from 'react-color';
+import Axios from 'axios';
 
 import { SavedGameStore } from 'lobby/stores/savedgame';
 import { NewPlayer } from 'lobby/components/NewPlayer';
 
+import { ViewData } from 'game/stores/phaser';
+
+import { GameData } from 'models/game';
+import { UserData } from 'models/user';
+import { GameMapData } from 'models/map';
+import { PlayerData } from 'models/player';
 import { Colour } from 'models/values';
 import { contains, clone } from 'models/utils';
 
@@ -17,6 +24,7 @@ type NewGameState = {
   players: NewPlayerData[];
   turns: number;
   victoryPoints: number;
+  isCreatingGame: boolean;
 }
 
 type NewPlayerData = {
@@ -27,12 +35,11 @@ type NewPlayerData = {
 const ColourPalette = [Colour.RED, Colour.BLUE, Colour.GREEN, Colour.ORANGE, Colour.PURPLE, Colour.YELLOW].map(colourNumber => '#' + ('000000' + colourNumber.toString(16)).substr(-6));
 
 @inject('savedGameStore')
-@observer
 export class NewGame extends React.Component<NewGameProps, NewGameState> {
   state: NewGameState = {
     players: [
       {
-        name: 'Test Player',
+        name: '',
         colour: ColourPalette[0]
       },
       {
@@ -41,7 +48,8 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
       }
     ],
     turns: 10,
-    victoryPoints: 25
+    victoryPoints: 25,
+    isCreatingGame: false
   };
 
   addPlayer() {
@@ -55,8 +63,66 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
     });
   }
 
-  createGame() {
+  async createGame() {
+    this.setState({
+      isCreatingGame: true
+    });
 
+    const responses = await Promise.all([
+      Axios.get('/assets/maps/lobby.map.' + this.state.players.length + 'players.json'),
+      Axios.get('/assets/maps/lobby.view.' + this.state.players.length + 'players.json')
+    ]);
+
+    const mapData: GameMapData = responses[0].data;
+    const viewData: ViewData = responses[1].data;
+
+    const players = mapData.playerIds.map(playerId => mapData.dataMap[playerId] as PlayerData);
+    for (let i = 0; i < players.length; i++) {
+      players[i].colour = Number.parseInt(this.state.players[i].colour.substring(1), 16);
+    }
+
+    const randId = function (length: number) {
+      let id = '';
+      for (let i = 0; i < length; ++i) {
+        id += String.fromCharCode(65 + Math.floor(Math.random() * 26));
+      }
+      return id;
+    }
+
+    const gameData: GameData = {
+      id: randId(6),
+      users: this.state.players.map((player, i) => ({
+        id: '#USER' + i,
+        type: "user" as "user",
+        name: player.name,
+        playerIds: [mapData.playerIds[i]]
+      })),
+      maxTurns: this.state.turns,
+      maxVictoryPoints: this.state.victoryPoints,
+      maps: [mapData]
+    }
+
+    this.props.savedGameStore.save({
+      gameData,
+      viewData,
+      lastUpdated: Date.now()
+    });
+
+    this.setState({
+      players: [
+        {
+          name: '',
+          colour: this.state.players[0].colour
+        },
+        {
+          name: '',
+          colour: this.state.players[1].colour
+        }
+      ],
+      turns: 10,
+      victoryPoints: 25,
+      isCreatingGame: false,
+    })
   }
 
   validate() {

@@ -12,7 +12,7 @@ type SavedGameListProps = {
 const SavedGameListComponent: React.StatelessComponent<SavedGameListProps> = ({ savedGameStore }) => (
   <div>
     <Subhead>Saved Games</Subhead>
-    {savedGameStore.games.map(game => <SavedGameComponent key={game.gameData.id} game={game} />)}
+    {savedGameStore.games.map(game => <SavedGameComponent key={game.gameData.id} game={game} linkUrl='/assets/html/index.html?gameId=' onDelete={() => savedGameStore.delete(game.gameData.id)} />)}
   </div>
 );
 

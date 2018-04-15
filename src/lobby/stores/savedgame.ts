@@ -5,6 +5,10 @@ import { LocalStorage, SavedGame, LocalGameProvider } from 'game/providers/local
 export class SavedGameStore {
   @observable games: SavedGame[] = [];
 
+  constructor() {
+    this.load();
+  }
+
   @action
   delete(gameId: string) {
     LocalStorage.deleteGame(gameId);
@@ -15,10 +19,11 @@ export class SavedGameStore {
   save(game: SavedGame) {
     game.lastUpdated = Date.now();
     LocalStorage.saveGame(game);
+    this.load();
   }
 
   @action
   load() {
-    this.games = LocalStorage.listGames();
+    this.games = LocalStorage.listGames().sort((a, b) => b.lastUpdated - a.lastUpdated);
   }
 }
