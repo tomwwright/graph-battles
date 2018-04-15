@@ -4,7 +4,7 @@ import { TerritoryModelAction } from 'models/actions/territory';
 import { observable, action, computed } from 'mobx';
 import PhaserStore from 'game/stores/phaser';
 import { GameProvider } from 'game/providers/base';
-import { ID, clone, contains, exclude, excludeAll } from 'models/utils';
+import { ID, clone, contains, exclude, excludeAll, flat } from 'models/utils';
 import Game, { GameData } from 'models/game';
 import GameMap, { GameMapData } from 'models/map';
 import UnitContainer from 'models/unitcontainer';
@@ -74,7 +74,8 @@ export default class GameStore {
 
       const player = this.map.player(this.currentPlayerId);
       if (player) {
-        for (const territory of player.territories) {
+        const playerPresentTerritories = flat([player.territories, player.units.map(unit => unit.location).filter(location => location.data.type == "territory") as Territory[]]);
+        for (const territory of playerPresentTerritories) {
           visibility.set(territory.data.id, true);
           territory.edges.map(edge => edge.other(territory).data.id).forEach(id => visibility.set(id, true));
         }
@@ -82,9 +83,6 @@ export default class GameStore {
           if (visibility.get(edge.data.territoryAId) && visibility.get(edge.data.territoryBId)) {
             visibility.set(edge.data.id, true);
           }
-        }
-        for (const unit of player.units) {
-          visibility.set(unit.location.data.id, true);
         }
       }
     } else {
