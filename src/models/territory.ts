@@ -122,8 +122,8 @@ export default class Territory extends UnitContainer<TerritoryData> {
   }
 
   resolveTerritoryControl(previous: Territory) {
-    const presentPlayerIds = unique(this.units.map(unit => unit.data.playerId));
-    const previousPlayerIds = unique(previous.units.map(unit => unit.data.playerId));
+    const presentPlayerIds = unique(this.units.map(unit => unit.data.playerId)).filter(id => id != null);
+    const previousPlayerIds = unique(previous.units.map(unit => unit.data.playerId)).filter(id => id != null);
 
     if (
       presentPlayerIds.length == 1 &&
