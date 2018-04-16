@@ -2,7 +2,7 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Subhead, Text, Button, Row, Column, Slider } from 'rebass';
 import { GithubPicker } from 'react-color';
-import Axios from 'axios';
+import Axios, { AxiosRequestConfig } from 'axios';
 
 import { SavedGameStore } from 'lobby/stores/savedgame';
 import { NewPlayer } from 'lobby/components/NewPlayer';
@@ -68,9 +68,15 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
       isCreatingGame: true
     });
 
+    const requestConfig: AxiosRequestConfig = {
+      headers: {
+        "Cache-Control": "no-cache"
+      }
+    };
+
     const responses = await Promise.all([
-      Axios.get('/assets/maps/lobby.map.' + this.state.players.length + 'players.json'),
-      Axios.get('/assets/maps/lobby.view.' + this.state.players.length + 'players.json')
+      Axios.get('/assets/maps/lobby.map.' + this.state.players.length + 'players.json', requestConfig),
+      Axios.get('/assets/maps/lobby.view.' + this.state.players.length + 'players.json', requestConfig)
     ]);
 
     const mapData: GameMapData = responses[0].data;

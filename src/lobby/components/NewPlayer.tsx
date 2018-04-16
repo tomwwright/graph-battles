@@ -48,14 +48,16 @@ export class NewPlayer extends React.Component<NewPlayerProps, NewPlayerState> {
     this.setState({
       isColourPickerOpen: false,
     });
-    this.props.onUpdateColour(colour);
+    if (colour) {
+      this.props.onUpdateColour(colour);
+    }
   }
 
   render() {
     return (
       <div>
         <Button style={{ background: this.props.colour, height: '32px', width: '32px' }} onClick={() => this.onOpenPicker()} />
-        <Input style={{ width: '200px' }} defaultValue={this.props.name} placeholder='Player Name' onChange={(e) => this.props.onUpdateName(e.target.value)} />
+        <Input style={{ width: '200px' }} value={this.props.name} placeholder='Player Name' onChange={(e) => this.props.onUpdateName(e.target.value)} />
         {this.state.isColourPickerOpen && (
           <AbsoluteOverlay>
             <CloseOverlay onClick={() => this.onClosePicker(null)} />
