@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Subhead, Text, Button, Row, Column, Slider } from 'rebass';
+import { Text, Button, Flex, Box, Slider, Divider, Container } from 'rebass';
 import { GithubPicker } from 'react-color';
 import Axios, { AxiosRequestConfig } from 'axios';
+import Styled from 'styled-components';
 
 import { SavedGameStore } from 'lobby/stores/savedgame';
 import { NewPlayer } from 'lobby/components/NewPlayer';
@@ -14,7 +15,7 @@ import { UserData } from 'models/user';
 import { GameMapData } from 'models/map';
 import { PlayerData } from 'models/player';
 import { Colour } from 'models/values';
-import { contains, clone } from 'models/utils';
+import { contains, clone, toHexColour } from 'models/utils';
 
 type NewGameProps = {
   savedGameStore?: SavedGameStore;
@@ -32,7 +33,11 @@ type NewPlayerData = {
   colour: string;
 };
 
-const ColourPalette = [Colour.RED, Colour.BLUE, Colour.GREEN, Colour.ORANGE, Colour.PURPLE, Colour.YELLOW].map(colourNumber => '#' + ('000000' + colourNumber.toString(16)).substr(-6));
+const ColourPalette = [Colour.RED, Colour.BLUE, Colour.GREEN, Colour.ORANGE, Colour.PURPLE, Colour.YELLOW].map(colourNumber => '#' + toHexColour(colourNumber));
+
+const SliderWrapper = Styled.div`
+  margin-bottom: 15px;
+`;
 
 @inject('savedGameStore')
 export class NewGame extends React.Component<NewGameProps, NewGameState> {
@@ -175,32 +180,34 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
   render() {
     const validationError = this.validate();
     return (
-      <div>
-        <Subhead>New Game</Subhead>
-        <Row>
-          <Column>
-            {this.state.players.map((player, i) => (
-              <NewPlayer
-                key={i}
-                colour={player.colour}
-                name={player.name}
-                colours={this.getUnusedColours()}
-                onDelete={i > 1 ? (() => this.onDelete(i)) : null}
-                onUpdateColour={(colour) => this.onUpdateColour(i, colour)}
-                onUpdateName={(name) => this.onUpdateName(i, name)} />
-            ))}
-            {this.state.players.length < 4 && <Button onClick={() => this.addPlayer()}>+</Button>}
-          </Column>
-          <Column>
-            <Text>Turn Limit: {this.state.turns} turns</Text>
+      <Flex>
+        <Box width={1 / 2}>
+          {this.state.players.map((player, i) => (
+            <NewPlayer
+              key={i}
+              colour={player.colour}
+              name={player.name}
+              colours={this.getUnusedColours()}
+              onDelete={i > 1 ? (() => this.onDelete(i)) : null}
+              onUpdateColour={(colour) => this.onUpdateColour(i, colour)}
+              onUpdateName={(name) => this.onUpdateName(i, name)} />
+          ))}
+          {this.state.players.length < 4 && <Button onClick={() => this.addPlayer()}>+</Button>}
+        </Box>
+        <Box width={1 / 2}>
+          <SliderWrapper>
+            <Text>Turn Limit: <i>{this.state.turns} turns</i></Text>
             <Slider value={this.state.turns} min={6} max={20} step={2} onChange={(e) => this.onUpdateTurns(e.target.value)} />
-            <Text>Victory Points: {this.state.victoryPoints} points</Text>
+          </SliderWrapper>
+          <SliderWrapper>
+            <Text>Victory Points: <i>{this.state.victoryPoints} points</i></Text>
             <Slider value={this.state.victoryPoints} min={20} max={50} step={5} onChange={(e) => this.onUpdateVictoryPoints(e.target.value)} />
-            {validationError && <p>{validationError}</p>}
-            <Button disabled={validationError != null} onClick={() => this.createGame()}>Create Game</Button>
-          </Column>
-        </Row>
-      </div >
+          </SliderWrapper>
+          <Container mt={4} px={0} py={0}>
+            <Button disabled={validationError != null} onClick={() => this.createGame()}>Create Game</Button>{validationError && <i style={{ marginLeft: '10px' }}>{validationError}</i>}
+          </Container>
+        </Box>
+      </Flex>
     )
   }
 }

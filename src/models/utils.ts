@@ -1,5 +1,7 @@
 import GameMap from "models/map";
 
+import { Colour } from "models/values";
+
 export type ID = string;
 
 export type ModelMap = { [id: string]: Model };
@@ -95,4 +97,8 @@ export function unique<T>(things: T[]): T[] {
     if (!contains(uniqueThings, thing)) uniqueThings.push(thing);
   });
   return uniqueThings;
+}
+
+export function toHexColour(colour: Colour) {
+  return ('000000' + colour.toString(16)).substr(-6);
 }

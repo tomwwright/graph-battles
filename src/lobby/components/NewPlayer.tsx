@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Input } from 'rebass';
+import { Button, Input, Close } from 'rebass';
 import { GithubPicker } from 'react-color';
 import Styled from 'styled-components';
 
@@ -33,6 +33,10 @@ const CloseOverlay = Styled.div`
   bottom: 0px;
 `;
 
+const PlayerRow = Styled.div`
+  margin: 10px 0px;
+`;
+
 export class NewPlayer extends React.Component<NewPlayerProps, NewPlayerState> {
   state = {
     isColourPickerOpen: false
@@ -55,17 +59,17 @@ export class NewPlayer extends React.Component<NewPlayerProps, NewPlayerState> {
 
   render() {
     return (
-      <div>
+      <PlayerRow>
         <Button style={{ background: this.props.colour, height: '32px', width: '32px' }} onClick={() => this.onOpenPicker()} />
-        <Input style={{ width: '200px' }} value={this.props.name} placeholder='Player Name' onChange={(e) => this.props.onUpdateName(e.target.value)} />
+        <Input style={{ width: '200px', height: '32px', margin: '0px 5px', padding: '10px' }} value={this.props.name} placeholder='Player Name' onChange={(e) => this.props.onUpdateName(e.target.value)} />
         {this.state.isColourPickerOpen && (
           <AbsoluteOverlay>
             <CloseOverlay onClick={() => this.onClosePicker(null)} />
             <GithubPicker onChange={(colour) => this.onClosePicker(colour.hex)} colors={include(this.props.colours, this.props.colour)} />
           </AbsoluteOverlay>
         )}
-        {this.props.onDelete && <Button onClick={() => this.props.onDelete()}>X</Button>}
-      </div>
+        {this.props.onDelete && <Close onClick={() => this.props.onDelete()} />}
+      </PlayerRow>
     )
   }
 
