@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Text, Button, Flex, Box, Slider, Divider, Container } from 'rebass';
-import { GithubPicker } from 'react-color';
 import Axios, { AxiosRequestConfig } from 'axios';
 import Styled from 'styled-components';
 
@@ -189,7 +188,6 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
               name={player.name}
               colours={this.getUnusedColours()}
               onDelete={i > 1 ? (() => this.onDelete(i)) : null}
-              onUpdateColour={(colour) => this.onUpdateColour(i, colour)}
               onUpdateName={(name) => this.onUpdateName(i, name)} />
           ))}
           {this.state.players.length < 4 && <Button onClick={() => this.addPlayer()}>+</Button>}

@@ -22,23 +22,11 @@
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@types/query-string/-/query-string-5.1.0.tgz#7f40cdea49ddafa0ea4f3db35fb6c24d3bfd4dcc"
 
-"@types/react-color@^2.13.4":
-  version "2.13.4"
-  resolved "https://registry.yarnpkg.com/@types/react-color/-/react-color-2.13.4.tgz#0b89850fc5d2eee42e40910c48cf21215dec8f09"
-  dependencies:
-    "@types/react" "*"
-
 "@types/react-dom@^15.5.0":
   version "15.5.6"
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-15.5.6.tgz#7794ff7822882b59b899c30294e1b1e62e97757e"
   dependencies:
     "@types/react" "^15"
-
-"@types/react@*":
-  version "16.3.5"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.3.5.tgz#bd3b21285602ea7cadb4b9e0d9711d96fd5692cc"
-  dependencies:
-    csstype "^2.0.0"
 
 "@types/react@^15", "@types/react@^15.0.24":
   version "15.6.5"
@@ -1082,10 +1070,6 @@ css-to-react-native@^2.0.3:
     fbjs "^0.8.5"
     postcss-value-parser "^3.3.0"
 
-csstype@^2.0.0:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/csstype/-/csstype-2.1.1.tgz#37b01a7a9958ef0b88167ff6678deccd732e0ae2"
-
 dashdash@^1.12.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/dashdash/-/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
@@ -1865,10 +1849,6 @@ lodash.keys@^3.0.0:
     lodash.isarguments "^3.0.0"
     lodash.isarray "^3.0.0"
 
-lodash@^4.0.1:
-  version "4.17.5"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
-
 lodash@^4.14.0, lodash@^4.2.0:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
@@ -1892,10 +1872,6 @@ magic-string@^0.19.0:
   resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.19.1.tgz#14d768013caf2ec8fdea16a49af82fc377e75201"
   dependencies:
     vlq "^0.2.1"
-
-material-colors@^1.2.1:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/material-colors/-/material-colors-1.2.5.tgz#5292593e6754cb1bcc2b98030e4e0d6a3afc9ea1"
 
 media-typer@0.3.0:
   version "0.3.0"
@@ -2367,16 +2343,6 @@ rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-color@^2.14.0:
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/react-color/-/react-color-2.14.0.tgz#5828a11c034aa0939befbd888a066ee37d8c3cc2"
-  dependencies:
-    lodash "^4.0.1"
-    material-colors "^1.2.1"
-    prop-types "^15.5.10"
-    reactcss "^1.2.0"
-    tinycolor2 "^1.4.1"
-
 react-dom@^15.3.1:
   version "15.6.2"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-15.6.2.tgz#41cfadf693b757faf2708443a1d1fd5a02bef730"
@@ -2395,12 +2361,6 @@ react@^15.3.1:
     loose-envify "^1.1.0"
     object-assign "^4.1.0"
     prop-types "^15.5.10"
-
-reactcss@^1.2.0:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/reactcss/-/reactcss-1.2.3.tgz#c00013875e557b1cf0dfd9a368a1c3dab3b548dd"
-  dependencies:
-    lodash "^4.0.1"
 
 read-pkg-up@^1.0.1:
   version "1.0.1"
@@ -2826,10 +2786,6 @@ timers-browserify@^2.0.2:
   resolved "https://registry.yarnpkg.com/timers-browserify/-/timers-browserify-2.0.2.tgz#ab4883cf597dcd50af211349a00fbca56ac86b86"
   dependencies:
     setimmediate "^1.0.4"
-
-tinycolor2@^1.4.1:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/tinycolor2/-/tinycolor2-1.4.1.tgz#f4fad333447bc0b07d4dc8e9209d8f39a8ac77e8"
 
 to-arraybuffer@^1.0.0:
   version "1.0.1"

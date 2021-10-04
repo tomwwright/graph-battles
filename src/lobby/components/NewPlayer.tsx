@@ -1,9 +1,6 @@
 import * as React from 'react';
 import { Button, Input, Close } from 'rebass';
-import { GithubPicker } from 'react-color';
 import Styled from 'styled-components';
-
-import { include } from 'models/utils';
 
 type NewPlayerProps = {
   name: string;
@@ -11,12 +8,8 @@ type NewPlayerProps = {
   colours: string[];
   onDelete: () => void;
   onUpdateName: (name: string) => void;
-  onUpdateColour: (colour: string) => void;
 }
 
-type NewPlayerState = {
-  isColourPickerOpen: boolean;
-}
 
 const AbsoluteOverlay = Styled.div`
   position: absolute;
@@ -37,37 +30,13 @@ const PlayerRow = Styled.div`
   margin: 10px 0px;
 `;
 
-export class NewPlayer extends React.Component<NewPlayerProps, NewPlayerState> {
-  state = {
-    isColourPickerOpen: false
-  };
-
-  onOpenPicker() {
-    this.setState({
-      isColourPickerOpen: true
-    });
-  }
-
-  onClosePicker(colour: string) {
-    this.setState({
-      isColourPickerOpen: false,
-    });
-    if (colour) {
-      this.props.onUpdateColour(colour);
-    }
-  }
-
+export class NewPlayer extends React.Component<NewPlayerProps, {}> {
+  
   render() {
     return (
       <PlayerRow>
-        <Button style={{ background: this.props.colour, height: '32px', width: '32px' }} onClick={() => this.onOpenPicker()} />
+        <Button style={{ background: this.props.colour, height: '32px', width: '32px' }} />
         <Input style={{ width: '200px', height: '32px', margin: '0px 5px', padding: '10px' }} value={this.props.name} placeholder='Player Name' onChange={(e) => this.props.onUpdateName(e.target.value)} />
-        {this.state.isColourPickerOpen && (
-          <AbsoluteOverlay>
-            <CloseOverlay onClick={() => this.onClosePicker(null)} />
-            <GithubPicker onChange={(colour) => this.onClosePicker(colour.hex)} colors={include(this.props.colours, this.props.colour)} />
-          </AbsoluteOverlay>
-        )}
         {this.props.onDelete && <Close onClick={() => this.props.onDelete()} />}
       </PlayerRow>
     )
