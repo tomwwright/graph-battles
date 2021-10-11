@@ -2,14 +2,11 @@ import { autorun, IReactionDisposer } from 'mobx';
 import * as Phaser from 'phaser-ce';
 
 import PhaserStore from 'game/stores/phaser';
-import GameStore, { VisibilityMode } from 'game/stores/game';
+import GameStore from 'game/stores/game';
 import UiStore from 'game/stores/ui';
 import { StatusDefinitions, SELECTED_ALPHA, UNITS_PER_ROW, UNITS_SPACING } from 'game/constants';
 
-import { ID } from 'models/utils';
-import Unit from 'models/unit';
-import GameMap from 'models/map';
-import { Colour } from 'models/values';
+import { GameMap, ID, Unit, Values } from '@battles/models';
 
 export default class UnitView {
   modelId: ID;
@@ -86,11 +83,26 @@ export default class UnitView {
 
   initialiseAutoruns() {
     this.disposeStatusAutorun = autorun(`Unit ${this.modelId} View: status autorun`, this.onUpdateStatuses.bind(this));
-    this.disposeVisibilityAutorun = autorun(`Unit ${this.modelId} View: visibility autorun`, this.onUpdateVisibility.bind(this));
-    this.disposePositionAutorun = autorun(`Unit ${this.modelId} View: position autorun`, this.onUpdatePosition.bind(this));
-    this.disposeDestinationAutorun = autorun(`Unit ${this.modelId} View: destination autorun`, this.onUpdateDestinationLine.bind(this));
-    this.disposeControllerAutorun = autorun(`Unit ${this.modelId} View: controller autorun`, this.onUpdateController.bind(this));
-    this.disposeSelectedAutorun = autorun(`Unit ${this.modelId} View: selected autorun`, this.onUpdateSelected.bind(this));
+    this.disposeVisibilityAutorun = autorun(
+      `Unit ${this.modelId} View: visibility autorun`,
+      this.onUpdateVisibility.bind(this)
+    );
+    this.disposePositionAutorun = autorun(
+      `Unit ${this.modelId} View: position autorun`,
+      this.onUpdatePosition.bind(this)
+    );
+    this.disposeDestinationAutorun = autorun(
+      `Unit ${this.modelId} View: destination autorun`,
+      this.onUpdateDestinationLine.bind(this)
+    );
+    this.disposeControllerAutorun = autorun(
+      `Unit ${this.modelId} View: controller autorun`,
+      this.onUpdateController.bind(this)
+    );
+    this.disposeSelectedAutorun = autorun(
+      `Unit ${this.modelId} View: selected autorun`,
+      this.onUpdateSelected.bind(this)
+    );
   }
 
   onUpdateStatuses() {
@@ -149,7 +161,6 @@ export default class UnitView {
   onUpdatePosition() {
     const model = this.gameStore.map.unit(this.modelId);
     if (model) {
-
       let rootPosition: Phaser.Point;
       const territoryView = this.phaserStore.territoryViews.get(model.data.locationId);
       if (territoryView) {
@@ -162,7 +173,7 @@ export default class UnitView {
       const numUnits = model.location.units.length,
         numRows = Math.ceil(numUnits / UNITS_PER_ROW),
         numCols = Math.min(numUnits, UNITS_PER_ROW),
-        index = model.location.units.findIndex(unit => unit.data.id === model.data.id),
+        index = model.location.units.findIndex((unit) => unit.data.id === model.data.id),
         row = Math.floor(index / UNITS_PER_ROW),
         col = index % UNITS_PER_ROW,
         totalWidth = (numCols - 1) * this.sprite.width * (1 + UNITS_SPACING),
@@ -176,14 +187,16 @@ export default class UnitView {
 
       const newPosition = {
         x: rootPosition.x + x - totalWidth * 0.5,
-        y: rootPosition.y + y - totalHeight * 0.5
+        y: rootPosition.y + y - totalHeight * 0.5,
       };
 
       if (Phaser.Point.distance(this.spriteGroup.position, newPosition) > 1) {
-        this.updateLocationTween = this.phaserStore.phaser.add.tween(this.spriteGroup).to(newPosition, 500, Phaser.Easing.Quadratic.Out);
+        this.updateLocationTween = this.phaserStore.phaser.add
+          .tween(this.spriteGroup)
+          .to(newPosition, 500, Phaser.Easing.Quadratic.Out);
         this.updateLocationTween.onStart.add(() => {
           this.disableDestinationLine();
-        })
+        });
         this.updateLocationTween.onComplete.add(() => {
           this.onUpdateDestinationLine();
         });
@@ -195,8 +208,7 @@ export default class UnitView {
   onUpdateController() {
     const model = this.gameStore.map.unit(this.modelId);
     if (model) {
-
-      const colour = model.player ? model.player.data.colour : Colour.WHITE;
+      const colour = model.player ? model.player.data.colour : Values.Colour.WHITE;
       this.spriteBackdrop.tint = colour;
       this.spriteLine.tint = colour;
       this.spriteArrow.tint = colour;
@@ -206,8 +218,8 @@ export default class UnitView {
   onUpdateSelected() {
     this.sprite.alpha =
       this.uiStore.selected &&
-        this.uiStore.selected.type === 'unit' &&
-        this.uiStore.selected.ids.indexOf(this.modelId) != -1
+      this.uiStore.selected.type === 'unit' &&
+      this.uiStore.selected.ids.indexOf(this.modelId) != -1
         ? SELECTED_ALPHA
         : 1;
   }

@@ -1,18 +1,16 @@
 import * as React from 'react';
-import { Text, Small } from 'rebass';
+import { Text } from 'rebass';
 
 import InfoPane from 'game/components/InfoPane';
 
-import { Colour, ColourStrings } from 'models/values';
-import { ID } from 'models/utils';
-import Territory from 'models/territory';
+import { Territory, Values } from '@battles/models';
 
 type TerritoryListItemProps = {
   territory: Territory;
 }
 
 const TerritoryListItem: React.StatelessComponent<TerritoryListItemProps> = ({ territory }) => {
-  const colour = ColourStrings[territory.player ? territory.player.data.colour : Colour.BLACK];
+  const colour = Values.ColourStrings[territory.player ? territory.player.data.colour : Values.Colour.BLACK];
 
   return (
     <InfoPane>

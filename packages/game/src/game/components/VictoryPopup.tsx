@@ -2,8 +2,7 @@ import * as React from 'react';
 import Styled from 'styled-components';
 import { Fixed, Overlay, Heading, Text, Button } from 'rebass';
 
-import Player from 'models/player';
-import { ColourStrings } from 'models/values';
+import { Player, Values } from '@battles/models';
 
 type VictoryPopupProps = {
   turn: number;
@@ -28,7 +27,7 @@ export const VictoryPopup: React.StatelessComponent<VictoryPopupProps> = (props)
       </Heading>
       <Text>
         {props.winners.map(player => (
-          <Span color={ColourStrings[player.data.colour]}>
+          <Span color={Values.ColourStrings[player.data.colour]}>
             Player {player.data.id}
           </Span>
         )).join(' and ')}

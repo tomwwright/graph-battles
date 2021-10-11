@@ -10,14 +10,14 @@ import { UserData } from './user';
 export type ID = string;
 
 export type ModelMap = { [id: string]: Model };
-export type DataMap = { [id: string]: ObjectData };
+export type DataMap = { [id: string]: ModelData };
 
 export type HasID = {
   id: ID;
   type: 'unit' | 'territory' | 'edge' | 'player' | 'map' | 'user';
 };
 
-export type ObjectData = UnitData | TerritoryData | EdgeData | PlayerData | UserData;
+export type ModelData = UnitData | TerritoryData | EdgeData | PlayerData | UserData;
 
 export abstract class Model<T extends HasID = HasID> {
   data: T;

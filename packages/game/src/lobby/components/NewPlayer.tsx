@@ -10,22 +10,6 @@ type NewPlayerProps = {
   onUpdateName: (name: string) => void;
 }
 
-
-const AbsoluteOverlay = Styled.div`
-  position: absolute;
-  z-index: 2;
-`;
-
-const CloseOverlay = Styled.div`
-  position: fixed;
-  background: black;
-  opacity: 0.1;
-  top: 0px;
-  right: 0px;
-  left: 0px;
-  bottom: 0px;
-`;
-
 const PlayerRow = Styled.div`
   margin: 10px 0px;
 `;

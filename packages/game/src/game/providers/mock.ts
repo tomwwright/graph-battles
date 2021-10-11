@@ -1,10 +1,8 @@
-import { GameProvider } from "game/providers/base";
-import Game, { GameData } from "models/game";
-import GameMap from "models/map";
-import { ModelAction } from "models/actions";
+import { GameProvider } from 'game/providers/base';
+import { Actions, Game, GameMap } from '@battles/models';
 
-const KEY_PREFIX: string = "graph-battles-";
-const KEY_GAME_LIST: string = KEY_PREFIX + "gamelist";
+const KEY_PREFIX: string = 'graph-battles-';
+const KEY_GAME_LIST: string = KEY_PREFIX + 'gamelist';
 
 export class MockGameProvider extends GameProvider {
   private game: Game;
@@ -17,10 +15,10 @@ export class MockGameProvider extends GameProvider {
     return this.game;
   }
 
-  public async action(action: ModelAction) {
+  public async action(action: Actions.ModelAction) {
     const map = new GameMap(this.game.latestMap);
     map.applyAction(action);
-    if (action.type === "ready-player" && map.players.every(player => player.data.ready)) {
+    if (action.type === 'ready-player' && map.players.every((player) => player.data.ready)) {
       this.game.resolveTurn();
     }
     return this.game;

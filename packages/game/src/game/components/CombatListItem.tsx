@@ -3,9 +3,7 @@ import { Text, Small } from 'rebass';
 
 import InfoPane from 'game/components/InfoPane';
 
-import { Colour, ColourStrings } from 'models/values';
-import { ID } from 'models/utils';
-import Combat from 'models/combat';
+import { Combat } from '@battles/models';
 
 type CombatListItemProps = {
   combat: Combat;

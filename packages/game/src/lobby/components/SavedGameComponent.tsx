@@ -4,8 +4,7 @@ import { Card, Flex, Box, Subhead, Small, Text, Button } from 'rebass';
 import { PlayerList } from 'lobby/components/PlayerList';
 
 import { SavedGame } from 'game/providers/local';
-import { PlayerData } from 'models/player';
-import GameMap from 'models/map';
+import { GameMap, PlayerData } from '@battles/models';
 
 type SavedGameProps = {
   game: SavedGame

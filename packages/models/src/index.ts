@@ -9,5 +9,6 @@ export * from './territoryActionResolvers';
 export * from './unit';
 export * from './unitcontainer';
 export * from './user';
+export { HasID, ID } from './utils';
 export * as Utils from './utils';
 export * as Values from './values';

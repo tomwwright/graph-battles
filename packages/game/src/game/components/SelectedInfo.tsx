@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Card, Text } from 'rebass';
 
 import GameStore from 'game/stores/game';
 import UiStore, { TurnState } from 'game/stores/ui';
-import InfoPane from 'game/components/InfoPane';
 import UnitInfo from 'game/components/UnitInfo';
 import TerritoryInfo from 'game/components/TerritoryInfo';
 

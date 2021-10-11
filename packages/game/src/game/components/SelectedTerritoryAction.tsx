@@ -1,20 +1,19 @@
 import * as React from "react";
 import { Small, Text, Row, Column, Button } from "rebass";
 import InfoPane from "game/components/InfoPane";
-import Territory from "models/territory";
 import { TerritoryActionTexts } from "game/constants";
-import { TerritoryAction, TerritoryActionDefinitions } from "models/values";
+import { Values } from "@battles/models";
 
 type TerritoryActionProps = {
-  action: TerritoryAction;
-  onClickUnbuy?: (action: TerritoryAction) => void;
+  action: Values.TerritoryAction;
+  onClickUnbuy?: (action: Values.TerritoryAction) => void;
 };
 
 const SelectedTerritoryActionComponent: React.StatelessComponent<TerritoryActionProps> = ({
   action,
   onClickUnbuy
 }) => {
-  const definition = TerritoryActionDefinitions[action];
+  const definition = Values.TerritoryActionDefinitions[action];
   const text = TerritoryActionTexts[action];
   return (
     <InfoPane>

@@ -1,8 +1,7 @@
 import * as Phaser from 'phaser-ce';
 import PhaserStore from 'game/stores/phaser';
 import GameStore from 'game/stores/game';
-import { ID } from 'models/utils';
-import Edge from 'models/edge';
+import { ID, Edge } from '@battles/models';
 
 export default class EdgeView {
   modelId: ID;

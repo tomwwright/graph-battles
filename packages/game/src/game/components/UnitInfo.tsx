@@ -1,9 +1,8 @@
 import * as React from 'react';
-import Unit from 'models/unit';
 import { Card, BackgroundImage, Box, Subhead, Small, Button, Text } from 'rebass';
 
 import { StatusDefinitions, ASSET_PATH } from 'game/constants';
-import { ColourStrings } from 'models/values';
+import { Unit, Values } from '@battles/models';
 
 type UnitInfoProps = {
   unit: Unit;
@@ -17,7 +16,7 @@ const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, isPlanning, o
     <Box p={2}>
       <Subhead>
         Unit {unit.data.id}{' '}
-        <Small color={unit.player ? ColourStrings[unit.player.data.colour] : 'gray'}>
+        <Small color={unit.player ? Values.ColourStrings[unit.player.data.colour] : 'gray'}>
           {unit.player ? `Player ${unit.data.playerId}` : 'No player'}
         </Small>
       </Subhead>

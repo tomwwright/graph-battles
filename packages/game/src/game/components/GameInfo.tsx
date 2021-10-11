@@ -1,21 +1,15 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 import Styled from 'styled-components';
-import { Card, Text, Button, Fixed, Overlay, Heading } from 'rebass';
+import { Button } from 'rebass';
 
 import GameStore from 'game/stores/game';
 import UiStore, { TurnState } from 'game/stores/ui';
-import InfoPane from 'game/components/InfoPane';
-import UnitInfo from 'game/components/UnitInfo';
 import PlayerInfo from 'game/components/PlayerInfo';
-import CombatInfo from 'game/components/CombatInfo';
 import TurnSelect from 'game/components/TurnSelect';
 import ResolveInfo from 'game/components/ResolveInfo';
 import { VictoryPopup } from 'game/components/VictoryPopup';
 import { NextPlayerPopup } from 'game/components/NextPlayerPopup';
-
-import Combat from 'models/combat';
-import { ColourStrings } from 'models/values';
 
 type GameInfoProps = {
   gameStore?: GameStore;

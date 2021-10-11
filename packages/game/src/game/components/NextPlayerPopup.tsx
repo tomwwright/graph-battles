@@ -2,8 +2,7 @@ import * as React from 'react';
 import Styled from 'styled-components';
 import { Fixed, Overlay, Heading, Text, Button } from 'rebass';
 
-import Player from 'models/player';
-import { ColourStrings } from 'models/values';
+import { Player, Values } from '@battles/models';
 
 type NextPlayerProps = {
   turn: number;
@@ -24,7 +23,7 @@ export const NextPlayerPopup: React.StatelessComponent<NextPlayerProps> = (props
         Turn {props.turn}/{props.maxTurns}
       </Heading>
       <Text>
-        <Span color={ColourStrings[props.player.data.colour]}>
+        <Span color={Values.ColourStrings[props.player.data.colour]}>
           Player {props.player.data.id}
         </Span>{' '}
         you're up!

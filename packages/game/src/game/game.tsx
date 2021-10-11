@@ -14,10 +14,7 @@ import { GameProvider } from 'game/providers/base';
 import { LocalGameProvider, SavedGame, LocalStorage } from 'game/providers/local';
 import { MockGameProvider } from 'game/providers/mock';
 
-import TerritoryView from 'game/phaser/territory';
-import { GameData } from 'models/game';
-import GameMap, { GameMapData } from 'models/map';
-import { clone } from 'models/utils';
+import { GameData, GameMap, GameMapData, Utils, } from '@battles/models';
 
 // enable Mobx strict mode (no state mutation outside of @action)
 useStrict(true);
@@ -30,7 +27,7 @@ const stores = new RootStore();
 type AppParameters = {
   gameId: string
 };
-const params: AppParameters = QueryString.parse(location.search);
+const params: AppParameters = QueryString.parse(location.search) as AppParameters;
 
 // load a saved game, or load our mock game
 let savedGame: SavedGame;
@@ -59,7 +56,7 @@ if (params.gameId) {
 
     gameData.maps.push(mapData);
 
-    const nextTurn = new GameMap(clone(mapData));
+    const nextTurn = new GameMap(Utils.clone(mapData));
     nextTurn.resolveTurn();
     gameData.maps.push(nextTurn.data);
 

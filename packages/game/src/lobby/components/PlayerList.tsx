@@ -2,9 +2,7 @@ import * as React from 'react';
 import { Text } from 'rebass';
 import Styled from 'styled-components';
 
-import { UserData } from 'models/user';
-import { PlayerData } from 'models/player';
-import { toHexColour } from 'models/utils';
+import { PlayerData, UserData, Utils } from '@battles/models';
 
 type PlayerListProps = {
   users: UserData[];
@@ -21,7 +19,7 @@ export const PlayerList: React.StatelessComponent<PlayerListProps> = ({ users, p
     player: players[i]
   }));
 
-  const playerSpans = playerUserMappings.map(mapping => <Span key={mapping.user.id} color={`#${toHexColour(mapping.player.colour)}`}>{mapping.user.name}</Span>);
+  const playerSpans = playerUserMappings.map(mapping => <Span key={mapping.user.id} color={`#${Utils.toHexColour(mapping.player.colour)}`}>{mapping.user.name}</Span>);
 
   const elements = [];
   playerSpans.forEach((playerSpan, i) => {

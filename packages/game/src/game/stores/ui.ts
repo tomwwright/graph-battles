@@ -1,32 +1,28 @@
-import { observable, observe, action, computed, runInAction } from 'mobx';
+import { observable, action, computed, runInAction } from 'mobx';
 
 import GameStore, { ResolveState, VisibilityMode } from 'game/stores/game';
 import PhaserStore from 'game/stores/phaser';
-import { GameProvider } from 'game/providers/base';
-import { ID, intersection, include, exclude, flat, clone } from 'models/utils';
-import Territory from 'models/territory';
-import { ReadyPlayerModelAction } from 'models/actions/ready';
+import { ID, Territory, Utils } from '@battles/models';
 
 type Selected =
   | null
   | {
-    type: 'territory';
-    id: ID;
-  }
+      type: 'territory';
+      id: ID;
+    }
   | {
-    type: 'unit';
-    ids: ID[];
-  };
+      type: 'unit';
+      ids: ID[];
+    };
 
 export const enum TurnState {
-  NEXT_PLAYER = "next-player",
-  REPLAYING = "replaying",
-  PLANNING = "planning",
-  VICTORY = "victory"
-};
+  NEXT_PLAYER = 'next-player',
+  REPLAYING = 'replaying',
+  PLANNING = 'planning',
+  VICTORY = 'victory',
+}
 
 export default class UiStore {
-
   gameStore: GameStore;
   phaserStore: PhaserStore;
 
@@ -54,13 +50,13 @@ export default class UiStore {
   get validDestinationIds() {
     if (!this.selected || this.selected.type !== 'unit') return [];
 
-    const units = this.selected.ids.map(id => this.gameStore.map.unit(id));
+    const units = this.selected.ids.map((id) => this.gameStore.map.unit(id));
 
     if (units.length > 0 && units[0].data.playerId != this.gameStore.currentPlayerId) return [];
 
-    const destinationIds = intersection(
-      ...units.map(unit =>
-        (unit.location as Territory).edges.map(edge => edge.other(unit.location as Territory).data.id)
+    const destinationIds = Utils.intersection(
+      ...units.map((unit) =>
+        (unit.location as Territory).edges.map((edge) => edge.other(unit.location as Territory).data.id)
       )
     );
 
@@ -69,8 +65,12 @@ export default class UiStore {
 
   @action
   onClickTerritory(territoryId: ID) {
-
-    if (!this.selected || this.selected.type === 'territory' || this.gameStore.isReplaying || this.validDestinationIds.indexOf(territoryId) === -1) {
+    if (
+      !this.selected ||
+      this.selected.type === 'territory' ||
+      this.gameStore.isReplaying ||
+      this.validDestinationIds.indexOf(territoryId) === -1
+    ) {
       this.selectTerritory(territoryId);
     } else if (this.selected.type === 'unit') {
       this.gameStore.onMoveUnits(this.selected.ids, territoryId);
@@ -90,9 +90,9 @@ export default class UiStore {
       if (selectedUnitsPlayer !== clickedUnitPlayer) {
         this.selectUnits([unitId]);
       } else if (this.selected.ids.indexOf(unitId) === -1) {
-        this.selectUnits(include(this.selected.ids, unitId));
+        this.selectUnits(Utils.include(this.selected.ids, unitId));
       } else {
-        this.selectUnits(exclude(this.selected.ids, unitId));
+        this.selectUnits(Utils.exclude(this.selected.ids, unitId));
       }
     }
   }
@@ -145,8 +145,7 @@ export default class UiStore {
 
   @action
   setTurn(turn: number) {
-    if (turn < 1 || turn > this.gameStore.game.data.maps.length)
-      throw new Error(`Invalid turn number: ${turn}`);
+    if (turn < 1 || turn > this.gameStore.game.data.maps.length) throw new Error(`Invalid turn number: ${turn}`);
     this.gameStore.setTurn(turn);
     this.unselect();
     this.turnState = this.gameStore.isReplaying ? TurnState.REPLAYING : TurnState.PLANNING;
@@ -154,7 +153,8 @@ export default class UiStore {
 
   @action
   selectTerritory(territoryId: ID) {
-    const territoryAlreadySelected = this.selected && this.selected.type === 'territory' && this.selected.id === territoryId;
+    const territoryAlreadySelected =
+      this.selected && this.selected.type === 'territory' && this.selected.id === territoryId;
     if (territoryAlreadySelected) {
       this.selected = null;
     } else {
@@ -172,20 +172,22 @@ export default class UiStore {
     } else {
       this.selected = {
         type: 'unit',
-        ids: unitIds
+        ids: unitIds,
       };
     }
   }
 
   @action
-  unselect() { this.selected = null; }
+  unselect() {
+    this.selected = null;
+  }
 
   @action
   onClickResolve(id: ID) {
     if (this.isResolving) {
       return;
     }
-    const focusIds = (this.gameStore.resolveState === ResolveState.GOLD) ? this.gameStore.map.data.territoryIds : [id];
+    const focusIds = this.gameStore.resolveState === ResolveState.GOLD ? this.gameStore.map.data.territoryIds : [id];
     this.isResolving = true;
     this.phaserStore.focusOn(focusIds).then(() => {
       runInAction(() => {
@@ -195,7 +197,7 @@ export default class UiStore {
         if (this.gameStore.resolveState == ResolveState.NONE && this.gameStore.game.winners.length == 0) {
           this.setTurn(this.gameStore.turn + 1);
         }
-      })
+      });
     });
   }
 }

@@ -11,10 +11,7 @@ import {
   TERRITORY_VISIBILITY_OVERLAY_ALPHA,
   SELECTED_ALPHA,
 } from 'game/constants';
-import Territory from 'models/territory';
-import { ID } from 'models/utils';
-
-import { Colour } from 'models/values';
+import { ID, Territory, Values } from '@battles/models';
 
 export default class TerritoryView {
   modelId: ID;
@@ -40,7 +37,7 @@ export default class TerritoryView {
   }
 
   findModel(): Territory {
-    return this.gameStore.map.territories.find(territory => territory.data.id === this.modelId);
+    return this.gameStore.map.territories.find((territory) => territory.data.id === this.modelId);
   }
 
   initialiseSprites(x: number, y: number) {
@@ -100,7 +97,7 @@ export default class TerritoryView {
       (this.uiStore.selected &&
         this.uiStore.selected.type === 'territory' &&
         this.uiStore.selected.id === this.modelId) ||
-        this.uiStore.validDestinationIds.find(destinationId => destinationId === this.modelId)
+      this.uiStore.validDestinationIds.find((destinationId) => destinationId === this.modelId)
         ? SELECTED_ALPHA
         : 1;
   }
@@ -125,7 +122,7 @@ export default class TerritoryView {
 
   onUpdateTerritoryController() {
     const model = this.findModel();
-    const colour = model.player ? model.player.data.colour : Colour.WHITE;
+    const colour = model.player ? model.player.data.colour : Values.Colour.WHITE;
     this.spriteBackdrop.tint = colour;
   }
 }

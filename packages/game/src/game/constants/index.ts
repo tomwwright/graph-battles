@@ -1,4 +1,4 @@
-import { TerritoryType, Status, TerritoryAction } from 'models/values';
+import { Values } from '@battles/models';
 
 export const SELECTED_ALPHA = 0.8;
 
@@ -9,17 +9,17 @@ export const TERRITORY_VISIBILITY_OVERLAY_ALPHA = 0.5;
 export const ASSET_PATH = '/assets/';
 
 export const TerritoryAssetStrings: { [key: number]: string } = {
-  [TerritoryType.UNSETTLED]: 'unsettled',
-  [TerritoryType.SETTLED]: 'settled',
-  [TerritoryType.CASTLE]: 'castle',
-  [TerritoryType.CASTLE_FARM]: 'castle-farm',
-  [TerritoryType.CITY]: 'city',
-  [TerritoryType.CITY_FARM]: 'city-farm',
-  [TerritoryType.CITY_FORT]: 'city-fort',
-  [TerritoryType.CITY_FORT_FARM]: 'city-fort-farm',
-  [TerritoryType.FARM]: 'farm',
-  [TerritoryType.FORT]: 'fort',
-  [TerritoryType.FORT_FARM]: 'fort-farm',
+  [Values.TerritoryType.UNSETTLED]: 'unsettled',
+  [Values.TerritoryType.SETTLED]: 'settled',
+  [Values.TerritoryType.CASTLE]: 'castle',
+  [Values.TerritoryType.CASTLE_FARM]: 'castle-farm',
+  [Values.TerritoryType.CITY]: 'city',
+  [Values.TerritoryType.CITY_FARM]: 'city-farm',
+  [Values.TerritoryType.CITY_FORT]: 'city-fort',
+  [Values.TerritoryType.CITY_FORT_FARM]: 'city-fort-farm',
+  [Values.TerritoryType.FARM]: 'farm',
+  [Values.TerritoryType.FORT]: 'fort',
+  [Values.TerritoryType.FORT_FARM]: 'fort-farm',
 };
 
 type StatusDefinition = {
@@ -29,17 +29,17 @@ type StatusDefinition = {
 };
 
 export const StatusDefinitions: { [key: number]: StatusDefinition } = {
-  [Status.DEFEND]: { status: Status.DEFEND, assetString: 'status-defend', text: 'Defending' },
-  [Status.STARVE]: { status: Status.STARVE, assetString: 'status-starve', text: 'Starving' },
+  [Values.Status.DEFEND]: { status: Values.Status.DEFEND, assetString: 'status-defend', text: 'Defending' },
+  [Values.Status.STARVE]: { status: Values.Status.STARVE, assetString: 'status-starve', text: 'Starving' },
 };
 
 export const TerritoryActionTexts: { [key: number]: string } = {
-  [TerritoryAction.CREATE_UNIT]: 'Create Unit',
-  [TerritoryAction.BUILD_SETTLEMENT]: 'Build Settlement',
-  [TerritoryAction.BUILD_FARM]: 'Build Farm',
-  [TerritoryAction.BUILD_FORT]: 'Build Fort',
-  [TerritoryAction.BUILD_CITY]: 'Build City',
-  [TerritoryAction.BUILD_CASTLE]: 'Build Castle',
+  [Values.TerritoryAction.CREATE_UNIT]: 'Create Unit',
+  [Values.TerritoryAction.BUILD_SETTLEMENT]: 'Build Settlement',
+  [Values.TerritoryAction.BUILD_FARM]: 'Build Farm',
+  [Values.TerritoryAction.BUILD_FORT]: 'Build Fort',
+  [Values.TerritoryAction.BUILD_CITY]: 'Build City',
+  [Values.TerritoryAction.BUILD_CASTLE]: 'Build Castle',
 };
 
 export const UNITS_PER_ROW = 3;

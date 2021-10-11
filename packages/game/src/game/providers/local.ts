@@ -1,15 +1,11 @@
-import { GameProvider } from "game/providers/base";
-import { ViewData } from "game/stores/phaser";
-import { include, exclude } from "models/utils";
-import { ModelAction } from "models/actions";
-import Game, { GameData } from "models/game";
-import GameMap from "models/map";
+import { GameProvider } from 'game/providers/base';
+import { ViewData } from 'game/stores/phaser';
+import { Actions, Game, GameData, GameMap, Utils } from '@battles/models';
 
-const KEY_PREFIX: string = "graph-battles-";
-const KEY_GAME_LIST: string = KEY_PREFIX + "gamelist";
+const KEY_PREFIX: string = 'graph-battles-';
+const KEY_GAME_LIST: string = KEY_PREFIX + 'gamelist';
 
 export class LocalGameProvider extends GameProvider {
-
   private constructor(gameId: string, userId: string) {
     super(gameId, userId);
   }
@@ -19,12 +15,12 @@ export class LocalGameProvider extends GameProvider {
     return new Game(savedGame.gameData);
   }
 
-  public async action(action: ModelAction) {
+  public async action(action: Actions.ModelAction) {
     const savedGame = await LocalStorage.loadGame(this.gameId);
     const game = new Game(savedGame.gameData);
     const map = new GameMap(game.latestMap);
     map.applyAction(action);
-    if (action.type === "ready-player" && map.players.every(player => player.data.ready)) {
+    if (action.type === 'ready-player' && map.players.every((player) => player.data.ready)) {
       game.resolveTurn();
     }
     savedGame.gameData = game.data;
@@ -47,19 +43,19 @@ export class LocalGameProvider extends GameProvider {
 }
 
 export type SavedGame = {
-  gameData: GameData,
-  viewData: ViewData,
-  lastUpdated: number
+  gameData: GameData;
+  viewData: ViewData;
+  lastUpdated: number;
 };
 
 export class LocalStorage {
   static saveGame(savedGame: SavedGame): void {
-    if (!window) throw new Error("LocalStorage only available in the browser!");
-    if (!window.localStorage) throw new Error("LocalStorage not available!");
+    if (!window) throw new Error('LocalStorage only available in the browser!');
+    if (!window.localStorage) throw new Error('LocalStorage not available!');
 
     // retrieve game list and modify
-    let gameList = JSON.parse(window.localStorage.getItem(KEY_GAME_LIST) || "[]");
-    gameList = include(gameList, savedGame.gameData.id);
+    let gameList = JSON.parse(window.localStorage.getItem(KEY_GAME_LIST) || '[]');
+    gameList = Utils.include(gameList, savedGame.gameData.id);
     window.localStorage.setItem(KEY_GAME_LIST, JSON.stringify(gameList));
 
     // save game data
@@ -67,8 +63,8 @@ export class LocalStorage {
   }
 
   static loadGame(name: string): SavedGame {
-    if (!window) throw new Error("LocalStorage only available in the browser!");
-    if (!window.localStorage) throw new Error("LocalStorage not available!");
+    if (!window) throw new Error('LocalStorage only available in the browser!');
+    if (!window.localStorage) throw new Error('LocalStorage not available!');
 
     // retrieve stringified SavedGame json
     let gameJson = window.localStorage.getItem(KEY_PREFIX + name);
@@ -78,28 +74,28 @@ export class LocalStorage {
   }
 
   static listen(name: string): Promise<SavedGame> {
-    if (!window) throw new Error("LocalStorage only available in the browser!");
-    if (!window.localStorage) throw new Error("LocalStorage not available!");
+    if (!window) throw new Error('LocalStorage only available in the browser!');
+    if (!window.localStorage) throw new Error('LocalStorage not available!');
 
     return new Promise<SavedGame>((resolve, reject) => {
       let storageListener = (e: StorageEvent) => {
         if (e.key === KEY_PREFIX + name) {
-          window.removeEventListener("storage", storageListener);
+          window.removeEventListener('storage', storageListener);
           resolve(<SavedGame>JSON.parse(e.newValue));
         }
       };
 
-      window.addEventListener("storage", storageListener);
+      window.addEventListener('storage', storageListener);
     });
   }
 
   static deleteGame(name: string): void {
-    if (!window) throw new Error("LocalStorage only available in the browser!");
-    if (!window.localStorage) throw new Error("LocalStorage not available!");
+    if (!window) throw new Error('LocalStorage only available in the browser!');
+    if (!window.localStorage) throw new Error('LocalStorage not available!');
 
     // retrieve game list and modify
-    let gameList = JSON.parse(window.localStorage.getItem(KEY_GAME_LIST) || "[]");
-    gameList = exclude(gameList, name);
+    let gameList = JSON.parse(window.localStorage.getItem(KEY_GAME_LIST) || '[]');
+    gameList = Utils.exclude(gameList, name);
     window.localStorage.setItem(KEY_GAME_LIST, JSON.stringify(gameList));
 
     // remove game data
@@ -107,13 +103,13 @@ export class LocalStorage {
   }
 
   static listGames(): SavedGame[] {
-    if (!window) throw new Error("LocalStorage only available in the browser!");
-    if (!window.localStorage) throw new Error("LocalStorage not available!");
+    if (!window) throw new Error('LocalStorage only available in the browser!');
+    if (!window.localStorage) throw new Error('LocalStorage not available!');
 
     // retrieve game list
-    let gameList: string[] = JSON.parse(window.localStorage.getItem(KEY_GAME_LIST) || "[]");
+    let gameList: string[] = JSON.parse(window.localStorage.getItem(KEY_GAME_LIST) || '[]');
 
-    let games: SavedGame[] = gameList.map(gameName => LocalStorage.loadGame(gameName));
+    let games: SavedGame[] = gameList.map((gameName) => LocalStorage.loadGame(gameName));
 
     return games;
   }

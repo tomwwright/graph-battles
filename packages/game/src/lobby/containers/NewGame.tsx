@@ -9,12 +9,7 @@ import { NewPlayer } from 'lobby/components/NewPlayer';
 
 import { ViewData } from 'game/stores/phaser';
 
-import { GameData } from 'models/game';
-import { UserData } from 'models/user';
-import { GameMapData } from 'models/map';
-import { PlayerData } from 'models/player';
-import { Colour } from 'models/values';
-import { contains, clone, toHexColour } from 'models/utils';
+import { GameData, GameMapData, PlayerData, UserData, Utils, Values } from '@battles/models';
 
 type NewGameProps = {
   savedGameStore?: SavedGameStore;
@@ -32,7 +27,7 @@ type NewPlayerData = {
   colour: string;
 };
 
-const ColourPalette = [Colour.RED, Colour.BLUE, Colour.GREEN, Colour.ORANGE, Colour.PURPLE, Colour.YELLOW].map(colourNumber => '#' + toHexColour(colourNumber));
+const ColourPalette = [Values.Colour.RED, Values.Colour.BLUE, Values.Colour.GREEN, Values.Colour.ORANGE, Values.Colour.PURPLE, Values.Colour.YELLOW].map(colourNumber => '#' + Utils.toHexColour(colourNumber));
 
 const SliderWrapper = Styled.div`
   margin-bottom: 15px;
@@ -57,7 +52,7 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
   };
 
   addPlayer() {
-    const players = clone(this.state.players);
+    const players = Utils.clone(this.state.players);
     players.push({
       name: '',
       colour: this.getUnusedColours()[0]
@@ -143,7 +138,7 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
   }
 
   onDelete(i: number) {
-    const players = clone(this.state.players);
+    const players = Utils.clone(this.state.players);
     players.splice(i, 1);
     this.setState({
       players
@@ -172,7 +167,7 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
 
   getUnusedColours() {
     const playerColours = this.state.players.map(player => player.colour);
-    let unusedColours = ColourPalette.filter(colour => !contains(playerColours, colour));
+    let unusedColours = ColourPalette.filter(colour => !Utils.contains(playerColours, colour));
     return unusedColours;
   }
 

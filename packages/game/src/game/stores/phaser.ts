@@ -8,9 +8,8 @@ import EdgeView from 'game/phaser/edge';
 import UnitView from 'game/phaser/unit';
 import KineticScroller from 'game/phaser/kineticScroller';
 
-import { ID, sum, contains } from 'models/utils';
-import { GameMapData } from 'models/map';
-import { TerritoryTypeCheckOrder, Colour } from 'models/values';
+import { ID, Utils } from '@battles/models';
+import { Values } from '@battles/models';
 import {
   TerritoryAssetStrings,
   TERRITORY_ASSET_PREFIX,
@@ -22,12 +21,11 @@ type TerritoryViewData = {
   position: {
     x: number;
     y: number;
-  }
+  };
 };
 export type ViewData = { [id: string]: TerritoryViewData };
 
 export default class PhaserStore {
-
   @observable.ref phaser: Phaser.Game = null;
 
   territoryViews: Map<ID, TerritoryView> = new Map();
@@ -51,10 +49,10 @@ export default class PhaserStore {
 
     this.initialisePhaser(window, divId);
 
-    when('game map is initialised',
+    when(
+      'game map is initialised',
       () => this.gameStore.map !== null,
       () => {
-
         const kineticScroller = new KineticScroller(this);
         this.phaser.world.add(kineticScroller.sprite);
 
@@ -80,7 +78,7 @@ export default class PhaserStore {
 
         autorun('phaser store: initialise unit views', () => this.initialiseUnitViews());
       }
-    )
+    );
   }
 
   @action
@@ -98,17 +96,14 @@ export default class PhaserStore {
     }
 
     const positions: Phaser.Point[] = [];
-    ids.forEach(id => {
-      if (this.territoryViews.get(id))
-        positions.push(this.territoryViews.get(id).spriteGroup.position);
-      else if (this.edgeViews.get(id))
-        positions.push(this.edgeViews.get(id).sprite.position);
-      else if (this.unitViews.get(id))
-        positions.push(this.unitViews.get(id).spriteGroup.position);
+    ids.forEach((id) => {
+      if (this.territoryViews.get(id)) positions.push(this.territoryViews.get(id).spriteGroup.position);
+      else if (this.edgeViews.get(id)) positions.push(this.edgeViews.get(id).sprite.position);
+      else if (this.unitViews.get(id)) positions.push(this.unitViews.get(id).spriteGroup.position);
     });
 
-    const x = sum(positions.map(position => position.x)) / positions.length;
-    const y = sum(positions.map(position => position.y)) / positions.length;
+    const x = Utils.sum(positions.map((position) => position.x)) / positions.length;
+    const y = Utils.sum(positions.map((position) => position.y)) / positions.length;
 
     return this.tweenCamera(x, y);
   }
@@ -121,10 +116,12 @@ export default class PhaserStore {
     const promise = new Promise((resolve, reject) => {
       const centreX = x - this.phaser.camera.width / 2;
       const centreY = y - this.phaser.camera.height / 2;
-      this.cameraTween = this.phaser.add.tween(this.phaser.camera).to({ x: centreX, y: centreY }, 500, Phaser.Easing.Quadratic.Out);
+      this.cameraTween = this.phaser.add
+        .tween(this.phaser.camera)
+        .to({ x: centreX, y: centreY }, 500, Phaser.Easing.Quadratic.Out);
       this.cameraTween.onComplete.add(() => {
         this.cameraTween = null;
-        resolve();
+        resolve(null);
       });
       this.cameraTween.start();
     });
@@ -141,26 +138,20 @@ export default class PhaserStore {
     this.phaser.camera.y = y - this.phaser.camera.height / 2;
   }
 
-
   private initialiseUnitViews() {
-
     this.unitViews.forEach((unitView: UnitView, id: ID) => {
-      if (!contains(this.gameStore.map.data.unitIds, unitView.modelId)) {
+      if (!Utils.contains(this.gameStore.map.data.unitIds, unitView.modelId)) {
         this.unitViews.delete(unitView.modelId);
         unitView.destroy();
       }
     });
 
-    this.gameStore.map.data.unitIds.forEach(unitId => {
+    this.gameStore.map.data.unitIds.forEach((unitId) => {
       const unitView = this.unitViews.get(unitId);
       if (!unitView) {
-        this.unitViews.set(
-          unitId,
-          new UnitView(this, this.gameStore, this.uiStore, unitId)
-        );
+        this.unitViews.set(unitId, new UnitView(this, this.gameStore, this.uiStore, unitId));
       }
     });
-
   }
 
   @action
@@ -194,7 +185,7 @@ export default class PhaserStore {
       phaser.load.image('arrow', ASSET_PATH + 'arrow.png');
       phaser.load.image('marker', ASSET_PATH + 'marker.png');
 
-      for (let type of TerritoryTypeCheckOrder) {
+      for (let type of Values.TerritoryTypeCheckOrder) {
         let assetString = TerritoryAssetStrings[type];
         phaser.load.image(
           TERRITORY_ASSET_PREFIX + assetString,
@@ -208,13 +199,13 @@ export default class PhaserStore {
     }
 
     function create() {
-      phaser.stage.backgroundColor = Colour.BLACK;
+      phaser.stage.backgroundColor = Values.Colour.BLACK;
       phaser.stage.disableVisibilityChange = true;
       phaser.camera.bounds = null;
 
       self.setPhaser(phaser);
     }
 
-    function update() { }
+    function update() {}
   }
 }

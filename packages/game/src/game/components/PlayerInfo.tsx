@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { Small, Text } from 'rebass';
 import InfoPane from 'game/components/InfoPane';
-import Player from 'models/player';
-import { TerritoryAction, TerritoryActionDefinitions, ColourStrings } from 'models/values';
+import { Player, Values } from '@battles/models';
 
 type PlayerInfoProps = {
   player: Player;
@@ -12,7 +11,7 @@ type PlayerInfoProps = {
 const PlayerInfo: React.StatelessComponent<PlayerInfoProps> = ({ player, isActive }) => {
   return (
     <InfoPane>
-      <Text color={ColourStrings[player.data.colour]}>
+      <Text color={Values.ColourStrings[player.data.colour]}>
         Player {player.data.id} <Small color="black">{isActive ? '(Active)' : ''}</Small>
       </Text>
       <Small>

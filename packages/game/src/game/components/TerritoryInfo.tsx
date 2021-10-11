@@ -1,10 +1,8 @@
 import * as React from 'react';
-import Territory from 'models/territory';
-import Player from 'models/player';
 import { Card, BackgroundImage, Box, Subhead, Small, Text } from 'rebass';
 import TerritoryAction from 'game/components/TerritoryAction';
 import SelectedTerritoryAction from 'game/components/SelectedTerritoryAction';
-import { TerritoryAction as TerritoryActionEnum, ColourStrings } from 'models/values';
+import { Player, Territory, Values } from '@battles/models';
 
 import { ASSET_PATH } from 'game/constants';
 
@@ -12,7 +10,7 @@ type TerritoryInfoProps = {
   territory: Territory;
   currentPlayer: Player;
   isPlanning: boolean;
-  setTerritoryAction?: (action: TerritoryActionEnum) => void;
+  setTerritoryAction?: (action: Values.TerritoryAction) => void;
 };
 
 const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory, currentPlayer, isPlanning, setTerritoryAction }) => {
@@ -25,7 +23,7 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
         <Box p={2}>
           <Subhead>
             Territory {territory.data.id}{' '}
-            <Small color={territory.player ? ColourStrings[territory.player.data.colour] : 'gray'}>
+            <Small color={territory.player ? Values.ColourStrings[territory.player.data.colour] : 'gray'}>
               {territory.player ? `Player ${territory.data.playerId}` : 'No player'}
             </Small>
           </Subhead>
