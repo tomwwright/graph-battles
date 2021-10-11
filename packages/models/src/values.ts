@@ -1,8 +1,7 @@
-import GameMap from 'models/map';
-import Territory from 'models/territory';
-import { contains, intersection } from 'models/utils';
-import * as TerritoryActionResolvers from 'models/territoryActionResolvers';
-import { Color } from 'phaser-ce';
+import GameMap from './map';
+import Territory from './territory';
+import { contains, intersection } from './utils';
+import * as TerritoryActionResolvers from './territoryActionResolvers';
 
 export enum Colour {
   BLACK = 0x000000, // 0
@@ -116,7 +115,11 @@ export function propsToActions(props: TerritoryProperty[]): TerritoryAction[] {
 
     if (!contains(props, TerritoryProperty.CITY)) actions.push(TerritoryAction.BUILD_CITY);
 
-    if (contains(props, TerritoryProperty.CITY) && contains(props, TerritoryProperty.FORT) && !contains(props, TerritoryProperty.CASTLE))
+    if (
+      contains(props, TerritoryProperty.CITY) &&
+      contains(props, TerritoryProperty.FORT) &&
+      !contains(props, TerritoryProperty.CASTLE)
+    )
       actions.push(TerritoryAction.BUILD_CASTLE);
 
     if (!contains(props, TerritoryProperty.FARM)) actions.push(TerritoryAction.BUILD_FARM);
@@ -126,7 +129,7 @@ export function propsToActions(props: TerritoryProperty[]): TerritoryAction[] {
 
 export function propsToType(props: TerritoryProperty[]): TerritoryType {
   return TerritoryTypeCheckOrder.find(
-    type => intersection(TerritoryPropertyMappings[type], props).length === TerritoryPropertyMappings[type].length
+    (type) => intersection(TerritoryPropertyMappings[type], props).length === TerritoryPropertyMappings[type].length
   );
 }
 

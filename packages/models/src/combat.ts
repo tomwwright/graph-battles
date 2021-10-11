@@ -1,8 +1,8 @@
-import Player from 'models/player';
-import UnitContainer from 'models/unitcontainer';
-import Unit from 'models/unit';
-import { Status } from 'models/values';
-import { sum, contains } from 'models/utils';
+import Player from './player';
+import UnitContainer from './unitcontainer';
+import Unit from './unit';
+import { Status } from './values';
+import { sum, contains } from './utils';
 
 export class Combatant {
   player: Player;
@@ -15,7 +15,7 @@ export class Combatant {
 
   get combatRating(): number {
     return sum(
-      this.units.map(unit => {
+      this.units.map((unit) => {
         let rating = 2;
         if (contains(unit.data.statuses, Status.DEFEND)) rating++;
         if (contains(unit.data.statuses, Status.STARVE)) rating--;
@@ -35,7 +35,7 @@ export default class Combat {
     const combatants: Combatant[] = [];
     for (const unit of location.units) {
       const combatant = combatants.find(
-        combatant =>
+        (combatant) =>
           (combatant.player === null && unit.player === null) ||
           (combatant.player && unit.player && combatant.player.data.id === unit.player.data.id)
       );

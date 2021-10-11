@@ -1,10 +1,10 @@
-import Edge from 'models/edge';
-import GameMap, { GameMapData } from 'models/map';
-import { clone } from "models/utils";
+import Edge from './edge';
+import GameMap, { GameMapData } from './map';
+import { clone } from './utils';
 import { expect } from 'chai';
-import { describe, it, beforeEach } from "mocha";
+import { describe, it, beforeEach } from 'mocha';
 
-import testMapData from "models/test/testMap";
+import testMapData from './test/testMap';
 
 let map: GameMap;
 
@@ -14,7 +14,7 @@ describe('Edge Model', () => {
   });
 
   it('edge objects in the test map', () => {
-    expect(map.edges.map(edge => edge.data.id)).to.have.members(map.data.edgeIds);
+    expect(map.edges.map((edge) => edge.data.id)).to.have.members(map.data.edgeIds);
   });
 
   it('retrieves other territory from the map', () => {
@@ -25,5 +25,3 @@ describe('Edge Model', () => {
     }
   });
 });
-
-

@@ -1,12 +1,12 @@
-import { ID, HasID, sum } from "models/utils";
-import GameMap from "models/map";
-import UnitContainer, { UnitContainerData } from "models/unitcontainer";
-import Territory from "models/territory";
-import Unit from "models/unit";
-import { Colour } from "models/values";
+import { ID, HasID, sum } from './utils';
+import GameMap from './map';
+import UnitContainer, { UnitContainerData } from './unitcontainer';
+import Territory from './territory';
+import Unit from './unit';
+import { Colour } from './values';
 
 export type PlayerData = UnitContainerData & {
-  type: "player";
+  type: 'player';
   colour: Colour;
   territoryIds: ID[];
   gold: number;
@@ -19,7 +19,7 @@ export type PlayerData = UnitContainerData & {
 
 export default class Player extends UnitContainer<PlayerData> {
   get territories() {
-    return this.data.territoryIds.map(id => <Territory>this.map.modelMap[id]);
+    return this.data.territoryIds.map((id) => <Territory>this.map.modelMap[id]);
   }
 
   get victoryPoints() {
@@ -27,7 +27,7 @@ export default class Player extends UnitContainer<PlayerData> {
       this.data.gold +
       this.units.length +
       this.territories.length +
-      sum(this.territories.map(territory => territory.data.properties.length)) +
+      sum(this.territories.map((territory) => territory.data.properties.length)) +
       this.data.neutralTerritoryCaptures +
       2 * this.data.opponentTerritoryCaptures +
       this.data.unitsDestroyed
@@ -35,6 +35,6 @@ export default class Player extends UnitContainer<PlayerData> {
   }
 
   resolveGold() {
-    this.data.gold += this.data.goldProduction + sum(this.territories.map(territory => territory.goldProduction));
+    this.data.gold += this.data.goldProduction + sum(this.territories.map((territory) => territory.goldProduction));
   }
 }

@@ -1,12 +1,23 @@
-import { clone, sum, intersection, include, exclude, excludeAll, unique, clamp, collect, contains, flat } from "models/utils";
+import {
+  clone,
+  sum,
+  intersection,
+  include,
+  exclude,
+  excludeAll,
+  unique,
+  clamp,
+  collect,
+  contains,
+  flat,
+} from './utils';
 import { expect } from 'chai';
-import { describe, it, beforeEach } from "mocha";
+import { describe, it, beforeEach } from 'mocha';
 
-import testMapData from "models/test/testMap";
-import combatTestMapData from "models/test/testMap";
+import testMapData from './test/testMap';
+import combatTestMapData from './test/testMap';
 
 describe('Utils', () => {
-
   it('clone', () => {
     const original = {
       array: [1, 2, 3, 4],
@@ -15,11 +26,11 @@ describe('Utils', () => {
         string: 'a',
         number: 7,
         object: {
-          string: 'c'
-        }
+          string: 'c',
+        },
       },
       string: 'b',
-      number: 4
+      number: 4,
     };
     const cloned = clone(original);
 
@@ -83,41 +94,14 @@ describe('Utils', () => {
   });
 
   it('intersection', () => {
-    expect(intersection(
-      [1, 2, 3, 4],
-      [2, 3, 4, 5],
-      [3, 4, 5, 6]
-    )).to.have.members([3, 4]);
-    expect(intersection(
-      [null, 2, 3, 4],
-      [2, 3, 4, null],
-      [3, 4, null, 6]
-    )).to.have.members([3, 4, null]);
-    expect(intersection(
-      [1, 2, 3]
-    )).to.have.members([1, 2, 3]);
-    expect(intersection(
-      [1, 2, 3],
-      [4, 5, 6]
-    )).to.have.members([]);
-    expect(intersection(
-      [1, 2, 3],
-      []
-    )).to.have.members([]);
+    expect(intersection([1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6])).to.have.members([3, 4]);
+    expect(intersection([null, 2, 3, 4], [2, 3, 4, null], [3, 4, null, 6])).to.have.members([3, 4, null]);
+    expect(intersection([1, 2, 3])).to.have.members([1, 2, 3]);
+    expect(intersection([1, 2, 3], [4, 5, 6])).to.have.members([]);
+    expect(intersection([1, 2, 3], [])).to.have.members([]);
   });
 
   it('flat', () => {
-    expect(flat([
-      [1, 2, 3],
-      4,
-      [
-        [5, 6],
-        [7],
-        [8, 9, 10],
-        11
-      ]
-    ])).to.have.members([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-  })
+    expect(flat([[1, 2, 3], 4, [[5, 6], [7], [8, 9, 10], 11]])).to.have.members([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  });
 });
-
-

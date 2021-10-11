@@ -1,6 +1,6 @@
-import GameMap, { GameMapData } from "models/map";
-import User, { UserData } from "models/user";
-import { clone } from "models/utils";
+import GameMap, { GameMapData } from './map';
+import User, { UserData } from './user';
+import { clone } from './utils';
 
 export type GameData = {
   id: string;
@@ -16,7 +16,7 @@ export default class Game {
 
   constructor(data: GameData) {
     this.data = data;
-    this.users = data.users.map(userData => new User(this, userData));
+    this.users = data.users.map((userData) => new User(this, userData));
   }
 
   get turn() {
@@ -36,8 +36,7 @@ export default class Game {
   }
 
   resolveTurn() {
-    if (this.winners.length > 0)
-      throw new Error('Unable to resolve turn -- game is in a completed state!');
+    if (this.winners.length > 0) throw new Error('Unable to resolve turn -- game is in a completed state!');
     const next = new GameMap(clone(this.latestMap));
     next.resolveTurn();
     this.data.maps.push(next.data);

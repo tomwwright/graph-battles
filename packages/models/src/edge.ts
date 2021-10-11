@@ -1,10 +1,10 @@
-import { ID, Model } from "models/utils";
-import GameMap from "models/map";
-import UnitContainer, { UnitContainerData } from "models/unitcontainer";
-import Territory from "models/territory";
+import { ID, Model } from './utils';
+import GameMap from './map';
+import UnitContainer, { UnitContainerData } from './unitcontainer';
+import Territory from './territory';
 
 export type EdgeData = UnitContainerData & {
-  type: "edge";
+  type: 'edge';
   territoryAId: ID;
   territoryBId: ID;
 };

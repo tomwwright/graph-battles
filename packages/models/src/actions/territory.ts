@@ -1,6 +1,6 @@
-import { ID, contains } from 'models/utils';
-import GameMap from 'models/map';
-import { TerritoryAction, TerritoryActionDefinitions } from 'models/values';
+import { ID, contains } from '../utils';
+import GameMap from '../map';
+import { TerritoryAction, TerritoryActionDefinitions } from '../values';
 
 export type TerritoryModelAction = {
   type: 'territory';
@@ -9,7 +9,7 @@ export type TerritoryModelAction = {
 };
 
 export function applyTerritoryAction(map: GameMap, action: TerritoryModelAction) {
-  const territory = map.territories.find(territory => territory.data.id === action.territoryId);
+  const territory = map.territories.find((territory) => territory.data.id === action.territoryId);
   if (!territory) throw new Error(`Invalid Territory ID ${action.territoryId}`);
 
   if (action.action && !contains(territory.actions, action.action))

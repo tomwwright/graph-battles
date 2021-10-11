@@ -1,6 +1,6 @@
-import { ID, HasID, Model } from "models/utils";
-import Game from "models/game";
-import { PlayerData } from "models/player";
+import { ID, HasID, Model } from './utils';
+import Game from './game';
+import { PlayerData } from './player';
 
 export type UserData = HasID & {
   name: string;
@@ -17,6 +17,6 @@ export default class User {
   }
 
   get players() {
-    return this.data.playerIds.map(id => this.game.latestMap.dataMap[id] as PlayerData);
+    return this.data.playerIds.map((id) => this.game.latestMap.dataMap[id] as PlayerData);
   }
 }

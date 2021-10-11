@@ -1,13 +1,21 @@
-import { ID, clone, include, exclude, contains, sum, clamp, unique } from "models/utils";
-import GameMap from "models/map";
-import UnitContainer, { UnitContainerData } from "models/unitcontainer";
-import Player from "models/player";
-import Edge from "models/edge";
-import Unit from "models/unit";
-import { TerritoryProperty, TerritoryAction, TerritoryActionDefinitions, TerritoryType, propsToActions, propsToType, Status } from "models/values";
+import { ID, clone, include, exclude, contains, sum, clamp, unique } from './utils';
+import GameMap from './map';
+import UnitContainer, { UnitContainerData } from './unitcontainer';
+import Player from './player';
+import Edge from './edge';
+import Unit from './unit';
+import {
+  TerritoryProperty,
+  TerritoryAction,
+  TerritoryActionDefinitions,
+  TerritoryType,
+  propsToActions,
+  propsToType,
+  Status,
+} from './values';
 
 export type TerritoryData = UnitContainerData & {
-  type: "territory";
+  type: 'territory';
   edgeIds: ID[];
   playerId: ID;
   food: number;
@@ -21,11 +29,11 @@ export default class Territory extends UnitContainer<TerritoryData> {
   }
 
   get units() {
-    return this.data.unitIds.map(id => <Unit>this.map.modelMap[id]);
+    return this.data.unitIds.map((id) => <Unit>this.map.modelMap[id]);
   }
 
   get edges() {
-    return this.data.edgeIds.map(id => <Edge>this.map.modelMap[id]);
+    return this.data.edgeIds.map((id) => <Edge>this.map.modelMap[id]);
   }
 
   get actions() {
@@ -66,7 +74,7 @@ export default class Territory extends UnitContainer<TerritoryData> {
   }
 
   hasProperty(...properties: TerritoryProperty[]) {
-    return properties.every(property => contains(this.data.properties, property));
+    return properties.every((property) => contains(this.data.properties, property));
   }
 
   addProperty(property: TerritoryProperty) {
@@ -78,9 +86,10 @@ export default class Territory extends UnitContainer<TerritoryData> {
   }
 
   setTerritoryAction(action: TerritoryAction) {
-    if (!this.player) throw new Error("setTerritoryAction on Territory without Player");
+    if (!this.player) throw new Error('setTerritoryAction on Territory without Player');
 
-    if (action && !contains(this.actions, action)) throw new Error(`Territory ${this.data.id} does not have Action ${action} available`);
+    if (action && !contains(this.actions, action))
+      throw new Error(`Territory ${this.data.id} does not have Action ${action} available`);
 
     const currentAction = TerritoryActionDefinitions[this.data.currentAction];
     const newAction = TerritoryActionDefinitions[action];
@@ -103,7 +112,7 @@ export default class Territory extends UnitContainer<TerritoryData> {
   resolveFood() {
     this.data.food += this.foodProduction;
 
-    const consumedFood = sum(this.units.map(unit => unit.foodConsumption));
+    const consumedFood = sum(this.units.map((unit) => unit.foodConsumption));
     this.data.food -= consumedFood;
     for (let unit of this.units) {
       if (this.data.food < 0) unit.addStatus(Status.STARVE);
@@ -122,8 +131,8 @@ export default class Territory extends UnitContainer<TerritoryData> {
   }
 
   resolveTerritoryControl(previous: Territory) {
-    const presentPlayerIds = unique(this.units.map(unit => unit.data.playerId)).filter(id => id != null);
-    const previousPlayerIds = unique(previous.units.map(unit => unit.data.playerId)).filter(id => id != null);
+    const presentPlayerIds = unique(this.units.map((unit) => unit.data.playerId)).filter((id) => id != null);
+    const previousPlayerIds = unique(previous.units.map((unit) => unit.data.playerId)).filter((id) => id != null);
 
     if (
       presentPlayerIds.length == 1 &&

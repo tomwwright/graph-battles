@@ -1,6 +1,6 @@
-import GameMap from 'models/map';
+import GameMap from './map';
 
-import { Colour } from 'models/values';
+import { Colour } from './values';
 import Edge, { EdgeData } from './edge';
 import Player, { PlayerData } from './player';
 import Territory, { TerritoryData } from './territory';

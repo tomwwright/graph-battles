@@ -1,6 +1,6 @@
-import { ID, HasID, Model, unique, exclude } from 'models/utils';
-import GameMap from 'models/map';
-import Unit from 'models/unit';
+import { ID, HasID, Model, unique, exclude } from './utils';
+import GameMap from './map';
+import Unit from './unit';
 
 export type UnitContainerData = HasID & {
   unitIds: ID[];
@@ -8,7 +8,7 @@ export type UnitContainerData = HasID & {
 
 export default abstract class UnitContainer<T extends UnitContainerData = UnitContainerData> extends Model<T> {
   get units() {
-    return this.data.unitIds.map(id => <Unit>this.map.modelMap[id]);
+    return this.data.unitIds.map((id) => <Unit>this.map.modelMap[id]);
   }
 
   remove(unitId: ID) {
@@ -16,6 +16,6 @@ export default abstract class UnitContainer<T extends UnitContainerData = UnitCo
   }
 
   hasCombat(): boolean {
-    return unique(this.units.map(unit => unit.data.playerId)).length > 1;
+    return unique(this.units.map((unit) => unit.data.playerId)).length > 1;
   }
 }

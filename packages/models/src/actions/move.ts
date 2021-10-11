@@ -1,6 +1,6 @@
-import { ID, intersection } from 'models/utils';
-import GameMap from 'models/map';
-import Territory from 'models/territory';
+import { ID, intersection } from '../utils';
+import GameMap from '../map';
+import Territory from '../territory';
 
 export type MoveUnitsModelAction = {
   type: 'move-units';
@@ -9,13 +9,13 @@ export type MoveUnitsModelAction = {
 };
 
 export function applyMoveUnits(map: GameMap, action: MoveUnitsModelAction) {
-  const units = action.unitIds.map(unitId => map.unit(unitId));
+  const units = action.unitIds.map((unitId) => map.unit(unitId));
 
-  if (units.some(unit => unit === undefined)) throw new Error(`Invalid Unit IDs ${JSON.stringify(action.unitIds)}`);
+  if (units.some((unit) => unit === undefined)) throw new Error(`Invalid Unit IDs ${JSON.stringify(action.unitIds)}`);
 
   if (
     units.some(
-      unit => !unit.location || !map.territories.find(territory => territory.data.id === unit.location.data.id)
+      (unit) => !unit.location || !map.territories.find((territory) => territory.data.id === unit.location.data.id)
     )
   )
     throw new Error(`Units ${JSON.stringify(action.unitIds)} not all on a Territory`);
@@ -26,18 +26,18 @@ export function applyMoveUnits(map: GameMap, action: MoveUnitsModelAction) {
 
     const adjacentTerritoryIds = intersection(
       ...units
-        .map(unit => unit.location as Territory)
-        .map(territory => territory.edges.map(edge => edge.other(territory).data.id))
+        .map((unit) => unit.location as Territory)
+        .map((territory) => territory.edges.map((edge) => edge.other(territory).data.id))
     );
 
     if (adjacentTerritoryIds.indexOf(action.destinationId) === -1)
       throw new Error(`Territory ${action.destinationId} not adjacent to all Units ${JSON.stringify(action.unitIds)}`);
 
-    units.forEach(unit => {
+    units.forEach((unit) => {
       unit.data.destinationId = action.destinationId;
     });
   } else {
-    units.forEach(unit => {
+    units.forEach((unit) => {
       unit.data.destinationId = null;
     });
   }

@@ -1,13 +1,13 @@
-import { ID, HasID, Model, include, exclude } from "models/utils";
-import GameMap from "models/map";
-import Player from "models/player";
-import UnitContainer from "models/unitcontainer";
-import Territory from "models/territory";
-import Edge from "models/edge";
-import { Status } from "models/values";
+import { ID, HasID, Model, include, exclude } from './utils';
+import GameMap from './map';
+import Player from './player';
+import UnitContainer from './unitcontainer';
+import Territory from './territory';
+import Edge from './edge';
+import { Status } from './values';
 
 export type UnitData = HasID & {
-  type: "unit";
+  type: 'unit';
   playerId: ID;
   locationId: ID;
   destinationId: ID;
@@ -25,15 +25,16 @@ export default class Unit extends Model<UnitData> {
     return <Territory>this.map.modelMap[this.data.destinationId] || null;
   }
   get movementEdge() {
-    return this.map.edge(this.data.locationId) || this.map.findEdge(this.data.locationId, this.data.destinationId) || null;
+    return (
+      this.map.edge(this.data.locationId) || this.map.findEdge(this.data.locationId, this.data.destinationId) || null
+    );
   }
   get foodConsumption() {
     return 1;
   }
 
   resolveMove() {
-    if (!this.data.destinationId)
-      throw new Error(`Unit ${this.data.id} moving without destination set`);
+    if (!this.data.destinationId) throw new Error(`Unit ${this.data.id} moving without destination set`);
     if (!this.destination)
       throw new Error(`Unit ${this.data.id} moving with invalid destination set: ${this.data.destinationId}`);
     if (!this.movementEdge)
@@ -67,11 +68,10 @@ export default class Unit extends Model<UnitData> {
           `Unable to set destination of Unit ${this.data.id}: Location ${this.location.data.id} not a Territory`
         );
 
-      const adjacentTerritories = location.edges.map(edge => edge.other(location));
-      if (!adjacentTerritories.find(territory => territory.data.id === destination.data.id))
+      const adjacentTerritories = location.edges.map((edge) => edge.other(location));
+      if (!adjacentTerritories.find((territory) => territory.data.id === destination.data.id))
         throw new Error(
-          `Unable to set destination of Unit ${this.data.id}: Territory ${destination.data
-            .id} is not adjacent to Location ${this.location.data.id}`
+          `Unable to set destination of Unit ${this.data.id}: Territory ${destination.data.id} is not adjacent to Location ${this.location.data.id}`
         );
 
       this.data.destinationId = destination.data.id;
