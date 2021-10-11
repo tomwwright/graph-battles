@@ -1,16 +1,23 @@
-import GameMap from "models/map";
+import GameMap from 'models/map';
 
-import { Colour } from "models/values";
+import { Colour } from 'models/values';
+import Edge, { EdgeData } from './edge';
+import Player, { PlayerData } from './player';
+import Territory, { TerritoryData } from './territory';
+import Unit, { UnitData } from './unit';
+import { UserData } from './user';
 
 export type ID = string;
 
 export type ModelMap = { [id: string]: Model };
-export type DataMap = { [id: string]: HasID };
+export type DataMap = { [id: string]: ObjectData };
 
 export type HasID = {
   id: ID;
-  type: "unit" | "territory" | "edge" | "player" | "map" | "user"
+  type: 'unit' | 'territory' | 'edge' | 'player' | 'map' | 'user';
 };
+
+export type ObjectData = UnitData | TerritoryData | EdgeData | PlayerData | UserData;
 
 export abstract class Model<T extends HasID = HasID> {
   data: T;
@@ -28,7 +35,7 @@ export function toID(id: number): string {
 
 export function mapIDs(...objects: Model[]): ModelMap {
   const map: ModelMap = {};
-  objects.forEach(object => (map[object.data.id] = object));
+  objects.forEach((object) => (map[object.data.id] = object));
   return map;
 }
 
@@ -42,7 +49,7 @@ export function contains<T>(array: T[], thing: T): boolean {
 
 export function intersection<T>(...arrays: T[][]): T[] {
   const compare = arrays[0] || [];
-  return compare.filter(item => arrays.every(array => array.indexOf(item) !== -1));
+  return compare.filter((item) => arrays.every((array) => array.indexOf(item) !== -1));
 }
 
 export function include<T>(array: T[], thing: T): T[] {
@@ -70,12 +77,10 @@ export function excludeAll<T>(array: T[], things: T[]): T[] {
 export function flat<T>(arrays: (T | T[])[]): T[] {
   const flattened: T[] = [];
   const flatten = (elementOrArray: T | T[]) => {
-    if (Array.isArray(elementOrArray))
-      elementOrArray.forEach(e => flatten(e));
-    else
-      flattened.push(elementOrArray);
+    if (Array.isArray(elementOrArray)) elementOrArray.forEach((e) => flatten(e));
+    else flattened.push(elementOrArray);
   };
-  arrays.forEach(elementOrArray => flatten(elementOrArray));
+  arrays.forEach((elementOrArray) => flatten(elementOrArray));
   return flattened;
 }
 
@@ -93,7 +98,7 @@ export function clamp(value: number, min: number, max: number): number {
 
 export function unique<T>(things: T[]): T[] {
   const uniqueThings = [];
-  things.forEach(thing => {
+  things.forEach((thing) => {
     if (!contains(uniqueThings, thing)) uniqueThings.push(thing);
   });
   return uniqueThings;

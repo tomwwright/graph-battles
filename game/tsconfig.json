@@ -6,6 +6,7 @@
     "baseUrl": "src/",
     "outDir": "build/es5",
     "inlineSourceMap": true,
+    "keyofStringsOnly": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
     "target": "es5",
