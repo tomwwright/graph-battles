@@ -21,8 +21,8 @@ const schema = {
   },
   models: {
     Test: {
-      pk: { type: String, value: 'test:${name}' },
-      sk: { type: String, value: 'test#' },
+      pk: { type: String, value: '${_type}:${name}' },
+      sk: { type: String, value: '${_type}#' },
       id: { type: String, uuid: 'uuid', validate: /^[0-9A-F]{32}$/i },
       name: { type: String, required: true },
     },
