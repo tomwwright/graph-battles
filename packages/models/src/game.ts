@@ -1,5 +1,5 @@
-import GameMap, { GameMapData } from './map';
-import User, { UserData } from './user';
+import { GameMap, GameMapData } from './map';
+import { User, UserData } from './user';
 import { clone } from './utils';
 
 export type GameData = {
@@ -10,7 +10,7 @@ export type GameData = {
   users: UserData[];
 };
 
-export default class Game {
+export class Game {
   data: GameData;
   users: User[];
 

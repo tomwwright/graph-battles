@@ -2,6 +2,8 @@
   "name": "@battles/models",
   "version": "0.0.1",
   "description": "Models",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "compile": "tsc",
     "build:clean": "rm -r build/*",
@@ -14,6 +16,7 @@
   "author": "Tom Wright",
   "license": "MIT",
   "homepage": "https://github.com/tomwwright/graph-battles#readme",
+  "private": true,
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^3.5.2",

@@ -1,7 +1,7 @@
 import { ID, Model } from './utils';
-import GameMap from './map';
-import UnitContainer, { UnitContainerData } from './unitcontainer';
-import Territory from './territory';
+import { GameMap } from './map';
+import { UnitContainer, UnitContainerData } from './unitcontainer';
+import { Territory } from './territory';
 
 export type EdgeData = UnitContainerData & {
   type: 'edge';
@@ -9,7 +9,7 @@ export type EdgeData = UnitContainerData & {
   territoryBId: ID;
 };
 
-export default class Edge extends UnitContainer<EdgeData> {
+export class Edge extends UnitContainer<EdgeData> {
   get territoryA() {
     return <Territory>this.map.modelMap[this.data.territoryAId];
   }

@@ -1,14 +1,12 @@
-import { ID, clone, include, exclude, contains, sum, clamp, unique } from './utils';
-import GameMap from './map';
-import UnitContainer, { UnitContainerData } from './unitcontainer';
-import Player from './player';
-import Edge from './edge';
-import Unit from './unit';
+import { ID, include, exclude, contains, sum, clamp, unique } from './utils';
+import { UnitContainer, UnitContainerData } from './unitcontainer';
+import { Player } from './player';
+import { Edge } from './edge';
+import { Unit } from './unit';
 import {
   TerritoryProperty,
   TerritoryAction,
   TerritoryActionDefinitions,
-  TerritoryType,
   propsToActions,
   propsToType,
   Status,
@@ -23,7 +21,7 @@ export type TerritoryData = UnitContainerData & {
   currentAction: TerritoryAction;
 };
 
-export default class Territory extends UnitContainer<TerritoryData> {
+export class Territory extends UnitContainer<TerritoryData> {
   get player() {
     return <Player>this.map.modelMap[this.data.playerId] || null;
   }

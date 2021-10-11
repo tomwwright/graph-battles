@@ -1,21 +1,6 @@
-import {
-  clone,
-  sum,
-  intersection,
-  include,
-  exclude,
-  excludeAll,
-  unique,
-  clamp,
-  collect,
-  contains,
-  flat,
-} from './utils';
+import { clone, sum, intersection, exclude, excludeAll, unique, clamp, collect, contains, flat } from './utils';
 import { expect } from 'chai';
-import { describe, it, beforeEach } from 'mocha';
-
-import testMapData from './test/testMap';
-import combatTestMapData from './test/testMap';
+import { describe, it } from 'mocha';
 
 describe('Utils', () => {
   it('clone', () => {

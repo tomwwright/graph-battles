@@ -1,5 +1,5 @@
-import { ID, HasID, Model } from './utils';
-import Game from './game';
+import { ID, HasID } from './utils';
+import { Game } from './game';
 import { PlayerData } from './player';
 
 export type UserData = HasID & {
@@ -7,7 +7,7 @@ export type UserData = HasID & {
   playerIds: ID[];
 };
 
-export default class User {
+export class User {
   data: UserData;
   game: Game;
 

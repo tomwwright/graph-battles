@@ -1,5 +1,4 @@
-import Unit from './unit';
-import GameMap, { GameMapData } from './map';
+import { GameMap } from './map';
 import { Status } from './values';
 import { clone } from './utils';
 import { expect } from 'chai';

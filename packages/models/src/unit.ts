@@ -1,9 +1,7 @@
 import { ID, HasID, Model, include, exclude } from './utils';
-import GameMap from './map';
-import Player from './player';
-import UnitContainer from './unitcontainer';
-import Territory from './territory';
-import Edge from './edge';
+import { Player } from './player';
+import { Territory } from './territory';
+import { Edge } from './edge';
 import { Status } from './values';
 
 export type UnitData = HasID & {
@@ -14,7 +12,7 @@ export type UnitData = HasID & {
   statuses: Status[];
 };
 
-export default class Unit extends Model<UnitData> {
+export class Unit extends Model<UnitData> {
   get player() {
     return <Player>this.map.modelMap[this.data.playerId] || null;
   }

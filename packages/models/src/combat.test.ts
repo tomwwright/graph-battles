@@ -1,6 +1,4 @@
-import Combat from './combat';
-import GameMap, { GameMapData } from './map';
-import { Status } from './values';
+import { GameMap } from './map';
 import { clone } from './utils';
 import { expect } from 'chai';
 import { describe, it, beforeEach } from 'mocha';

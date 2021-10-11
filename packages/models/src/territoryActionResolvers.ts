@@ -1,7 +1,6 @@
 import { TerritoryProperty } from './values';
-import GameMap from './map';
-import Territory from './territory';
-import { contains } from './utils';
+import { GameMap } from './map';
+import { Territory } from './territory';
 
 export function onCreateUnit(map: GameMap, territory: Territory) {
   map.addUnit(territory);

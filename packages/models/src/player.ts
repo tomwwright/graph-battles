@@ -1,8 +1,6 @@
-import { ID, HasID, sum } from './utils';
-import GameMap from './map';
-import UnitContainer, { UnitContainerData } from './unitcontainer';
-import Territory from './territory';
-import Unit from './unit';
+import { ID, sum } from './utils';
+import { UnitContainer, UnitContainerData } from './unitcontainer';
+import { Territory } from './territory';
 import { Colour } from './values';
 
 export type PlayerData = UnitContainerData & {
@@ -17,7 +15,7 @@ export type PlayerData = UnitContainerData & {
   unitsDestroyed: number;
 };
 
-export default class Player extends UnitContainer<PlayerData> {
+export class Player extends UnitContainer<PlayerData> {
   get territories() {
     return this.data.territoryIds.map((id) => <Territory>this.map.modelMap[id]);
   }

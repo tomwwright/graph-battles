@@ -1,6 +1,6 @@
-import Player from './player';
-import UnitContainer from './unitcontainer';
-import Unit from './unit';
+import { Player } from './player';
+import { UnitContainer } from './unitcontainer';
+import { Unit } from './unit';
 import { Status } from './values';
 import { sum, contains } from './utils';
 
@@ -25,7 +25,7 @@ export class Combatant {
   }
 }
 
-export default class Combat {
+export class Combat {
   location: UnitContainer;
   combatants: Combatant[];
 

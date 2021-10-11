@@ -1,6 +1,6 @@
 import { ID, contains } from '../utils';
-import GameMap from '../map';
-import { TerritoryAction, TerritoryActionDefinitions } from '../values';
+import { GameMap } from '../map';
+import { TerritoryAction } from '../values';
 
 export type TerritoryModelAction = {
   type: 'territory';

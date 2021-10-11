@@ -1,12 +1,11 @@
 import { ID, HasID, Model, unique, exclude } from './utils';
-import GameMap from './map';
-import Unit from './unit';
+import { Unit } from './unit';
 
 export type UnitContainerData = HasID & {
   unitIds: ID[];
 };
 
-export default abstract class UnitContainer<T extends UnitContainerData = UnitContainerData> extends Model<T> {
+export abstract class UnitContainer<T extends UnitContainerData = UnitContainerData> extends Model<T> {
   get units() {
     return this.data.unitIds.map((id) => <Unit>this.map.modelMap[id]);
   }

@@ -1,5 +1,5 @@
-import GameMap from './map';
-import Territory from './territory';
+import { GameMap } from './map';
+import { Territory } from './territory';
 import { contains, intersection } from './utils';
 import * as TerritoryActionResolvers from './territoryActionResolvers';
 

@@ -1,5 +1,5 @@
-import GameMap, { GameMapData } from './map';
-import { Status, TerritoryAction, TerritoryType, TerritoryProperty } from './values';
+import { GameMap } from './map';
+import { Status, TerritoryAction, TerritoryProperty } from './values';
 import { clone } from './utils';
 import { expect } from 'chai';
 import { describe, it, beforeEach } from 'mocha';

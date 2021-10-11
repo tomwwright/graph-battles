@@ -1,11 +1,10 @@
-import { ID, HasID, ModelMap, DataMap, Model, toID, clamp, clone, sum, unique, include, exclude } from './utils';
-import { Status, TerritoryActionDefinitions, propsToType, propsToActions } from './values';
-import Player, { PlayerData } from './player';
-import UnitContainer from './unitcontainer';
-import Combat from './combat';
-import Territory, { TerritoryData } from './territory';
-import Edge, { EdgeData } from './edge';
-import Unit, { UnitData } from './unit';
+import { ID, HasID, ModelMap, DataMap, toID, clone, unique } from './utils';
+import { Player, PlayerData } from './player';
+import { UnitContainer } from './unitcontainer';
+import { Combat } from './combat';
+import { Territory, TerritoryData } from './territory';
+import { Edge, EdgeData } from './edge';
+import { Unit, UnitData } from './unit';
 
 import { ModelAction } from './actions';
 import { applyReadyPlayer } from './actions/ready';
@@ -22,7 +21,7 @@ export type GameMapData = HasID & {
   nextId: number;
 };
 
-export default class GameMap extends UnitContainer<GameMapData> {
+export class GameMap extends UnitContainer<GameMapData> {
   modelMap: ModelMap = {};
 
   constructor(data: GameMapData) {

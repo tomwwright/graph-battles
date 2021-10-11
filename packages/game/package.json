@@ -1,5 +1,5 @@
 {
-  "name": "graph-battles",
+  "name": "@battles/game",
   "version": "0.0.1",
   "description": "A turn-based tactics game for web built with Phaser, Mobx, and React.",
   "scripts": {
@@ -17,6 +17,7 @@
   "author": "Tom Wright",
   "license": "MIT",
   "homepage": "https://github.com/tomwwright/graph-battles#readme",
+  "private": true,
   "dependencies": {
     "@types/query-string": "^5.1.0",
     "async": "^2.4.1",

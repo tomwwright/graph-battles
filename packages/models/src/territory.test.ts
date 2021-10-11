@@ -1,5 +1,4 @@
-import Territory from './territory';
-import GameMap, { GameMapData } from './map';
+import { GameMap } from './map';
 import { TerritoryProperty, TerritoryType, TerritoryAction } from './values';
 import { clone } from './utils';
 import { expect } from 'chai';

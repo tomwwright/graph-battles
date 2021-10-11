@@ -1,10 +1,10 @@
-import GameMap from './map';
+import { GameMap } from './map';
 
 import { Colour } from './values';
-import Edge, { EdgeData } from './edge';
-import Player, { PlayerData } from './player';
-import Territory, { TerritoryData } from './territory';
-import Unit, { UnitData } from './unit';
+import { EdgeData } from './edge';
+import { PlayerData } from './player';
+import { TerritoryData } from './territory';
+import { UnitData } from './unit';
 import { UserData } from './user';
 
 export type ID = string;

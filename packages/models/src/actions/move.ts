@@ -1,6 +1,6 @@
 import { ID, intersection } from '../utils';
-import GameMap from '../map';
-import Territory from '../territory';
+import { GameMap } from '../map';
+import { Territory } from '../territory';
 
 export type MoveUnitsModelAction = {
   type: 'move-units';

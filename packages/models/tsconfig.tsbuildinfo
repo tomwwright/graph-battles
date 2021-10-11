@@ -1,0 +1,666 @@
+{
+  "program": {
+    "fileInfos": {
+      "../../node_modules/typescript/lib/lib.es5.d.ts": {
+        "version": "70ae6416528e68c2ee7b62892200d2ca631759943d4429f8b779b947ff1e124d",
+        "signature": "70ae6416528e68c2ee7b62892200d2ca631759943d4429f8b779b947ff1e124d",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.d.ts": {
+        "version": "dc47c4fa66b9b9890cf076304de2a9c5201e94b740cffdf09f87296d877d71f6",
+        "signature": "dc47c4fa66b9b9890cf076304de2a9c5201e94b740cffdf09f87296d877d71f6",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/typescript/lib/lib.es2016.d.ts": {
+        "version": "7a387c58583dfca701b6c85e0adaf43fb17d590fb16d5b2dc0a2fbd89f35c467",
+        "signature": "7a387c58583dfca701b6c85e0adaf43fb17d590fb16d5b2dc0a2fbd89f35c467",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/typescript/lib/lib.dom.d.ts": {
+        "version": "9affb0a2ddc57df5b8174c0af96c288d697a262e5bc9ca1f544c999dc64a91e6",
+        "signature": "9affb0a2ddc57df5b8174c0af96c288d697a262e5bc9ca1f544c999dc64a91e6",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.core.d.ts": {
+        "version": "63e0cc12d0f77394094bd19e84464f9840af0071e5b9358ced30511efef1d8d2",
+        "signature": "63e0cc12d0f77394094bd19e84464f9840af0071e5b9358ced30511efef1d8d2",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.collection.d.ts": {
+        "version": "43fb1d932e4966a39a41b464a12a81899d9ae5f2c829063f5571b6b87e6d2f9c",
+        "signature": "43fb1d932e4966a39a41b464a12a81899d9ae5f2c829063f5571b6b87e6d2f9c",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.generator.d.ts": {
+        "version": "cdccba9a388c2ee3fd6ad4018c640a471a6c060e96f1232062223063b0a5ac6a",
+        "signature": "cdccba9a388c2ee3fd6ad4018c640a471a6c060e96f1232062223063b0a5ac6a",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.iterable.d.ts": {
+        "version": "42f5e41e5893da663dbf0394268f54f1da4b43dc0ddd2ea4bf471fe5361d6faf",
+        "signature": "42f5e41e5893da663dbf0394268f54f1da4b43dc0ddd2ea4bf471fe5361d6faf",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.promise.d.ts": {
+        "version": "0b7a905675e6cb4211c128f0a3aa47d414b275180a299a9aad5d3ec298abbfc4",
+        "signature": "0b7a905675e6cb4211c128f0a3aa47d414b275180a299a9aad5d3ec298abbfc4",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.proxy.d.ts": {
+        "version": "dfff68b3c34338f6b307a25d4566de15eed7973b0dc5d69f9fde2bcac1c25315",
+        "signature": "dfff68b3c34338f6b307a25d4566de15eed7973b0dc5d69f9fde2bcac1c25315",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.reflect.d.ts": {
+        "version": "cb609802a8698aa28b9c56331d4b53f590ca3c1c3a255350304ae3d06017779d",
+        "signature": "cb609802a8698aa28b9c56331d4b53f590ca3c1c3a255350304ae3d06017779d",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.symbol.d.ts": {
+        "version": "3013574108c36fd3aaca79764002b3717da09725a36a6fc02eac386593110f93",
+        "signature": "3013574108c36fd3aaca79764002b3717da09725a36a6fc02eac386593110f93",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts": {
+        "version": "4670208dd7da9d6c774ab1b75c1527a810388c7989c4905de6aaea8561cb9dce",
+        "signature": "4670208dd7da9d6c774ab1b75c1527a810388c7989c4905de6aaea8561cb9dce",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/typescript/lib/lib.es2016.array.include.d.ts": {
+        "version": "3be5a1453daa63e031d266bf342f3943603873d890ab8b9ada95e22389389006",
+        "signature": "3be5a1453daa63e031d266bf342f3943603873d890ab8b9ada95e22389389006",
+        "affectsGlobalScope": true
+      },
+      "./src/player.ts": {
+        "version": "e9de7c47f006ae917871e86279706ad5f7deb15173e408d4df04ccbd93ff0e70",
+        "signature": "60f89d333d9b1ec9df2576df3c8155b3b5d8f3fece8274c2d6cf6fbbe80684f2",
+        "affectsGlobalScope": false
+      },
+      "./src/edge.ts": {
+        "version": "fae4d21da58921c9cb50a199ed70d999e591755c6a6ca0954f0f98abc7a4528d",
+        "signature": "2a918c5c58e6ea2b812c8175a256aef3cdfd19d04c9e8f614473300df0ad55f5",
+        "affectsGlobalScope": false
+      },
+      "./src/unit.ts": {
+        "version": "f7d05739982d2d7afc96a64df647ae3131669a43961fa1cf035739629b5a1330",
+        "signature": "5ccd2979ce5c704492368d70f63752bde5064b49fef6d59d937c021a313f6337",
+        "affectsGlobalScope": false
+      },
+      "./src/unitcontainer.ts": {
+        "version": "a413594b1a5c9893fca8c55cd0b524cbe12526019909db4e8e835f504f7bacf1",
+        "signature": "0f604e86dcb5aae13b33582a6cab62f2c592dac21e3b6faa4ed3c2fdb1749561",
+        "affectsGlobalScope": false
+      },
+      "./src/territory.ts": {
+        "version": "95fb8da9f31b884205b72aef9cdfc0dabfba82d7ee1d388ad75b7f82d12204f6",
+        "signature": "063a30b9bc818f2547bd0e9d97d4ea53d3ba5925d3a04f2645ec223fdf5d9a59",
+        "affectsGlobalScope": false
+      },
+      "./src/territoryactionresolvers.ts": {
+        "version": "ebbe647d67cda49e8917ffe6a0395f9948bb547912fdde54abcd7d249abc3f7c",
+        "signature": "3c4310f81245b8ad4f4691db57e1b0ca702f37adf8c887d6bd92b88ff480ffeb",
+        "affectsGlobalScope": false
+      },
+      "./src/values.ts": {
+        "version": "0e5b744f82dd3b4dcfa040d7d92e7e4729768919c9a282e1ec7f244bdb8603bf",
+        "signature": "595bb56fd54fd9050fd32c3f78d948c1e0ddb365eaa4fb69dd70c4c215b973a6",
+        "affectsGlobalScope": false
+      },
+      "./src/game.ts": {
+        "version": "c4c86552e666c198186dc2a25bcb4a4bf32173826b3d6cfcef3b09b97bd9e40d",
+        "signature": "8123961c7169713217fc7d2fc775b180e7e81cca5391c62cf04ccab2b2b7489b",
+        "affectsGlobalScope": false
+      },
+      "./src/user.ts": {
+        "version": "6ddad005d6903a77c7c641f2f0d33a91891eded48c558ad08d57b5edc8c448bd",
+        "signature": "95b4171921d2db8d3337884da02c3688a1d6a5a53a24bdc5c42d4cb209e4f361",
+        "affectsGlobalScope": false
+      },
+      "./src/utils.ts": {
+        "version": "2b2eb3390d2ce38d4594f5a2111522a0948cb046295c1c2ab33cf955c8348b7d",
+        "signature": "516e4585717a00bf5a1048cf143dffa64466e52b28aa1a8cc8efbef10ca28de6",
+        "affectsGlobalScope": false
+      },
+      "./src/combat.ts": {
+        "version": "08cab1f4eaf16fbeaa507da81f527f2f0254bbb94f50236df9f896f4509a40a1",
+        "signature": "4f9d40600e047150a02f9f23c5896c304fd9689a48dd85c6c02acfcc1ed15177",
+        "affectsGlobalScope": false
+      },
+      "./src/actions/ready.ts": {
+        "version": "965b411699120d0ec3e5aaac9605515db4cffc4862bce7a3f68e447a1a64d870",
+        "signature": "b40468039d542805b6907f5733665794dbbfd2bd4d3619ff05b68643f778dee7",
+        "affectsGlobalScope": false
+      },
+      "./src/actions/move.ts": {
+        "version": "4bbafc2ad657e4a865721f9a4d2bdba2f1a6a485d7fa754059833e2e98f7543e",
+        "signature": "fa63152be86b12f9399c3420840f1d3e878f2c9364237c448ebb2d90681146a5",
+        "affectsGlobalScope": false
+      },
+      "./src/actions/territory.ts": {
+        "version": "93f18e9999336368ea0803db1c827c684658fc08f7f9e22e430544b4b971e933",
+        "signature": "76f49b22f28ae0553684eabfded888625cdcb9dba2cb0e7d5c79379d386b5ffb",
+        "affectsGlobalScope": false
+      },
+      "./src/actions/index.ts": {
+        "version": "80726b5304b3d2504c42257e3c6c98e8b162411b8bcbeaa95c6ce92129fe6c39",
+        "signature": "15a2e1ec38ce584a2613bfebaae004d91de87c5ebce4fbc7b3417076c5896db2",
+        "affectsGlobalScope": false
+      },
+      "./src/map.ts": {
+        "version": "eab8140a66dec09504e546cff3ae6fbed3220f47f71eb08ff72b88f991e84552",
+        "signature": "550d62a7626e953cb603973a6c17bfe514b95f1ff46a09f9f9187284b84e1458",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/chai/index.d.ts": {
+        "version": "86eded1c74fa0670dd4e84d0da361b03e026240016c6a84e51b2d54b0ca828d0",
+        "signature": "86eded1c74fa0670dd4e84d0da361b03e026240016c6a84e51b2d54b0ca828d0",
+        "affectsGlobalScope": true
+      },
+      "./src/test/combattestmap.ts": {
+        "version": "6e513796a9b96957aa53c2574862736c926fde4a79a51c06dc19ec3609d66547",
+        "signature": "3f82336d9002462028415a296659e52376062e399c884d282186ab8a655a9bf8",
+        "affectsGlobalScope": false
+      },
+      "./src/combat.test.ts": {
+        "version": "774eea08c4a9dbea2b4690407a9428a6dcb40314c92397ea98040743307a2afc",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "./src/test/testmap.ts": {
+        "version": "3958a1b99fdc63423b061326c487fca6675b3d1e5c64cf4dab1b6d805e4ad9a4",
+        "signature": "72a64d2ccab7459816899f7a6947b8c8591ccf942013ff36dcf77e7f073f937d",
+        "affectsGlobalScope": false
+      },
+      "./src/edge.test.ts": {
+        "version": "2c66513c602c12e124efe098bd621ef22fbb8dd529b02450b3993ae0ede5b565",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "./src/index.ts": {
+        "version": "5ce9db8adb44b3d3c643de81740c75bd450ac3f8786281bb2d0f569f93bf49d8",
+        "signature": "5ce9db8adb44b3d3c643de81740c75bd450ac3f8786281bb2d0f569f93bf49d8",
+        "affectsGlobalScope": false
+      },
+      "./src/test/resolvedtestmap.ts": {
+        "version": "67d533816a3ce62485ad847f9123fc415c6a07bce0aeb3c76fefaa26d682bc71",
+        "signature": "72a64d2ccab7459816899f7a6947b8c8591ccf942013ff36dcf77e7f073f937d",
+        "affectsGlobalScope": false
+      },
+      "./src/map.test.ts": {
+        "version": "a1284f3bcdbae627d0df4e3abdf72028d304da4e3fdf90117dde3343f048f15b",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "./src/player.test.ts": {
+        "version": "b61d53d92c0c4b0e89e78a2e168d7ff31d6e7de1bc04626808f2239a27407b5f",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "./src/territory.test.ts": {
+        "version": "9657cc555bfd6f098c23921903e4645ea30c7bcb3a0b32288462a1191d3130ec",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "./src/unit.test.ts": {
+        "version": "fd7304ff948664835cdc8cb8cdc5da98318ce4d128c2842a446605d01e187e23",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "./src/unitcontainer.test.ts": {
+        "version": "998229f11002253e296e1f387c00856be3535448e8c8184ba8f37bb1bcc2ad4a",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "./src/utils.test.ts": {
+        "version": "25f3f44349801c358c05d2947b270180affb816f7478101cd6dfa0831b08b16e",
+        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/async/index.d.ts": {
+        "version": "9d8cfbf794c27d432474eb18756fc9f8e94d860c3c730297f019a4b99d66f4de",
+        "signature": "9d8cfbf794c27d432474eb18756fc9f8e94d860c3c730297f019a4b99d66f4de",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/aws-lambda/index.d.ts": {
+        "version": "74f6691b139cb33fdd23f6753494de0557add0f3a7d3b5a6c8e80da87e7d344f",
+        "signature": "74f6691b139cb33fdd23f6753494de0557add0f3a7d3b5a6c8e80da87e7d344f",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/node/base.d.ts": {
+        "version": "e7f447ee6988ff9fefe357e8672350b2c6ca3d088f0f8359ec5d0a4b6c82b37a",
+        "signature": "e7f447ee6988ff9fefe357e8672350b2c6ca3d088f0f8359ec5d0a4b6c82b37a",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/@types/node/index.d.ts": {
+        "version": "2ee6b8d10878e64227c146bdbda238deeb794b6b56db11dd82fc23547071d8ed",
+        "signature": "2ee6b8d10878e64227c146bdbda238deeb794b6b56db11dd82fc23547071d8ed",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/query-string/index.d.ts": {
+        "version": "191a86aef5e87c7ce1cb42f17d8d3fbe66f74dff7e396b1f0cff124cc66ae97d",
+        "signature": "191a86aef5e87c7ce1cb42f17d8d3fbe66f74dff7e396b1f0cff124cc66ae97d",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/react/index.d.ts": {
+        "version": "50d03526cbf054d628f030244994cb1d3ddc603001e46ca02e9886fb37b65cd0",
+        "signature": "50d03526cbf054d628f030244994cb1d3ddc603001e46ca02e9886fb37b65cd0",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/@types/react-dom/index.d.ts": {
+        "version": "5fc25dba9e64580b9d81898e6a71c469e74b5fc808e7fe7c322db4a57f8bc3c2",
+        "signature": "5fc25dba9e64580b9d81898e6a71c469e74b5fc808e7fe7c322db4a57f8bc3c2",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/sinon/index.d.ts": {
+        "version": "42964be6d1b2c47abd3974e40ad57d4e8cd6474d196f3c9f71f770a6f29e7cc2",
+        "signature": "42964be6d1b2c47abd3974e40ad57d4e8cd6474d196f3c9f71f770a6f29e7cc2",
+        "affectsGlobalScope": false
+      },
+      "../../node_modules/@types/underscore/index.d.ts": {
+        "version": "0609dda5350cd6d8c42daef710dffe3b51521ffbd00109e234f7bfb7533194e7",
+        "signature": "0609dda5350cd6d8c42daef710dffe3b51521ffbd00109e234f7bfb7533194e7",
+        "affectsGlobalScope": true
+      },
+      "../../node_modules/@types/uuid/index.d.ts": {
+        "version": "25775ecc31a9def7cca19030ca0a1d99701820d10e266a4006375f216e8f35ed",
+        "signature": "25775ecc31a9def7cca19030ca0a1d99701820d10e266a4006375f216e8f35ed",
+        "affectsGlobalScope": false
+      }
+    },
+    "options": {
+      "composite": true,
+      "declaration": true,
+      "experimentalDecorators": true,
+      "rootDir": "./src",
+      "outDir": "./build",
+      "inlineSourceMap": true,
+      "noImplicitAny": false,
+      "moduleResolution": 2,
+      "target": 1,
+      "noEmitOnError": true,
+      "lib": [
+        "lib.es2015.d.ts",
+        "lib.dom.d.ts"
+      ],
+      "configFilePath": "./tsconfig.json"
+    },
+    "referencedMap": {
+      "../../node_modules/@types/node/base.d.ts": [
+        "../../node_modules/@types/node/base.d.ts"
+      ],
+      "../../node_modules/@types/node/index.d.ts": [
+        "../../node_modules/@types/node/base.d.ts"
+      ],
+      "../../node_modules/@types/react-dom/index.d.ts": [
+        "../../node_modules/@types/react/index.d.ts"
+      ],
+      "../../node_modules/@types/uuid/index.d.ts": [
+        "../../node_modules/@types/node/index.d.ts"
+      ],
+      "./src/actions/index.ts": [
+        "./src/actions/move.ts",
+        "./src/actions/ready.ts",
+        "./src/actions/territory.ts"
+      ],
+      "./src/actions/move.ts": [
+        "./src/map.ts",
+        "./src/territory.ts",
+        "./src/utils.ts"
+      ],
+      "./src/actions/ready.ts": [
+        "./src/map.ts",
+        "./src/utils.ts"
+      ],
+      "./src/actions/territory.ts": [
+        "./src/map.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/combat.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/map.ts",
+        "./src/test/combattestmap.ts",
+        "./src/utils.ts"
+      ],
+      "./src/combat.ts": [
+        "./src/player.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/edge.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/edge.ts",
+        "./src/map.ts",
+        "./src/test/testmap.ts",
+        "./src/utils.ts"
+      ],
+      "./src/edge.ts": [
+        "./src/map.ts",
+        "./src/territory.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts"
+      ],
+      "./src/game.ts": [
+        "./src/map.ts",
+        "./src/user.ts",
+        "./src/utils.ts"
+      ],
+      "./src/index.ts": [
+        "./src/actions/index.ts",
+        "./src/combat.ts",
+        "./src/edge.ts",
+        "./src/game.ts",
+        "./src/map.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/territoryactionresolvers.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts",
+        "./src/user.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/map.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/map.ts",
+        "./src/test/combattestmap.ts",
+        "./src/test/resolvedtestmap.ts",
+        "./src/test/testmap.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/map.ts": [
+        "./src/actions/index.ts",
+        "./src/actions/move.ts",
+        "./src/actions/ready.ts",
+        "./src/actions/territory.ts",
+        "./src/combat.ts",
+        "./src/edge.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts"
+      ],
+      "./src/player.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/map.ts",
+        "./src/test/testmap.ts",
+        "./src/utils.ts"
+      ],
+      "./src/player.ts": [
+        "./src/territory.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/territory.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/map.ts",
+        "./src/test/testmap.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/territory.ts": [
+        "./src/edge.ts",
+        "./src/player.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/territoryactionresolvers.ts": [
+        "./src/map.ts",
+        "./src/territory.ts",
+        "./src/values.ts"
+      ],
+      "./src/test/combattestmap.ts": [
+        "./src/map.ts",
+        "./src/values.ts"
+      ],
+      "./src/test/resolvedtestmap.ts": [
+        "./src/map.ts",
+        "./src/values.ts"
+      ],
+      "./src/test/testmap.ts": [
+        "./src/map.ts",
+        "./src/values.ts"
+      ],
+      "./src/unit.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/map.ts",
+        "./src/test/testmap.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/unit.ts": [
+        "./src/edge.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/unitcontainer.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/map.ts",
+        "./src/test/combattestmap.ts",
+        "./src/test/testmap.ts",
+        "./src/utils.ts"
+      ],
+      "./src/unitcontainer.ts": [
+        "./src/unit.ts",
+        "./src/utils.ts"
+      ],
+      "./src/user.ts": [
+        "./src/game.ts",
+        "./src/player.ts",
+        "./src/utils.ts"
+      ],
+      "./src/utils.test.ts": [
+        "../../node_modules/@types/chai/index.d.ts",
+        "./src/utils.ts"
+      ],
+      "./src/utils.ts": [
+        "./src/edge.ts",
+        "./src/map.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/unit.ts",
+        "./src/user.ts",
+        "./src/values.ts"
+      ],
+      "./src/values.ts": [
+        "./src/map.ts",
+        "./src/territory.ts",
+        "./src/territoryactionresolvers.ts",
+        "./src/utils.ts"
+      ]
+    },
+    "exportedModulesMap": {
+      "../../node_modules/@types/node/base.d.ts": [
+        "../../node_modules/@types/node/base.d.ts"
+      ],
+      "../../node_modules/@types/node/index.d.ts": [
+        "../../node_modules/@types/node/base.d.ts"
+      ],
+      "../../node_modules/@types/react-dom/index.d.ts": [
+        "../../node_modules/@types/react/index.d.ts"
+      ],
+      "../../node_modules/@types/uuid/index.d.ts": [
+        "../../node_modules/@types/node/index.d.ts"
+      ],
+      "./src/actions/index.ts": [
+        "./src/actions/move.ts",
+        "./src/actions/ready.ts",
+        "./src/actions/territory.ts"
+      ],
+      "./src/actions/move.ts": [
+        "./src/map.ts",
+        "./src/utils.ts"
+      ],
+      "./src/actions/ready.ts": [
+        "./src/map.ts",
+        "./src/utils.ts"
+      ],
+      "./src/actions/territory.ts": [
+        "./src/map.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/combat.ts": [
+        "./src/player.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts"
+      ],
+      "./src/edge.ts": [
+        "./src/territory.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts"
+      ],
+      "./src/game.ts": [
+        "./src/map.ts",
+        "./src/player.ts",
+        "./src/user.ts"
+      ],
+      "./src/index.ts": [
+        "./src/actions/index.ts",
+        "./src/combat.ts",
+        "./src/edge.ts",
+        "./src/game.ts",
+        "./src/map.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/territoryactionresolvers.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts",
+        "./src/user.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/map.ts": [
+        "./src/actions/index.ts",
+        "./src/combat.ts",
+        "./src/edge.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts"
+      ],
+      "./src/player.ts": [
+        "./src/territory.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/territory.ts": [
+        "./src/edge.ts",
+        "./src/player.ts",
+        "./src/unit.ts",
+        "./src/unitcontainer.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/territoryactionresolvers.ts": [
+        "./src/map.ts",
+        "./src/territory.ts"
+      ],
+      "./src/test/combattestmap.ts": [
+        "./src/map.ts"
+      ],
+      "./src/test/resolvedtestmap.ts": [
+        "./src/map.ts"
+      ],
+      "./src/test/testmap.ts": [
+        "./src/map.ts"
+      ],
+      "./src/unit.ts": [
+        "./src/edge.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/utils.ts",
+        "./src/values.ts"
+      ],
+      "./src/unitcontainer.ts": [
+        "./src/unit.ts",
+        "./src/utils.ts"
+      ],
+      "./src/user.ts": [
+        "./src/game.ts",
+        "./src/player.ts",
+        "./src/utils.ts"
+      ],
+      "./src/utils.ts": [
+        "./src/edge.ts",
+        "./src/map.ts",
+        "./src/player.ts",
+        "./src/territory.ts",
+        "./src/unit.ts",
+        "./src/user.ts",
+        "./src/values.ts"
+      ],
+      "./src/values.ts": [
+        "./src/map.ts",
+        "./src/territory.ts"
+      ]
+    },
+    "semanticDiagnosticsPerFile": [
+      "../../node_modules/@types/async/index.d.ts",
+      "../../node_modules/@types/aws-lambda/index.d.ts",
+      "../../node_modules/@types/chai/index.d.ts",
+      "../../node_modules/@types/node/base.d.ts",
+      "../../node_modules/@types/node/index.d.ts",
+      "../../node_modules/@types/query-string/index.d.ts",
+      "../../node_modules/@types/react-dom/index.d.ts",
+      "../../node_modules/@types/react/index.d.ts",
+      "../../node_modules/@types/sinon/index.d.ts",
+      "../../node_modules/@types/underscore/index.d.ts",
+      "../../node_modules/@types/uuid/index.d.ts",
+      "../../node_modules/typescript/lib/lib.dom.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.generator.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.promise.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.proxy.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.reflect.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.symbol.d.ts",
+      "../../node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts",
+      "../../node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "../../node_modules/typescript/lib/lib.es2016.d.ts",
+      "../../node_modules/typescript/lib/lib.es5.d.ts",
+      "./src/actions/index.ts",
+      "./src/actions/move.ts",
+      "./src/actions/ready.ts",
+      "./src/actions/territory.ts",
+      "./src/combat.test.ts",
+      "./src/combat.ts",
+      "./src/edge.test.ts",
+      "./src/edge.ts",
+      "./src/game.ts",
+      "./src/index.ts",
+      "./src/map.test.ts",
+      "./src/map.ts",
+      "./src/player.test.ts",
+      "./src/player.ts",
+      "./src/territory.test.ts",
+      "./src/territory.ts",
+      "./src/territoryactionresolvers.ts",
+      "./src/test/combattestmap.ts",
+      "./src/test/resolvedtestmap.ts",
+      "./src/test/testmap.ts",
+      "./src/unit.test.ts",
+      "./src/unit.ts",
+      "./src/unitcontainer.test.ts",
+      "./src/unitcontainer.ts",
+      "./src/user.ts",
+      "./src/utils.test.ts",
+      "./src/utils.ts",
+      "./src/values.ts"
+    ]
+  },
+  "version": "3.9.10"
+}
