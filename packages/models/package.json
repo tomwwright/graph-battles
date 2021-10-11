@@ -1,0 +1,36 @@
+{
+  "name": "@battles/models",
+  "version": "0.0.1",
+  "description": "Models",
+  "scripts": {
+    "compile": "tsc",
+    "build:clean": "rm -r build/*",
+    "test": "yarn compile && NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/models/**/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomwwright/graph-battles"
+  },
+  "author": "Tom Wright",
+  "license": "MIT",
+  "homepage": "https://github.com/tomwwright/graph-battles#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/node": "^7.0.18",
+    "chai": "^3.5.0",
+    "mocha": "^3.1.2",
+    "typescript": "^3.0.0"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "printWidth": 120,
+    "tabWidth": 2
+  }
+}
