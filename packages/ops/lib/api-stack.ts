@@ -22,7 +22,9 @@ export class ApiStack extends cdk.Stack {
     });
 
     const lambdaFunction = new lambda.DockerImageFunction(this, "Function", {
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, "../../api")),
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, "../../.."), {
+        exclude: ["packages/ops"],
+      }),
       environment: {
         DYNAMODB_TABLE_NAME: table.tableName,
       },
