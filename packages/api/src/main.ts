@@ -1,7 +1,7 @@
 import serverlessExpress from "@vendia/serverless-express";
 import express from "express";
 import cors from "cors";
-import { GameModel, PlayerActionsModel, table } from "./models";
+import { GameModel, PlayerActionsModel, table, ViewModel } from "./models";
 import { Game, GameData, GameMap, Actions } from "@battles/models";
 
 const app = express();
@@ -41,6 +41,34 @@ app.put("/game", async (req, res) => {
   });
 });
 
+app.get("/game/:id/view", async (req, res) => {
+  const record = await ViewModel.get({
+    gameId: req.params.id,
+  });
+
+  if (record === undefined || record.view === undefined) {
+    res.status(404).json({ message: "not found" });
+  } else {
+    res.json(record.view);
+  }
+});
+
+app.put("/game/:id/view", async (req, res) => {
+  const viewData = JSON.parse(req.body);
+
+  await ViewModel.create(
+    {
+      gameId: req.params.id,
+      view: viewData,
+    },
+    { exists: null }
+  );
+
+  res.json({
+    message: "ok",
+  });
+});
+
 app.get("/game/:id/actions/:playerId", async (req, res) => {
   const record = await PlayerActionsModel.get({
     gameId: req.params.id,
@@ -54,7 +82,10 @@ app.get("/game/:id/actions/:playerId", async (req, res) => {
       ? JSON.parse(record.actions)
       : [];
 
-    res.json(actions);
+    res.json({
+      actions,
+      updatedAt: record.updated,
+    });
   }
 });
 

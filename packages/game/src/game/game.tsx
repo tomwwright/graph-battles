@@ -12,6 +12,7 @@ import { VisibilityMode } from 'game/stores/game';
 import { ViewData } from 'game/stores/phaser';
 import { GameProvider } from 'game/providers/base';
 import { LocalGameProvider, SavedGame, LocalStorage } from 'game/providers/local';
+import { APIGameProvider } from 'game/providers/api';
 import { MockGameProvider } from 'game/providers/mock';
 
 import { GameData, GameMap, GameMapData, Utils, } from '@battles/models';
@@ -25,17 +26,32 @@ const stores = new RootStore();
 
 // parse the query string
 type AppParameters = {
-  gameId: string
+  gameId?: string
+  playerId?: string
+  local?: string
 };
+
 const params: AppParameters = QueryString.parse(location.search) as AppParameters;
 
 // load a saved game, or load our mock game
 let savedGame: SavedGame;
 
-if (params.gameId) {
+async function startFromGameId(gameId: string, playerId: string, isLocal: boolean) {
   try {
-    savedGame = LocalStorage.loadGame(params.gameId);
-    initialise(savedGame, LocalGameProvider.createProvider(savedGame.gameData.id, 'xxx'));
+    if(isLocal) {
+      savedGame = LocalStorage.loadGame(gameId);
+      initialise(savedGame, LocalGameProvider.createProvider(savedGame.gameData.id, playerId));
+    } else {
+      const provider = new APIGameProvider(gameId, playerId);
+      const game = await provider.get()
+      const viewData = await provider.getViewData()
+      savedGame = {
+        gameData: game.data,
+        viewData: viewData,
+        lastUpdated: Date.now()
+      }
+      initialise(savedGame, provider);
+    }
   } catch (e) {
     console.error(e);
 
@@ -44,6 +60,10 @@ if (params.gameId) {
       document.getElementById('react-container')
     );
   }
+}
+
+if (params.gameId) {
+  startFromGameId(params.gameId, params.playerId, params.local === "true");
 } else {
   Promise.all([
     Axios.get('/assets/maps/test.game.json'),
