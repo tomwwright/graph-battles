@@ -1,5 +1,6 @@
 import serverlessExpress from "@vendia/serverless-express";
 import express from "express";
+import cors from "cors";
 import { GameModel, PlayerActionsModel, table } from "./models";
 import { Game, GameData, GameMap, Actions } from "@battles/models";
 
@@ -8,6 +9,8 @@ const app = express();
 export const handler = serverlessExpress({
   app,
 });
+
+app.use(cors());
 
 app.get("/game/:id", async (req, res) => {
   const record = await GameModel.get({
