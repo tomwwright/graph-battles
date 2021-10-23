@@ -2,7 +2,7 @@ import serverlessExpress from "@vendia/serverless-express";
 import express from "express";
 import cors from "cors";
 import { GameModel, PlayerActionsModel, table, ViewModel } from "./models";
-import { Game, GameData, GameMap, Actions } from "@battles/models";
+import { Game, GameData, GameMap, Actions, Player } from "@battles/models";
 
 const app = express();
 
@@ -11,6 +11,35 @@ export const handler = serverlessExpress({
 });
 
 app.use(cors());
+
+app.get("/game/_all", async (_, res) => {
+  const gameRecords = await GameModel.scan();
+
+  const summaries = gameRecords.map((gameRecord) => {
+    const game = new Game(JSON.parse(gameRecord.gameData ?? "{}") as GameData);
+    const leaderboard = game.users
+      .map((user) => {
+        const player = new Player(new GameMap(game.latestMap), user.players[0]);
+
+        return {
+          name: user.data.name,
+          playerId: player.data.id,
+          victoryPoints: player.victoryPoints,
+        };
+      })
+      .sort((entry) => entry.victoryPoints);
+
+    return {
+      gameId: game.data.id,
+      maxTurns: game.data.maxTurns,
+      maxVictoryPoints: game.data.maxVictoryPoints,
+      finished: game.winners.length > 0,
+      leaderboard,
+    };
+  });
+
+  res.json(summaries);
+});
 
 app.get("/game/:id", async (req, res) => {
   const record = await GameModel.get({
