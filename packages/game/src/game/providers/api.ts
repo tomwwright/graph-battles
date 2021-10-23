@@ -61,7 +61,8 @@ export class APIGameProvider extends GameProvider {
 
   private async pushLatestActions() {
     const actions = this.playerActionStorage.currentActions.actions;
-    const response = await Axios.put(`${BATTLES_API_HOSTNAME}/game/${this.gameId}/actions/${this.userId}`, actions);
+    const playerId = this.userId; // the API provider expects that user id == player id
+    const response = await Axios.put(`${BATTLES_API_HOSTNAME}/game/${this.gameId}/actions/${playerId}`, actions);
 
     if (response.status != 200) throw new Error(JSON.stringify(response));
   }
