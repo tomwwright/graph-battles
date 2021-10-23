@@ -9,11 +9,10 @@ type PlayerActionRecord = {
   updatedAt: number;
 };
 
-const BATTLES_API_HOSTNAME = 'https://18vjoshjme.execute-api.ap-southeast-2.amazonaws.com';
-
 export class APIGameProvider extends GameProvider {
   localGameProvider: LocalGameProvider;
   playerActionStorage: PlayerActionLocalStorage;
+  gameApi: GameAPI;
 
   cachedGameData: GameData;
 
@@ -22,11 +21,11 @@ export class APIGameProvider extends GameProvider {
 
     this.localGameProvider = LocalGameProvider.createProvider(gameId, userId);
     this.playerActionStorage = new PlayerActionLocalStorage(gameId, userId);
+    this.gameApi = new GameAPI();
   }
 
   public async get(): Promise<Game> {
-    const gameResponse = await Axios.get(`${BATTLES_API_HOSTNAME}/game/${this.gameId}`);
-    this.cachedGameData = gameResponse.data as GameData;
+    this.cachedGameData = await this.gameApi.getGameData(this.gameId);
 
     const actions = await this.findLatestActions();
 
@@ -40,8 +39,7 @@ export class APIGameProvider extends GameProvider {
   }
 
   public async getViewData(): Promise<ViewData> {
-    const viewResponse = await Axios.get(`${BATTLES_API_HOSTNAME}/game/${this.gameId}/view`);
-    return viewResponse.data as ViewData;
+    return this.gameApi.getViewData(this.gameId);
   }
 
   public async action(action: Actions.ModelAction): Promise<Game> {
@@ -62,16 +60,13 @@ export class APIGameProvider extends GameProvider {
   private async pushLatestActions() {
     const actions = this.playerActionStorage.currentActions.actions;
     const playerId = this.userId; // the API provider expects that user id == player id
-    const response = await Axios.put(`${BATTLES_API_HOSTNAME}/game/${this.gameId}/actions/${playerId}`, actions);
-
-    if (response.status != 200) throw new Error(JSON.stringify(response));
+    await this.gameApi.putPlayerActions(this.gameId, playerId, actions);
   }
 
   private async findLatestActions(): Promise<Actions.ModelAction[]> {
     let apiActionsRecord: PlayerActionRecord;
     try {
-      const apiActionsResponse = await Axios.get(`${BATTLES_API_HOSTNAME}/game/${this.gameId}/actions/${this.userId}`);
-      apiActionsRecord = apiActionsResponse.data as PlayerActionRecord;
+      apiActionsRecord = await this.gameApi.getPlayerActions(this.gameId, this.userId);
     } catch (e) {
       apiActionsRecord = {
         actions: [],
@@ -133,5 +128,51 @@ export class PlayerActionLocalStorage {
 
   private get key() {
     return `${KEY_PREFIX}-${this.gameId}-${this.playerId}`;
+  }
+}
+
+type GameSummary = {
+  gameId: string;
+  maxTurns: number;
+  maxVictoryPoints: number;
+  finished: boolean;
+  leaderboard: {
+    name: string;
+    victoryPoints: number;
+  }[];
+};
+
+export class GameAPI {
+  static BATTLES_API_HOSTNAME = 'https://18vjoshjme.execute-api.ap-southeast-2.amazonaws.com';
+
+  endpoint: string;
+
+  constructor() {
+    this.endpoint = GameAPI.BATTLES_API_HOSTNAME;
+  }
+
+  async listGames(): Promise<GameSummary[]> {
+    const response = await Axios.get(`${this.endpoint}/game/_all`);
+    return response.data as GameSummary[];
+  }
+
+  async getViewData(gameId: string): Promise<ViewData> {
+    const viewResponse = await Axios.get(`${this.endpoint}/game/${gameId}/view`);
+    return viewResponse.data as ViewData;
+  }
+
+  async getGameData(gameId: string): Promise<GameData> {
+    const gameResponse = await Axios.get(`${this.endpoint}/game/${gameId}`);
+    return gameResponse.data as GameData;
+  }
+
+  async getPlayerActions(gameId, playerId): Promise<PlayerActionRecord> {
+    const apiActionsResponse = await Axios.get(`${this.endpoint}/game/${gameId}/actions/${playerId}`);
+    return apiActionsResponse.data as PlayerActionRecord;
+  }
+
+  async putPlayerActions(gameId, playerId, actions) {
+    const response = await Axios.put(`${this.endpoint}/game/${gameId}/actions/${playerId}`, actions);
+    if (response.status != 200) throw new Error(JSON.stringify(response));
   }
 }
