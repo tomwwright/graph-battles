@@ -27,14 +27,17 @@ app.get("/game/_all", async (_, res) => {
           victoryPoints: player.victoryPoints,
         };
       })
-      .sort((entry) => entry.victoryPoints);
+      .sort((a, b) => b.victoryPoints - a.victoryPoints);
 
     return {
       gameId: game.data.id,
+      numTerritories: game.latestMap.territoryIds.length,
+      turn: game.data.maps.length,
       maxTurns: game.data.maxTurns,
       maxVictoryPoints: game.data.maxVictoryPoints,
       finished: game.winners.length > 0,
       leaderboard,
+      updatedAt: gameRecord.updated,
     };
   });
 

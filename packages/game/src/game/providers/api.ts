@@ -131,15 +131,18 @@ export class PlayerActionLocalStorage {
   }
 }
 
-type GameSummary = {
+export type GameSummary = {
   gameId: string;
+  turn: number;
   maxTurns: number;
   maxVictoryPoints: number;
+  numTerritories: number;
   finished: boolean;
   leaderboard: {
     name: string;
     victoryPoints: number;
   }[];
+  updatedAt: number;
 };
 
 export class GameAPI {

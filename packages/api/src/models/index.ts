@@ -34,6 +34,7 @@ const GameSchema = {
   sk: { type: String, value: "${_type}" },
   gameId: { type: String, required: true },
   gameData: { type: String, required: true },
+  updated: { type: Number },
 };
 
 table.addModel("Game", GameSchema);
