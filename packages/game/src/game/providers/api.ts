@@ -154,6 +154,14 @@ export class GameAPI {
     this.endpoint = GameAPI.BATTLES_API_HOSTNAME;
   }
 
+  async createGame(gameData: GameData, viewData: ViewData) {
+    const gameResponse = await Axios.put(`${this.endpoint}/game`, gameData);
+    if (gameResponse.status != 200) throw new Error(JSON.stringify(gameResponse));
+
+    const viewResponse = await Axios.put(`${this.endpoint}/game/${gameData.id}/view`, viewData);
+    if (viewResponse.status != 200) throw new Error(JSON.stringify(viewResponse));
+  }
+
   async listGames(): Promise<GameSummary[]> {
     const response = await Axios.get(`${this.endpoint}/game/_all`);
     return response.data as GameSummary[];

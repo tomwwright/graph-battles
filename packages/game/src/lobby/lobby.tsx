@@ -6,7 +6,7 @@ import { Provider as ThemeProvider } from 'rebass';
 import * as QueryString from 'query-string';
 
 import { RootStore } from 'lobby/stores';
-import { Root } from 'lobby/containers/Root';
+import { Root, RootProps } from 'lobby/containers/Root';
 
 // enable Mobx strict mode (no state mutation outside of @action)
 useStrict(true);
@@ -16,9 +16,7 @@ const stores = new RootStore();
 (window as any).stores = stores;
 
 // parse the query string
-type AppParameters = {
-  playerId?: string
-};
+type AppParameters = RootProps;
 
 const params: AppParameters = QueryString.parse(location.search) as AppParameters;
 
@@ -26,7 +24,7 @@ const params: AppParameters = QueryString.parse(location.search) as AppParameter
 ReactDOM.render(
   <ThemeProvider>
     <Provider {...stores}>
-      <Root playerId={params.playerId}/>
+      <Root {...params}/>
     </Provider>
   </ThemeProvider>,
   document.getElementById('react-container')
