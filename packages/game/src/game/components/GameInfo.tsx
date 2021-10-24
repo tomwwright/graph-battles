@@ -17,7 +17,7 @@ type GameInfoProps = {
 };
 
 const Span = Styled.span`
-  color: ${props => props.color}
+  color: ${(props) => props.color}
 `;
 
 const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore }) => (
@@ -28,14 +28,26 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
       onClick={(turn: number) => uiStore.setTurn(turn)}
     />
     <Button onClick={() => uiStore.phaserStore.centreCamera()}>Reset Camera</Button>
-    {gameStore.map.players.map((player, i) => (
-      <PlayerInfo key={i} player={player} isActive={gameStore.currentPlayerId === player.data.id} />
-    ))}
+    {gameStore.map.players.map((player, i) => {
+      const user = gameStore.game.users.find((user) =>
+        user.players.map((player) => player.id).includes(player.data.id)
+      );
+      return <PlayerInfo key={i} player={player} user={user} isActive={gameStore.currentPlayerId === player.data.id} />;
+    })}
     {uiStore.turnState === TurnState.VICTORY && (
-      <VictoryPopup winners={gameStore.game.winners} turn={gameStore.game.turn} onClick={() => uiStore.onClickReplayVictory()} />
+      <VictoryPopup
+        winners={gameStore.game.winners}
+        turn={gameStore.game.turn}
+        onClick={() => uiStore.onClickReplayVictory()}
+      />
     )}
     {uiStore.turnState === TurnState.NEXT_PLAYER && (
-      <NextPlayerPopup player={gameStore.currentPlayer} turn={gameStore.game.turn} maxTurns={gameStore.game.data.maxTurns} onClick={() => uiStore.onClickNextPlayerGo()} />
+      <NextPlayerPopup
+        player={gameStore.currentPlayer}
+        turn={gameStore.game.turn}
+        maxTurns={gameStore.game.data.maxTurns}
+        onClick={() => uiStore.onClickNextPlayerGo()}
+      />
     )}
     {uiStore.turnState === TurnState.REPLAYING && <ResolveInfo gameStore={gameStore} uiStore={uiStore} />}
     {uiStore.turnState === TurnState.PLANNING && gameStore.currentPlayerId != null && (
