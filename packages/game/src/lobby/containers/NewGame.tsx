@@ -103,10 +103,20 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
       return id;
     };
 
+    const isLocalGame = this.props.gameType == 'local';
+
+    const generateUserId = (player: NewPlayerData, i: number) => {
+      if (isLocalGame) {
+        return '#USER' + i;
+      } else {
+        return player.name;
+      }
+    };
+
     const gameData: GameData = {
       id: randId(6),
       users: this.state.players.map((player, i) => ({
-        id: '#USER' + i,
+        id: generateUserId(player, i),
         type: 'user' as 'user',
         name: player.name,
         playerIds: [mapData.playerIds[i]],

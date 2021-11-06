@@ -15,8 +15,8 @@ type EnterPlayerIdState = {
 };
 
 class EnterPlayerIdComponent extends React.Component<{}, EnterPlayerIdState> {
-  onSubmit(playerId: string) {
-    const url = `?gameType=remote&playerId=${playerId}`;
+  onSubmit(userId: string) {
+    const url = `?gameType=remote&userId=${userId}`;
     window.open(url, '_self');
   }
 
