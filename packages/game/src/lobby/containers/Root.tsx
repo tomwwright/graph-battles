@@ -35,15 +35,15 @@ class EnterPlayerIdComponent extends React.Component<{}, EnterPlayerIdState> {
   }
 }
 
-const RemoteGamesComponent = ({ playerId }) => (
+const RemoteGamesComponent = ({ userId }) => (
   <div>
     <Subhead>Remote Games</Subhead>
-    {playerId === undefined ? (
+    {userId === undefined ? (
       <EnterPlayerIdComponent />
     ) : (
       <div>
-        <Text>Playing as: {playerId}</Text>
-        <RemoteGameList playerId={playerId} />
+        <Text>Playing as: {userId}</Text>
+        <RemoteGameList userId={userId} />
       </div>
     )}
   </div>
@@ -57,18 +57,18 @@ const LocalGamesComponent = () => (
 );
 
 export type RootProps = {
-  playerId?: string;
+  userId?: string;
   gameType?: 'local' | 'remote';
 };
 
-export const Root: React.StatelessComponent<RootProps> = ({ playerId, gameType }) => (
+export const Root: React.StatelessComponent<RootProps> = ({ userId, gameType }) => (
   <Wrapper width={800} my={1}>
     <Image width="100%" src={`/assets/territory-portrait.jpg`} />
     <Box p={4}>
       <Subhead>New Game</Subhead>
       <NewGame gameType={gameType} />
       <Divider color="#CCC" my={4} mx={3} />
-      {gameType === 'local' ? <LocalGamesComponent /> : <RemoteGamesComponent playerId={playerId} />}
+      {gameType === 'local' ? <LocalGamesComponent /> : <RemoteGamesComponent userId={userId} />}
     </Box>
   </Wrapper>
 );

@@ -7,14 +7,14 @@ import { RemoteGameStore } from 'lobby/stores/remotegame';
 
 type RemoteGameListProps = {
   remoteGameStore?: RemoteGameStore;
-  playerId: string;
+  userId: string;
 };
-const RemoteGameListComponent: React.StatelessComponent<RemoteGameListProps> = ({ remoteGameStore, playerId }) => (
+const RemoteGameListComponent: React.StatelessComponent<RemoteGameListProps> = ({ remoteGameStore, userId }) => (
   <div>
     {remoteGameStore.games.length == 0 ? (
       <Text>No games found.</Text>
     ) : (
-      remoteGameStore.games.map((game) => <RemoteGameComponent key={game.gameId} game={game} playerId={playerId} />)
+      remoteGameStore.games.map((game) => <RemoteGameComponent key={game.gameId} game={game} userId={userId} />)
     )}
   </div>
 );
