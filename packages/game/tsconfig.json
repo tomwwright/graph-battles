@@ -9,15 +9,19 @@
     "keyofStringsOnly": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
+    "skipLibCheck": true,
     "target": "es5",
     //"module": "es6",
     "jsx": "react",
     "noEmitOnError": true,
     "lib": [
-      "es2015",
+      "es2019",
       "dom"
     ]
   },
+  "exclude": [
+    "node_modules"
+  ],
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx"

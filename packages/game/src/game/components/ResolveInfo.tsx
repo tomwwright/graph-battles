@@ -61,9 +61,10 @@ const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, ui
                 />
               );
             case ResolveState.GOLD:
-              return <PlayerInfo key={i} player={gameStore.map.player(id)} isActive={false} />;
+              const user = gameStore.game.users.find((user) => user.players.map((player) => player.id).includes(id));
+              return <PlayerInfo key={i} player={gameStore.map.player(id)} user={user} isActive={false} />;
             case ResolveState.COMBATS:
-              return <CombatInfo key={i} combat={gameStore.combats.find(combat => combat.location.data.id === id)} />;
+              return <CombatInfo key={i} combat={gameStore.combats.find((combat) => combat.location.data.id === id)} />;
           }
         } else {
           switch (gameStore.resolveState) {
@@ -79,7 +80,7 @@ const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, ui
               return <PlayerListItem key={i} player={gameStore.map.player(id)} />;
             case ResolveState.COMBATS:
               return (
-                <CombatListItem key={i} combat={gameStore.combats.find(combat => combat.location.data.id === id)} />
+                <CombatListItem key={i} combat={gameStore.combats.find((combat) => combat.location.data.id === id)} />
               );
           }
         }

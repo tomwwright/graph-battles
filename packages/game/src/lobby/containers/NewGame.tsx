@@ -10,24 +10,33 @@ import { NewPlayer } from 'lobby/components/NewPlayer';
 import { ViewData } from 'game/stores/phaser';
 
 import { GameData, GameMapData, PlayerData, UserData, Utils, Values } from '@battles/models';
+import { GameAPI } from 'game/providers/api';
 
 type NewGameProps = {
   savedGameStore?: SavedGameStore;
-}
+  gameType: 'local' | 'remote';
+};
 
 type NewGameState = {
   players: NewPlayerData[];
   turns: number;
   victoryPoints: number;
   isCreatingGame: boolean;
-}
+};
 
 type NewPlayerData = {
   name: string;
   colour: string;
 };
 
-const ColourPalette = [Values.Colour.RED, Values.Colour.BLUE, Values.Colour.GREEN, Values.Colour.ORANGE, Values.Colour.PURPLE, Values.Colour.YELLOW].map(colourNumber => '#' + Utils.toHexColour(colourNumber));
+const ColourPalette = [
+  Values.Colour.RED,
+  Values.Colour.BLUE,
+  Values.Colour.GREEN,
+  Values.Colour.ORANGE,
+  Values.Colour.PURPLE,
+  Values.Colour.YELLOW,
+].map((colourNumber) => '#' + Utils.toHexColour(colourNumber));
 
 const SliderWrapper = Styled.div`
   margin-bottom: 15px;
@@ -39,49 +48,49 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
     players: [
       {
         name: '',
-        colour: ColourPalette[0]
+        colour: ColourPalette[0],
       },
       {
         name: '',
-        colour: ColourPalette[1]
-      }
+        colour: ColourPalette[1],
+      },
     ],
     turns: 10,
     victoryPoints: 25,
-    isCreatingGame: false
+    isCreatingGame: false,
   };
 
   addPlayer() {
     const players = Utils.clone(this.state.players);
     players.push({
       name: '',
-      colour: this.getUnusedColours()[0]
+      colour: this.getUnusedColours()[0],
     });
     this.setState({
-      players
+      players,
     });
   }
 
   async createGame() {
     this.setState({
-      isCreatingGame: true
+      isCreatingGame: true,
     });
 
     const requestConfig: AxiosRequestConfig = {
       headers: {
-        "Cache-Control": "no-cache"
-      }
+        'Cache-Control': 'no-cache',
+      },
     };
 
     const responses = await Promise.all([
       Axios.get('/assets/maps/lobby.map.' + this.state.players.length + 'players.json', requestConfig),
-      Axios.get('/assets/maps/lobby.view.' + this.state.players.length + 'players.json', requestConfig)
+      Axios.get('/assets/maps/lobby.view.' + this.state.players.length + 'players.json', requestConfig),
     ]);
 
     const mapData: GameMapData = responses[0].data;
     const viewData: ViewData = responses[1].data;
 
-    const players = mapData.playerIds.map(playerId => mapData.dataMap[playerId] as PlayerData);
+    const players = mapData.playerIds.map((playerId) => mapData.dataMap[playerId] as PlayerData);
     for (let i = 0; i < players.length; i++) {
       players[i].colour = Number.parseInt(this.state.players[i].colour.substring(1), 16);
     }
@@ -92,48 +101,63 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
         id += String.fromCharCode(65 + Math.floor(Math.random() * 26));
       }
       return id;
-    }
+    };
+
+    const isLocalGame = this.props.gameType == 'local';
+
+    const generateUserId = (player: NewPlayerData, i: number) => {
+      if (isLocalGame) {
+        return '#USER' + i;
+      } else {
+        return player.name;
+      }
+    };
 
     const gameData: GameData = {
       id: randId(6),
       users: this.state.players.map((player, i) => ({
-        id: '#USER' + i,
-        type: "user" as "user",
+        id: generateUserId(player, i),
+        type: 'user' as 'user',
         name: player.name,
-        playerIds: [mapData.playerIds[i]]
+        playerIds: [mapData.playerIds[i]],
       })),
       maxTurns: this.state.turns,
       maxVictoryPoints: this.state.victoryPoints,
-      maps: [mapData]
-    }
+      maps: [mapData],
+    };
 
-    this.props.savedGameStore.save({
-      gameData,
-      viewData,
-      lastUpdated: Date.now()
-    });
+    if (this.props.gameType == 'local') {
+      this.props.savedGameStore.save({
+        gameData,
+        viewData,
+        lastUpdated: Date.now(),
+      });
+    } else {
+      const gameApi = new GameAPI();
+      await gameApi.createGame(gameData, viewData);
+      window.location.reload();
+    }
 
     this.setState({
       players: [
         {
           name: '',
-          colour: this.state.players[0].colour
+          colour: this.state.players[0].colour,
         },
         {
           name: '',
-          colour: this.state.players[1].colour
-        }
+          colour: this.state.players[1].colour,
+        },
       ],
       turns: 10,
       victoryPoints: 25,
       isCreatingGame: false,
-    })
+    });
   }
 
   validate() {
-    const namesValid = this.state.players.map(player => player.name).every(name => name.length > 0);
-    if (!namesValid)
-      return "Enter names for all players";
+    const namesValid = this.state.players.map((player) => player.name).every((name) => name.length > 0);
+    if (!namesValid) return 'Enter names for all players';
     return null;
   }
 
@@ -141,7 +165,7 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
     const players = Utils.clone(this.state.players);
     players.splice(i, 1);
     this.setState({
-      players
+      players,
     });
   }
 
@@ -166,8 +190,8 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
   }
 
   getUnusedColours() {
-    const playerColours = this.state.players.map(player => player.colour);
-    let unusedColours = ColourPalette.filter(colour => !Utils.contains(playerColours, colour));
+    const playerColours = this.state.players.map((player) => player.colour);
+    let unusedColours = ColourPalette.filter((colour) => !Utils.contains(playerColours, colour));
     return unusedColours;
   }
 
@@ -182,25 +206,45 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
               colour={player.colour}
               name={player.name}
               colours={this.getUnusedColours()}
-              onDelete={i > 1 ? (() => this.onDelete(i)) : null}
-              onUpdateName={(name) => this.onUpdateName(i, name)} />
+              onDelete={i > 1 ? () => this.onDelete(i) : null}
+              onUpdateName={(name) => this.onUpdateName(i, name)}
+            />
           ))}
           {this.state.players.length < 4 && <Button onClick={() => this.addPlayer()}>+</Button>}
         </Box>
         <Box width={1 / 2}>
           <SliderWrapper>
-            <Text>Turn Limit: <i>{this.state.turns} turns</i></Text>
-            <Slider value={this.state.turns} min={6} max={20} step={2} onChange={(e) => this.onUpdateTurns(e.target.value)} />
+            <Text>
+              Turn Limit: <i>{this.state.turns} turns</i>
+            </Text>
+            <Slider
+              value={this.state.turns}
+              min={6}
+              max={20}
+              step={2}
+              onChange={(e) => this.onUpdateTurns(e.target.value)}
+            />
           </SliderWrapper>
           <SliderWrapper>
-            <Text>Victory Points: <i>{this.state.victoryPoints} points</i></Text>
-            <Slider value={this.state.victoryPoints} min={20} max={50} step={5} onChange={(e) => this.onUpdateVictoryPoints(e.target.value)} />
+            <Text>
+              Victory Points: <i>{this.state.victoryPoints} points</i>
+            </Text>
+            <Slider
+              value={this.state.victoryPoints}
+              min={20}
+              max={50}
+              step={5}
+              onChange={(e) => this.onUpdateVictoryPoints(e.target.value)}
+            />
           </SliderWrapper>
           <Container mt={4} px={0} py={0}>
-            <Button disabled={validationError != null} onClick={() => this.createGame()}>Create Game</Button>{validationError && <i style={{ marginLeft: '10px' }}>{validationError}</i>}
+            <Button disabled={validationError != null || this.state.isCreatingGame} onClick={() => this.createGame()}>
+              Create Game
+            </Button>
+            {validationError && <i style={{ marginLeft: '10px' }}>{validationError}</i>}
           </Container>
         </Box>
       </Flex>
-    )
+    );
   }
 }
