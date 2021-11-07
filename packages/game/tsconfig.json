@@ -15,7 +15,7 @@
     "jsx": "react",
     "noEmitOnError": true,
     "lib": [
-      "es2015",
+      "es2019",
       "dom"
     ]
   },

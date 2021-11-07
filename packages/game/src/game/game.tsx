@@ -42,6 +42,7 @@ async function startFromGameId(gameId: string, userId: string, isLocal: boolean)
       savedGame = LocalStorage.loadGame(gameId);
       initialise(savedGame, LocalGameProvider.createProvider(savedGame.gameData.id, userId));
     } else {
+      stores.uiStore.setFilteredUserIds([userId]);
       const provider = new APIGameProvider(gameId, userId);
       const game = await provider.get();
       const viewData = await provider.getViewData();
@@ -103,7 +104,7 @@ function initialise(game: SavedGame, provider: GameProvider) {
     () => stores.phaserStore.phaser !== null,
     () => {
       stores.uiStore.setTurn(1);
-      stores.uiStore.setPlayer(stores.gameStore.map.data.playerIds[0]);
+      stores.uiStore.setFirstPlayer();
 
       ReactDOM.render(
         <ThemeProvider>

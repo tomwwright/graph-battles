@@ -1,7 +1,6 @@
 import Axios, { AxiosError } from 'axios';
 import { GameProvider } from 'game/providers/base';
 import { Actions, Game, GameData, GameMap } from '@battles/models';
-import { LocalGameProvider } from './local';
 import { ViewData } from 'game/stores/phaser';
 
 type PlayerActionRecord = {
@@ -10,7 +9,6 @@ type PlayerActionRecord = {
 };
 
 export class APIGameProvider extends GameProvider {
-  localGameProvider: LocalGameProvider;
   playerActionStorage: PlayerActionLocalStorage;
   gameApi: GameAPI;
 
@@ -19,7 +17,6 @@ export class APIGameProvider extends GameProvider {
   constructor(gameId: string, userId: string) {
     super(gameId, userId);
 
-    this.localGameProvider = LocalGameProvider.createProvider(gameId, userId);
     this.playerActionStorage = new PlayerActionLocalStorage(gameId, userId);
     this.gameApi = new GameAPI();
   }
@@ -59,8 +56,15 @@ export class APIGameProvider extends GameProvider {
 
   private async pushLatestActions() {
     const actions = this.playerActionStorage.currentActions.actions;
-    const playerId = this.userId; // the API provider expects that user id == player id
-    await this.gameApi.putPlayerActions(this.gameId, playerId, actions);
+
+    /* Because the GameProvider works on the userId instead of the playerId, look up playerId from the actions */
+    const readyAction = actions.find((action) => action.type === 'ready-player') as Actions.ReadyPlayerModelAction;
+    if (!readyAction) {
+      throw new Error('Attempting to push actions to API without a ready action!');
+    }
+    console.log(`Pushing actions for playerId: ${readyAction.playerId}`);
+    await this.gameApi.putPlayerActions(this.gameId, readyAction.playerId, actions);
+    this.playerActionStorage.saveActions([]);
   }
 
   private async findLatestActions(): Promise<Actions.ModelAction[]> {
@@ -85,20 +89,18 @@ export class APIGameProvider extends GameProvider {
   }
 }
 
-const KEY_PREFIX: string = 'graph-battles-actions-';
-
 export class PlayerActionLocalStorage {
   gameId: string;
-  playerId: string;
+  userId: string;
 
   static KEY_PREFIX: string = 'graph-battles-actions';
 
-  constructor(gameId: string, playerId: string) {
+  constructor(gameId: string, userId: string) {
     if (!window) throw new Error('LocalStorage only available in the browser!');
     if (!window.localStorage) throw new Error('LocalStorage not available!');
 
     this.gameId = gameId;
-    this.playerId = playerId;
+    this.userId = userId;
   }
 
   addAction(action: Actions.ModelAction) {
@@ -127,7 +129,7 @@ export class PlayerActionLocalStorage {
   }
 
   private get key() {
-    return `${KEY_PREFIX}-${this.gameId}-${this.playerId}`;
+    return `${PlayerActionLocalStorage.KEY_PREFIX}-${this.gameId}-${this.userId}`;
   }
 }
 
@@ -168,22 +170,26 @@ export class GameAPI {
   }
 
   async getViewData(gameId: string): Promise<ViewData> {
-    const viewResponse = await Axios.get(`${this.endpoint}/game/${gameId}/view`);
+    const url = `${this.endpoint}/game/${gameId}/view`;
+    const viewResponse = await Axios.get(url);
     return viewResponse.data as ViewData;
   }
 
   async getGameData(gameId: string): Promise<GameData> {
-    const gameResponse = await Axios.get(`${this.endpoint}/game/${gameId}`);
+    const url = `${this.endpoint}/game/${gameId}`;
+    const gameResponse = await Axios.get(url);
     return gameResponse.data as GameData;
   }
 
   async getPlayerActions(gameId, playerId): Promise<PlayerActionRecord> {
-    const apiActionsResponse = await Axios.get(`${this.endpoint}/game/${gameId}/actions/${playerId}`);
+    const url = `${this.endpoint}/game/${gameId}/actions/${encodeURIComponent(playerId)}`;
+    const apiActionsResponse = await Axios.get(url);
     return apiActionsResponse.data as PlayerActionRecord;
   }
 
   async putPlayerActions(gameId, playerId, actions) {
-    const response = await Axios.put(`${this.endpoint}/game/${gameId}/actions/${playerId}`, actions);
+    const url = `${this.endpoint}/game/${gameId}/actions/${encodeURIComponent(playerId)}`;
+    const response = await Axios.put(url, actions);
     if (response.status != 200) throw new Error(JSON.stringify(response));
   }
 }

@@ -9,6 +9,7 @@ import PlayerInfo from 'game/components/PlayerInfo';
 import TurnSelect from 'game/components/TurnSelect';
 import ResolveInfo from 'game/components/ResolveInfo';
 import { VictoryPopup } from 'game/components/VictoryPopup';
+import { ReadyPopup } from 'game/components/ReadyPopup';
 import { NextPlayerPopup } from 'game/components/NextPlayerPopup';
 
 type GameInfoProps = {
@@ -55,6 +56,7 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
         Ready!
       </Button>
     )}
+    {uiStore.turnState === TurnState.ALL_PLAYERS_READY && <ReadyPopup />}
   </div>
 );
 

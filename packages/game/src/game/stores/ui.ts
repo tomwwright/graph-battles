@@ -17,6 +17,7 @@ type Selected =
 
 export const enum TurnState {
   NEXT_PLAYER = 'next-player',
+  ALL_PLAYERS_READY = 'all-players-ready',
   REPLAYING = 'replaying',
   PLANNING = 'planning',
   VICTORY = 'victory',
@@ -30,6 +31,9 @@ export default class UiStore {
   @observable turnState: TurnState = TurnState.NEXT_PLAYER;
 
   @observable isResolving = false;
+
+  /* Only consider these userIds when cycling through turns */
+  @observable filteredUserIds: ID[];
 
   constructor(gameStore: GameStore, phaserStore: PhaserStore) {
     this.gameStore = gameStore;
@@ -61,6 +65,23 @@ export default class UiStore {
     );
 
     return destinationIds;
+  }
+
+  @computed
+  get activePlayerIds() {
+    const playerIds = this.filteredUserIds
+      ? this.gameStore.game.users
+          .filter((user) => this.filteredUserIds.includes(user.data.id))
+          .map((user) => user.players.map((player) => player.id))
+          .flat()
+      : this.gameStore.map.data.playerIds;
+
+    return playerIds;
+  }
+
+  @action
+  setFilteredUserIds(userIds: ID[]) {
+    this.filteredUserIds = userIds;
   }
 
   @action
@@ -114,18 +135,42 @@ export default class UiStore {
     this.gameStore.setVisibility(VisibilityMode.NOT_VISIBLE);
     await this.gameStore.onReadyPlayer(true);
 
-    const playerIds = this.gameStore.map.data.playerIds;
+    const playerIds = this.activePlayerIds;
+
     const currentPlayerIdx = playerIds.indexOf(this.gameStore.currentPlayerId);
     if (currentPlayerIdx < playerIds.length - 1) {
       this.setPlayer(playerIds[currentPlayerIdx + 1]);
     } else {
-      const winners = this.gameStore.game.winners;
-      if (winners.length == 0) {
-        this.setPlayer(playerIds[0]);
-      } else {
-        this.onVictory();
-      }
+      this.onAllPlayersReady();
     }
+  }
+
+  @action
+  onAllPlayersReady() {
+    this.turnState = TurnState.ALL_PLAYERS_READY;
+
+    /* set up scheduled polling here! */
+
+    const currentTurn = this.gameStore.turn;
+
+    const checkForResolvedTurn = async () => {
+      console.log('Checking game state...');
+
+      const game = await this.gameStore.provider.get();
+
+      if (game.turn > currentTurn) {
+        this.gameStore.setGame(game.data);
+        this.gameStore.setTurn(game.turn);
+        if (game.winners.length > 0) {
+          this.onVictory();
+        } else {
+          this.setFirstPlayer();
+        }
+      } else {
+        setTimeout(checkForResolvedTurn, 10000);
+      }
+    };
+    checkForResolvedTurn();
   }
 
   @action
@@ -134,6 +179,11 @@ export default class UiStore {
     this.unselect();
     this.gameStore.setVisibility(VisibilityMode.VISIBLE);
     this.turnState = TurnState.VICTORY;
+  }
+
+  @action
+  setFirstPlayer() {
+    this.setPlayer(this.activePlayerIds[0]);
   }
 
   @action
