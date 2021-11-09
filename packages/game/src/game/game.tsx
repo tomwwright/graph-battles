@@ -33,63 +33,68 @@ type AppParameters = {
 
 const params: AppParameters = QueryString.parse(location.search) as AppParameters;
 
-// load a saved game, or load our mock game
-let savedGame: SavedGame;
-
-async function startFromGameId(gameId: string, userId: string, isLocal: boolean) {
-  try {
-    if (isLocal) {
-      savedGame = LocalStorage.loadGame(gameId);
-      initialise(savedGame, LocalGameProvider.createProvider(savedGame.gameData.id, userId));
+try {
+  if (params.gameId) {
+    if (params.local === 'true') {
+      startLocalGame(params.gameId, params.userId);
     } else {
-      stores.uiStore.setFilteredUserIds([userId]);
-      const provider = new APIGameProvider(gameId, userId);
-      const game = await provider.get();
-      const viewData = await provider.getViewData();
-      savedGame = {
-        gameData: game.data,
-        viewData: viewData,
-        lastUpdated: Date.now(),
-      };
-      initialise(savedGame, provider);
+      startRemoteGame(params.gameId, params.userId);
     }
-  } catch (e) {
-    console.error(e);
-
-    ReactDOM.render(
-      <p>Unable to load game '{params.gameId}', does it exist?</p>,
-      document.getElementById('react-container')
-    );
+  } else {
+    startExampleGame();
   }
+} catch (e) {
+  console.error(e);
+
+  ReactDOM.render(
+    <p>Unable to load game '{params.gameId}', does it exist?</p>,
+    document.getElementById('react-container')
+  );
 }
 
-if (params.gameId) {
-  startFromGameId(params.gameId, params.userId, params.local === 'true');
-} else {
-  Promise.all([
+function startLocalGame(gameId: string, userId: string) {
+  const savedGame = LocalStorage.loadGame(gameId);
+  initialise(savedGame, LocalGameProvider.createProvider(savedGame.gameData.id, userId));
+}
+
+async function startRemoteGame(gameId: string, userId: string) {
+  stores.uiStore.setFilteredUserIds([userId]);
+  const provider = new APIGameProvider(gameId, userId);
+  const game = await provider.get();
+  const viewData = await provider.getViewData();
+  const savedGame = {
+    gameData: game.data,
+    viewData: viewData,
+    lastUpdated: Date.now(),
+  };
+  initialise(savedGame, provider);
+}
+
+async function startExampleGame() {
+  const responses = await Promise.all([
     Axios.get('/assets/maps/test.game.json'),
     Axios.get('/assets/maps/test.map.json'),
     Axios.get('/assets/maps/test.view.json'),
-  ]).then((responses) => {
-    const gameData: GameData = responses[0].data;
-    const mapData: GameMapData = responses[1].data;
-    const viewData: ViewData = responses[2].data;
+  ]);
 
-    gameData.maps.push(mapData);
+  const gameData: GameData = responses[0].data;
+  const mapData: GameMapData = responses[1].data;
+  const viewData: ViewData = responses[2].data;
 
-    const nextTurn = new GameMap(Utils.clone(mapData));
-    nextTurn.resolveTurn();
-    gameData.maps.push(nextTurn.data);
+  gameData.maps.push(mapData);
 
-    initialise(
-      {
-        gameData,
-        viewData,
-        lastUpdated: Date.now(),
-      },
-      null
-    );
-  });
+  const nextTurn = new GameMap(Utils.clone(mapData));
+  nextTurn.resolveTurn();
+  gameData.maps.push(nextTurn.data);
+
+  initialise(
+    {
+      gameData,
+      viewData,
+      lastUpdated: Date.now(),
+    },
+    null
+  );
 }
 
 function initialise(game: SavedGame, provider: GameProvider) {
