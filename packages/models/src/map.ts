@@ -146,16 +146,7 @@ export class GameMap extends UnitContainer<GameMapData> {
 
     this.resolveRemoveDefendStatus();
 
-    // resolve all combats (and then check if more combats occurred)
-    this.resolveMoves();
-    let combats = this.getCombats();
-    while (combats.length > 0) {
-      for (const combat of combats) {
-        combat.resolve();
-      }
-      this.resolveMoves();
-      combats = this.getCombats();
-    }
+    this.resolveMovesAndCombats();
 
     this.resolveAddDefendStatus(previous);
 
@@ -165,7 +156,7 @@ export class GameMap extends UnitContainer<GameMapData> {
     this.resolveTerritoryControl(previous);
     this.resolveTerritoryActions();
 
-    this.players.forEach((player) => (player.data.ready = false));
+    this.unreadyPlayers();
   }
 
   resolveGold() {
@@ -203,6 +194,20 @@ export class GameMap extends UnitContainer<GameMapData> {
     }
   }
 
+  resolveMovesAndCombats() {
+    this.resolveMoves();
+
+    // resolve all combats (and then check if more combats occurred)
+    let combats = this.getCombats();
+    while (combats.length > 0) {
+      for (const combat of combats) {
+        combat.resolve();
+      }
+      this.resolveMoves();
+      combats = this.getCombats();
+    }
+  }
+
   resolveTerritoryActions() {
     for (let territory of this.territories) {
       territory.resolveTerritoryAction();
@@ -215,5 +220,9 @@ export class GameMap extends UnitContainer<GameMapData> {
       const previousTerritory = previous.territory(territory.data.id);
       territory.resolveTerritoryControl(previousTerritory);
     }
+  }
+
+  unreadyPlayers() {
+    this.players.forEach((player) => (player.data.ready = false));
   }
 }
