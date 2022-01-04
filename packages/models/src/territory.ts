@@ -50,7 +50,7 @@ export class Territory extends UnitContainer<TerritoryData> {
     let maxFood = 3;
     if (this.hasProperty(TerritoryProperty.SETTLED)) {
       maxFood = 5;
-      if (this.hasProperty(TerritoryProperty.CITY, TerritoryProperty.FORT)) {
+      if (this.hasProperty(TerritoryProperty.FARM)) {
         maxFood = 7;
         if (this.hasProperty(TerritoryProperty.CASTLE)) {
           maxFood = 10;
