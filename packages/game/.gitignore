@@ -59,7 +59,7 @@ typings/
 
 # Build artifacts
 build
+package.zip
 
 # OS
 .DS_Store
-

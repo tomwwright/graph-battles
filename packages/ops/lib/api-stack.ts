@@ -33,9 +33,7 @@ export class ApiStack extends cdk.Stack {
     table.grantReadWriteData(lambdaFunction);
 
     const api = new apigateway.HttpApi(this, "Api", {
-      defaultIntegration: new apigatewayIntegrations.LambdaProxyIntegration({
-        handler: lambdaFunction,
-      }),
+      defaultIntegration: new apigatewayIntegrations.HttpLambdaIntegration("Integration", lambdaFunction),
     });
   }
 }

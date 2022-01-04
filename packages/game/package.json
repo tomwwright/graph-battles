@@ -8,7 +8,8 @@
     "build:client": "yarn compile && yarn bundle:client",
     "build:clean": "rm -r build/*",
     "test": "yarn test:models",
-    "test:models": "yarn compile && NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/models/**/*.test.js"
+    "test:models": "yarn compile && NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/models/**/*.test.js",
+    "package": "rm -f package.zip && zip -r package.zip assets build/bundle && zip -rj package.zip assets/html"
   },
   "repository": {
     "type": "git",
