@@ -148,7 +148,7 @@ export type GameSummary = {
 };
 
 export class GameAPI {
-  static BATTLES_API_HOSTNAME = 'https://18vjoshjme.execute-api.ap-southeast-2.amazonaws.com';
+  static BATTLES_API_HOSTNAME = 'https://dctg63fuac.execute-api.ap-southeast-2.amazonaws.com';
 
   endpoint: string;
 
