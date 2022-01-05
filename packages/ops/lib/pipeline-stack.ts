@@ -20,7 +20,15 @@ export class PipelineStack extends cdk.Stack {
     this.pipeline = new pipelines.CodePipeline(this, "Pipeline", {
       synth: new pipelines.ShellStep("Synth", {
         input: source,
-        commands: ["yarn build", "yarn workspace @battles/models test", "yarn workspace @battles/api test"],
+        commands: [
+          "yarn install",
+          "yarn build",
+          "yarn workspace @battles/models test",
+          "yarn workspace @battles/api test",
+          "yarn workspace @battles/game bundle:client",
+          "yarn workspace @battles/game package",
+          "yarn workspace @battles/ops cdk synth",
+        ],
         primaryOutputDirectory: "packages/ops/cdk.out",
       }),
     });
