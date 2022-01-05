@@ -42,10 +42,9 @@ export class AppStack extends cdk.Stack {
           behaviors: [{ isDefaultBehavior: true }],
         },
       ],
-      aliasConfiguration: {
-        acmCertRef: certificate.certificateArn,
-        names: [hostname],
-      },
+      viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
+        aliases: [hostname],
+      }),
     });
 
     new s3deployment.BucketDeployment(this, "DeployApp", {
