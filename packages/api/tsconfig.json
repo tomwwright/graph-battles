@@ -35,4 +35,7 @@
     "node_modules",
     "**/*.test.ts"
   ],
+  "references": [
+    { "path": "../models" }
+  ],
 }

@@ -21,7 +21,8 @@
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "noEmit": true
   },
   "exclude": [
     "node_modules",

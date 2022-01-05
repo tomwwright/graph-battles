@@ -5,9 +5,9 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "compile": "tsc",
-    "build:clean": "rm -r build/*",
-    "test": "yarn compile && NODE_PATH=\"$NODE_PATH:$PWD/build/es5\" mocha --recursive build/es5/models/**/*.test.js"
+    "build": "tsc",
+    "build:clean": "rm -r build/* && rm -f tsconfig.tsbuildinfo",
+    "test": "NODE_PATH=\"$NODE_PATH:$PWD/build\" mocha --recursive build/**/*.test.js"
   },
   "repository": {
     "type": "git",

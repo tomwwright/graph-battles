@@ -7,6 +7,9 @@
   "author": "Tom Wright <tom.suffern.wright@gmail.com>",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "tsc --build --verbose"
+  },
   "workspaces": [
     "packages/*"
   ]

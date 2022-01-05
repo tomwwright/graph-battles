@@ -1,0 +1,9 @@
+{
+  "references": [
+    { "path": "packages/api" },
+    { "path": "packages/game" },
+    { "path": "packages/models" },
+    { "path": "packages/ops" },
+  ],
+  "files": []
+}
