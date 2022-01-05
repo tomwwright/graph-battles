@@ -101,7 +101,7 @@ const testMap: GameMapData = {
       playerId: '#PG',
       unitIds: ['#UG1'],
       edgeIds: ['#E35', '#E45'],
-      food: 5,
+      food: 6,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.FARM],
       currentAction: null,
     },

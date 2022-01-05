@@ -112,7 +112,7 @@ describe('Map Model', () => {
     expect(map.territory('#T2').data.food).to.equal(2, 'Territory #T2 has correct initial food');
     expect(map.territory('#T3').data.food).to.equal(3, 'Territory #T3 has correct initial food');
     expect(map.territory('#T4').data.food).to.equal(3, 'Territory #T4 has correct initial food');
-    expect(map.territory('#T5').data.food).to.equal(5, 'Territory #T5 has correct initial food');
+    expect(map.territory('#T5').data.food).to.equal(6, 'Territory #T5 has correct initial food');
 
     map.resolveFood();
 
@@ -134,7 +134,7 @@ describe('Map Model', () => {
     expect(map.territory('#T2').data.food).to.equal(2, 'Territory #T2 has correct resolved food');
     expect(map.territory('#T3').data.food).to.equal(0, 'Territory #T3 has correct resolved food: exactly zero');
     expect(map.territory('#T4').data.food).to.equal(3, 'Territory #T4 has correct resolved food');
-    expect(map.territory('#T5').data.food).to.equal(5, 'Territory #T5 has correct resolved food: caps at max');
+    expect(map.territory('#T5').data.food).to.equal(7, 'Territory #T5 has correct resolved food: caps at max');
   });
 
   it('resolve removing defend status', () => {

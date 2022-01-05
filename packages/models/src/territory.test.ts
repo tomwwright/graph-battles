@@ -41,7 +41,7 @@ describe('Territory Model', () => {
     expect(map.territory('#T2').maxFood).to.be.equal(3, 'Territory #T2 maxFood');
     expect(map.territory('#T3').maxFood).to.be.equal(3, 'Territory #T3 maxFood');
     expect(map.territory('#T4').maxFood).to.be.equal(5, 'Territory #T4 maxFood');
-    expect(map.territory('#T5').maxFood).to.be.equal(5, 'Territory #T5 maxFood');
+    expect(map.territory('#T5').maxFood).to.be.equal(7, 'Territory #T5 maxFood');
 
     expect(map.territory('#T1').goldProduction).to.be.equal(2, 'Territory #T1 goldProduction');
     expect(map.territory('#T2').goldProduction).to.be.equal(0, 'Territory #T2 goldProduction');
@@ -100,10 +100,10 @@ describe('Territory Model', () => {
     territory.setTerritoryAction(TerritoryAction.BUILD_CITY);
     expect(territory.data.currentAction).to.equal(TerritoryAction.BUILD_CITY, 'set to valid action: build city');
     expect(territory.player.data.gold).to.equal(10 - 5, 'player gold after setting build city');
-    expect(territory.data.food).to.equal(5 - 2, 'territory food after setting build city');
+    expect(territory.data.food).to.equal(6 - 2, 'territory food after setting build city');
     territory.setTerritoryAction(null);
     expect(territory.data.currentAction).to.equal(null, 'set to no action');
     expect(territory.player.data.gold).to.equal(10, 'player gold after setting no action');
-    expect(territory.data.food).to.equal(5, 'territory food after setting no action');
+    expect(territory.data.food).to.equal(6, 'territory food after setting no action');
   });
 });
