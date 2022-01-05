@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 import Styled from 'styled-components';
-import { Button } from 'rebass';
+import { Button, Text, Link } from 'rebass';
 
 import GameStore from 'game/stores/game';
 import UiStore, { TurnState } from 'game/stores/ui';
+import InfoPane from 'game/components/InfoPane';
 import PlayerInfo from 'game/components/PlayerInfo';
 import TurnSelect from 'game/components/TurnSelect';
 import ResolveInfo from 'game/components/ResolveInfo';
@@ -23,12 +24,18 @@ const Span = Styled.span`
 
 const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore }) => (
   <div>
+    <InfoPane>
+      <Link href="https://github.com/tomwwright/graph-battles/blob/master/docs/readme.md">Game Help</Link>
+    </InfoPane>
     <TurnSelect
       currentTurn={gameStore.turn}
       numTurns={gameStore.game.data.maps.length}
       onClick={(turn: number) => uiStore.setTurn(turn)}
     />
     <Button onClick={() => uiStore.phaserStore.centreCamera()}>Reset Camera</Button>
+    <InfoPane>
+      <Text>Players</Text>
+    </InfoPane>
     {gameStore.map.players.map((player, i) => {
       const user = gameStore.game.users.find((user) =>
         user.players.map((player) => player.id).includes(player.data.id)
