@@ -11,7 +11,7 @@ type VictoryPopupProps = {
 };
 
 const Span = Styled.span`
-  color: ${props => props.color}
+  color: ${(props) => props.color}
 `;
 
 const Bold = Styled.span`
@@ -22,15 +22,11 @@ export const VictoryPopup: React.StatelessComponent<VictoryPopupProps> = (props)
   <div>
     <Fixed top right bottom left />
     <Overlay>
-      <Heading>
-        Turn {props.turn}
-      </Heading>
+      <Heading>Turn {props.turn}</Heading>
       <Text>
-        {props.winners.map(player => (
-          <Span color={Values.ColourStrings[player.data.colour]}>
-            Player {player.data.id}
-          </Span>
-        )).join(' and ')}
+        {props.winners.map((player) => (
+          <Span color={Values.ColourStrings[player.data.colour]}>Player {player.data.id}</Span>
+        ))}
         {props.winners.length > 1 ? ' have ' : ' has '}
         won the game with <Bold>{props.winners[0].victoryPoints} Victory Points</Bold>!
       </Text>
