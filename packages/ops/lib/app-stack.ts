@@ -15,9 +15,7 @@ export class AppStack extends cdk.Stack {
     const domain = "tomwwright.com";
     const hostname = `battles.${domain}`;
 
-    const bucket = new s3.Bucket(this, "Bucket", {
-      websiteIndexDocument: "index.html",
-    });
+    const bucket = new s3.Bucket(this, "Bucket");
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, "OIA", {
       comment: "Setup read access from CloudFront to the bucket",
@@ -34,6 +32,7 @@ export class AppStack extends cdk.Stack {
     });
 
     const distribution = new cloudfront.CloudFrontWebDistribution(this, "Distribution", {
+      defaultRootObject: "lobby.html",
       originConfigs: [
         {
           s3OriginSource: {
