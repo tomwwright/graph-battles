@@ -2,7 +2,7 @@ FROM node:14-alpine as build
 
 WORKDIR /app
 
-COPY package.json yarn.lock .
+COPY package.json yarn.lock ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/models/package.json ./packages/models/
 
