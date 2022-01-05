@@ -11,7 +11,7 @@ type RemoteGameProps = {
 };
 
 const toTimeDescription = (ms: number) => {
-  const seconds = Math.floor(ms / (1000 * 60));
+  const seconds = Math.floor(ms / 1000);
   if (seconds < 60) return 'moments';
 
   const minutes = Math.floor(seconds / 60);
