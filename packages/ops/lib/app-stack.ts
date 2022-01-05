@@ -24,11 +24,6 @@ export class AppStack extends cdk.Stack {
     });
     bucket.grantRead(originAccessIdentity);
 
-    new s3deployment.BucketDeployment(this, "DeployApp", {
-      sources: [s3deployment.Source.asset(DEPLOYMENT_ARTIFACT)],
-      destinationBucket: bucket,
-    });
-
     const zone = route53.HostedZone.fromLookup(this, "LookupHostedZone", {
       domainName: domain,
     });
@@ -52,6 +47,12 @@ export class AppStack extends cdk.Stack {
         acmCertRef: certificate.certificateArn,
         names: [hostname],
       },
+    });
+
+    new s3deployment.BucketDeployment(this, "DeployApp", {
+      sources: [s3deployment.Source.asset(DEPLOYMENT_ARTIFACT)],
+      destinationBucket: bucket,
+      distribution,
     });
 
     new route53.ARecord(this, "AliasRecord", {
