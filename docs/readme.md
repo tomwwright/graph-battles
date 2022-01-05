@@ -2,6 +2,12 @@
 
 ![Screenshot](./screenshot.png)
 
+- [1 Introduction](#1-introduction)
+- [2 Game Concepts](#2-game-concepts)
+- [3 Resolving a Turn](#3-resolving-a-turn)
+- [4 Territory Actions](#4-territory-actions)
+- [5 Combat](#5-combat)
+
 ## 1 Introduction
 
 This is a turn-based strategy game about capturing the territories of opponents and defeating their units in strategic combat. To win the game, a player must:
