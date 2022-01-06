@@ -126,13 +126,11 @@ export class GameMap extends UnitContainer<GameMapData> {
 
     this.data.unitIds.push(unitData.id);
     territory.data.unitIds.push(unitData.id);
-    if (territory.player) territory.player.data.unitIds.push(unitData.id);
 
     return this;
   }
 
   removeUnit(unit: Unit): GameMap {
-    if (unit.data.playerId) unit.player.remove(unit.data.id);
     unit.location.remove(unit.data.id);
     this.remove(unit.data.id);
     delete this.data.dataMap[unit.data.id];

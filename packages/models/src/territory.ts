@@ -138,9 +138,7 @@ export class Territory extends UnitContainer<TerritoryData> {
       presentPlayerIds[0] === previousPlayerIds[0] &&
       presentPlayerIds[0] !== this.data.playerId
     ) {
-      if (this.player) this.player.data.territoryIds = exclude(this.player.data.territoryIds, this.data.id);
       this.data.playerId = presentPlayerIds[0];
-      this.player.data.territoryIds = include(this.player.data.territoryIds, this.data.id);
       this.data.currentAction = null;
     }
   }

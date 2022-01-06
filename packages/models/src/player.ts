@@ -1,12 +1,9 @@
-import { ID, sum } from './utils';
-import { UnitContainer, UnitContainerData } from './unitcontainer';
-import { Territory } from './territory';
+import { HasID, Model, sum } from './utils';
 import { Colour } from './values';
 
-export type PlayerData = UnitContainerData & {
+export type PlayerData = HasID & {
   type: 'player';
   colour: Colour;
-  territoryIds: ID[];
   gold: number;
   goldProduction: number;
   ready: boolean;
@@ -15,9 +12,13 @@ export type PlayerData = UnitContainerData & {
   unitsDestroyed: number;
 };
 
-export class Player extends UnitContainer<PlayerData> {
+export class Player extends Model<PlayerData> {
   get territories() {
-    return this.data.territoryIds.map((id) => <Territory>this.map.modelMap[id]);
+    return this.map.territories.filter((territory) => territory.data.playerId === this.data.id);
+  }
+
+  get units() {
+    return this.map.units.filter((unit) => unit.data.playerId === this.data.id);
   }
 
   get victoryPoints() {

@@ -66,14 +66,12 @@ describe('Map Model', () => {
   it('remove unit', () => {
     const unit = map.unit('#UR1');
     expect(map.territory('#T1').data.unitIds).to.contain('#UR1', 'unit exists on territory');
-    expect(map.player('#PR').data.unitIds).to.contain('#UR1', 'unit exists on player');
     expect(map.data.unitIds).to.contain('#UR1', 'unit exists on map');
     expect(unit.data.locationId).to.equal('#T1', 'unit location set to territory');
 
     map.removeUnit(unit);
 
     expect(map.territory('#T1').data.unitIds).to.not.contain('#UR1', 'unit removed from territory');
-    expect(map.player('#PR').data.unitIds).to.not.contain('#UR1', 'unit removed from player');
     expect(map.data.unitIds).to.not.contain('#UR1', 'unit removed from map');
     expect(unit.data.locationId).to.equal(null, 'unit location unset');
   });
