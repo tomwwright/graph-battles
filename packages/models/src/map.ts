@@ -1,4 +1,4 @@
-import { ID, HasID, ModelMap, DataMap, toID, clone, unique } from './utils';
+import { ID, HasID, ModelMap, DataMap, toID, clone, unique, ModelData, exclude } from './utils';
 import { Player, PlayerData } from './player';
 import { UnitContainer } from './unitcontainer';
 import { Combat } from './combat';
@@ -73,7 +73,7 @@ export class GameMap extends UnitContainer<GameMapData> {
   }
 
   getCombats() {
-    const combatLocations: UnitContainer[] = [];
+    const combatLocations: UnitContainer<ModelData>[] = [];
     for (const edge of this.edges) {
       if (edge.hasCombat()) combatLocations.push(edge);
     }
@@ -125,14 +125,12 @@ export class GameMap extends UnitContainer<GameMapData> {
     this.modelMap[unitData.id] = new Unit(this, unitData);
 
     this.data.unitIds.push(unitData.id);
-    territory.data.unitIds.push(unitData.id);
 
     return this;
   }
 
   removeUnit(unit: Unit): GameMap {
-    unit.location.remove(unit.data.id);
-    this.remove(unit.data.id);
+    this.data.unitIds = exclude(this.data.unitIds, unit.data.id);
     delete this.data.dataMap[unit.data.id];
     unit.data.locationId = null;
 
@@ -213,7 +211,7 @@ export class GameMap extends UnitContainer<GameMapData> {
   }
 
   resolveTerritoryControl(previous: GameMap) {
-    const populatedTerritories = this.territories.filter((territory) => territory.data.unitIds.length > 0);
+    const populatedTerritories = this.territories.filter((territory) => territory.units.length > 0);
     for (const territory of populatedTerritories) {
       const previousTerritory = previous.territory(territory.data.id);
       territory.resolveTerritoryControl(previousTerritory);

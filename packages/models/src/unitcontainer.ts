@@ -1,17 +1,8 @@
-import { ID, HasID, Model, unique, exclude } from './utils';
-import { Unit } from './unit';
+import { HasID, Model, unique } from './utils';
 
-export type UnitContainerData = HasID & {
-  unitIds: ID[];
-};
-
-export abstract class UnitContainer<T extends UnitContainerData = UnitContainerData> extends Model<T> {
+export abstract class UnitContainer<T extends HasID> extends Model<T> {
   get units() {
-    return this.data.unitIds.map((id) => <Unit>this.map.modelMap[id]);
-  }
-
-  remove(unitId: ID) {
-    this.data.unitIds = exclude(this.data.unitIds, unitId);
+    return this.map.units.filter((unit) => unit.data.locationId == this.data.id);
   }
 
   hasCombat(): boolean {

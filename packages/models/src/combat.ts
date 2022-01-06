@@ -2,7 +2,7 @@ import { Player } from './player';
 import { UnitContainer } from './unitcontainer';
 import { Unit } from './unit';
 import { Status } from './values';
-import { sum, contains } from './utils';
+import { sum, contains, ModelData } from './utils';
 
 export class Combatant {
   player: Player;
@@ -26,10 +26,10 @@ export class Combatant {
 }
 
 export class Combat {
-  location: UnitContainer;
+  location: UnitContainer<ModelData>;
   combatants: Combatant[];
 
-  constructor(location: UnitContainer) {
+  constructor(location: UnitContainer<ModelData>) {
     this.location = location;
 
     const combatants: Combatant[] = [];

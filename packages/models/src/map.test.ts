@@ -42,19 +42,28 @@ describe('Map Model', () => {
   });
 
   it('add unit', () => {
-    expect(map.territory('#T4').data.unitIds).to.have.members(['#U1'], 'Territory #T4 units correct');
+    expect(map.territory('#T4').units.map((unit) => unit.data.id)).to.have.members(
+      ['#U1'],
+      'Territory #T4 units correct'
+    );
     expect(map.data.nextId).to.equal(0, 'Map starting ID counter correct');
 
     map.addUnit(map.territory('#T4'));
 
-    expect(map.territory('#T4').data.unitIds).to.have.members(['#U1', '#0'], 'Territory #T4 units correct');
+    expect(map.territory('#T4').units.map((unit) => unit.data.id)).to.have.members(
+      ['#U1', '#0'],
+      'Territory #T4 units correct'
+    );
     expect(map.data.nextId).to.equal(1, 'Map ID counter incremented');
     expect(map.unit('#0').data.playerId).to.equal(null, 'unit added to neutral territory has no player');
     expect(map.data.unitIds).to.contain.members(['#0'], 'new unit added to map units');
 
     map.addUnit(map.territory('#T1'));
 
-    expect(map.territory('#T1').data.unitIds).to.contain.members(['#1'], 'Territory #T1 units correct');
+    expect(map.territory('#T1').units.map((unit) => unit.data.id)).to.contain.members(
+      ['#1'],
+      'Territory #T1 units correct'
+    );
     expect(map.data.nextId).to.equal(2, 'Map ID counter incremented');
     expect(map.unit('#1').data.playerId).to.equal(
       map.territory('#T1').data.playerId,
@@ -65,13 +74,16 @@ describe('Map Model', () => {
 
   it('remove unit', () => {
     const unit = map.unit('#UR1');
-    expect(map.territory('#T1').data.unitIds).to.contain('#UR1', 'unit exists on territory');
+    expect(map.territory('#T1').units.map((unit) => unit.data.id)).to.contain('#UR1', 'unit exists on territory');
     expect(map.data.unitIds).to.contain('#UR1', 'unit exists on map');
     expect(unit.data.locationId).to.equal('#T1', 'unit location set to territory');
 
     map.removeUnit(unit);
 
-    expect(map.territory('#T1').data.unitIds).to.not.contain('#UR1', 'unit removed from territory');
+    expect(map.territory('#T1').units.map((unit) => unit.data.id)).to.not.contain(
+      '#UR1',
+      'unit removed from territory'
+    );
     expect(map.data.unitIds).to.not.contain('#UR1', 'unit removed from map');
     expect(unit.data.locationId).to.equal(null, 'unit location unset');
   });
@@ -227,13 +239,12 @@ describe('Map Model', () => {
       TerritoryAction.CREATE_UNIT,
       'Territory #T3 initial current action'
     );
-    expect(map.territory('#T1').data.unitIds).to.have.length(3, 'Territory #T1 initial number of units');
+    expect(map.territory('#T1').units).to.have.length(3, 'Territory #T1 initial number of units');
     expect(map.territory('#T2').data.currentAction).to.equal(
       TerritoryAction.CREATE_UNIT,
       '#T2 has the Create Unit action set'
     );
-    expect(map.territory('#T2').data.unitIds).to.have.length(1, '#T2 has a 1 unit initially');
-
+    expect(map.territory('#T2').units).to.have.length(1, '#T2 has a 1 unit initially');
     expect(map.territory('#T3').data.currentAction).to.equal(
       TerritoryAction.BUILD_SETTLEMENT,
       'Territory #T3 initial current action'
@@ -245,13 +256,13 @@ describe('Map Model', () => {
 
     map.resolveTerritoryActions();
 
-    expect(map.territory('#T1').data.currentAction).to.equal(null, 'Territory #T3 post-resolve current action');
-    expect(map.territory('#T1').data.unitIds).to.have.length(
+    expect(map.territory('#T1').data.currentAction).to.equal(null, 'Territory #T1 post-resolve current action');
+    expect(map.territory('#T1').units).to.have.length(
       3,
       '#T1 still has 3 units because opposing units stifled the Create Unit'
     );
     expect(map.territory('#T2').data.currentAction).to.equal(null, '#T2 post-resolve current action is cleared');
-    expect(map.territory('#T2').data.unitIds).to.have.length(2, '#T2 has a new unit created by Create Unit');
+    expect(map.territory('#T2').units).to.have.length(2, '#T2 has a new unit created by Create Unit');
     expect(map.territory('#T3').data.currentAction).to.equal(null, 'Territory #T3 post-resolve current action');
     expect(map.territory('#T3').hasProperty(TerritoryProperty.SETTLED)).to.equal(
       true,
