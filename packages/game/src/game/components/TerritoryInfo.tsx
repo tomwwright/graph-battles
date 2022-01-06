@@ -13,7 +13,12 @@ type TerritoryInfoProps = {
   setTerritoryAction?: (action: Values.TerritoryAction) => void;
 };
 
-const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory, currentPlayer, isPlanning, setTerritoryAction }) => {
+const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({
+  territory,
+  currentPlayer,
+  isPlanning,
+  setTerritoryAction,
+}) => {
   const isControlledByCurrentPlayer = currentPlayer && territory.data.playerId === currentPlayer.data.id;
 
   return (
@@ -30,28 +35,24 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({ territory
           <Small>
             <Text>
               Food {territory.data.food}/{territory.maxFood} (+{territory.foodProduction})
-          </Text>
+            </Text>
             <Text>Gold +{territory.goldProduction}</Text>
-            <Text>{territory.units.length > 0 ? territory.units.length : 'No'} units</Text>
           </Small>
         </Box>
       </Card>
-      {isControlledByCurrentPlayer && isPlanning ? territory.actions.map((action, i) => (
-        territory.data.currentAction === action ?
-          <SelectedTerritoryAction key={i} action={action} onClickUnbuy={setTerritoryAction} />
-          :
-          <TerritoryAction
-            key={i}
-            onClickBuy={setTerritoryAction}
-            action={action}
-            territory={territory}
-          />
-      ))
-        :
-        territory.data.currentAction != null && <SelectedTerritoryAction action={territory.data.currentAction} onClickUnbuy={null} />
-      }
+      {isControlledByCurrentPlayer && isPlanning
+        ? territory.actions.map((action, i) =>
+            territory.data.currentAction === action ? (
+              <SelectedTerritoryAction key={i} action={action} onClickUnbuy={setTerritoryAction} />
+            ) : (
+              <TerritoryAction key={i} onClickBuy={setTerritoryAction} action={action} territory={territory} />
+            )
+          )
+        : territory.data.currentAction != null && (
+            <SelectedTerritoryAction action={territory.data.currentAction} onClickUnbuy={null} />
+          )}
     </div>
-  )
+  );
 };
 
 export default TerritoryInfo;
