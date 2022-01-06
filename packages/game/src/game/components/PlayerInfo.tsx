@@ -24,7 +24,6 @@ const PlayerInfo: React.StatelessComponent<PlayerInfoProps> = ({ player, user, i
           )
         </Text>
         <Text>Victory Points {player.victoryPoints}</Text>
-        <Text>{player.data.ready ? 'Ready' : 'Not Ready'}</Text>
       </Small>
     </InfoPane>
   );
