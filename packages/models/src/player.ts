@@ -7,9 +7,6 @@ export type PlayerData = HasID & {
   gold: number;
   goldProduction: number;
   ready: boolean;
-  neutralTerritoryCaptures: number;
-  opponentTerritoryCaptures: number;
-  unitsDestroyed: number;
 };
 
 export class Player extends Model<PlayerData> {
@@ -26,10 +23,7 @@ export class Player extends Model<PlayerData> {
       this.data.gold +
       this.units.length +
       this.territories.length +
-      sum(this.territories.map((territory) => territory.data.properties.length)) +
-      this.data.neutralTerritoryCaptures +
-      2 * this.data.opponentTerritoryCaptures +
-      this.data.unitsDestroyed
+      sum(this.territories.map((territory) => territory.data.properties.length))
     );
   }
 

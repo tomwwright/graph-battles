@@ -29,10 +29,7 @@
           "unitIds": ["#UR1", "#UR2", "#UR3", "#UR4"],
           "gold": 5,
           "goldProduction": 0,
-          "ready": false,
-          "neutralTerritoryCaptures": 1,
-          "opponentTerritoryCaptures": 0,
-          "unitsDestroyed": 1
+          "ready": false
         },
         "#PB": {
           "id": "#PB",
@@ -42,10 +39,7 @@
           "unitIds": ["#UB1", "#UB2", "#UB3", "#UB4"],
           "gold": 1,
           "goldProduction": 1,
-          "ready": false,
-          "neutralTerritoryCaptures": 1,
-          "opponentTerritoryCaptures": 2,
-          "unitsDestroyed": 3
+          "ready": false
         },
         "#PG": {
           "id": "#PG",
@@ -55,10 +49,7 @@
           "unitIds": ["#UG1"],
           "gold": 10,
           "goldProduction": 2,
-          "ready": false,
-          "neutralTerritoryCaptures": 0,
-          "opponentTerritoryCaptures": 0,
-          "unitsDestroyed": 0
+          "ready": false
         },
         "#T1": {
           "id": "#T1",

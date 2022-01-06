@@ -35,10 +35,10 @@ describe('Map Model', () => {
   });
 
   it('winning players', () => {
-    expect(map.winningPlayers(10, false).map((player) => player.data.id)).to.have.members(['#PB']);
-    expect(map.winningPlayers(15, false).map((player) => player.data.id)).to.have.members(['#PB']);
+    expect(map.winningPlayers(10, false).map((player) => player.data.id)).to.have.members(['#PG']);
+    expect(map.winningPlayers(15, false).map((player) => player.data.id)).to.be.empty;
     expect(map.winningPlayers(25, false).map((player) => player.data.id)).to.be.empty;
-    expect(map.winningPlayers(25, true).map((player) => player.data.id)).to.have.members(['#PB']);
+    expect(map.winningPlayers(25, true).map((player) => player.data.id)).to.have.members(['#PG']);
   });
 
   it('add unit', () => {

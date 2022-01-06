@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const seedInput = fs.readFileSync("/dev/stdin", "utf-8");
+const fs = require('fs');
+const seedInput = fs.readFileSync('/dev/stdin', 'utf-8');
 
 const seedList = JSON.parse(seedInput);
 
@@ -11,27 +11,27 @@ if (!Array.isArray(seedList)) {
 }
 
 const map = {
-  id: "generated-map",
+  id: 'generated-map',
   nextId: 0,
-  type: "map",
+  type: 'map',
   playerIds: [],
   territoryIds: [],
   edgeIds: [],
   unitIds: [],
-  dataMap: {}
+  dataMap: {},
 };
 
 for (let i = 0; i < seedList.length; ++i) {
   const seed = seedList[i];
 
   switch (seed.type) {
-    case "player":
+    case 'player':
       processPlayer(map, seed);
       break;
-    case "territory":
+    case 'territory':
       processTerritory(map, seed);
       break;
-    case "edge":
+    case 'edge':
       processEdge(map, seed);
       break;
   }
@@ -50,10 +50,7 @@ function processPlayer(map, playerSeed) {
     gold: 0,
     goldProduction: 1,
     ready: false,
-    neutralTerritoryCaptures: 0,
-    opponentTerritoryCaptures: 0,
-    unitsDestroyed: 0,
-    ...playerSeed
+    ...playerSeed,
   };
 }
 
@@ -70,7 +67,7 @@ function processTerritory(map, territorySeed) {
     edgeIds: [],
     currentAction: null,
     properties: [],
-    ...territorySeed
+    ...territorySeed,
   };
 
   map.dataMap[id] = territory;
@@ -87,12 +84,12 @@ function processTerritory(map, territorySeed) {
     map.dataMap[id].unitIds.push(unitId);
 
     map.dataMap[unitId] = {
-      type: "unit",
+      type: 'unit',
       id: unitId,
       playerId: territory.playerId || null,
       locationId: territory.id,
       destinationId: null,
-      statuses: []
+      statuses: [],
     };
 
     if (territory.playerId) {
@@ -108,7 +105,7 @@ function processEdge(map, edgeSeed) {
   map.dataMap[id] = {
     id: id,
     unitIds: [],
-    ...edgeSeed
+    ...edgeSeed,
   };
 
   map.dataMap[edgeSeed.territoryAId].edgeIds.push(id);

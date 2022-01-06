@@ -25,9 +25,6 @@ const testMap: GameMapData = {
       gold: 5,
       goldProduction: 0,
       ready: false,
-      neutralTerritoryCaptures: 1,
-      opponentTerritoryCaptures: 0,
-      unitsDestroyed: 1,
     },
     '#PB': {
       id: '#PB',
@@ -36,9 +33,6 @@ const testMap: GameMapData = {
       gold: 4,
       goldProduction: 1,
       ready: false,
-      neutralTerritoryCaptures: 1,
-      opponentTerritoryCaptures: 2,
-      unitsDestroyed: 3,
     },
     '#PG': {
       id: '#PG',
@@ -47,9 +41,6 @@ const testMap: GameMapData = {
       gold: 13,
       goldProduction: 2,
       ready: false,
-      neutralTerritoryCaptures: 0,
-      opponentTerritoryCaptures: 0,
-      unitsDestroyed: 0,
     },
     '#T1': {
       id: '#T1',
