@@ -1,9 +1,14 @@
 import { TerritoryProperty } from './values';
 import { GameMap } from './map';
 import { Territory } from './territory';
+import { unique } from './utils';
 
 export function onCreateUnit(map: GameMap, territory: Territory) {
-  map.addUnit(territory);
+  const presentPlayerIds = unique(territory.units.map((unit) => unit.data.playerId)).filter((id) => !!id);
+  const onlyControllingPlayerPresent = presentPlayerIds.every((playerId) => playerId === territory.player.data.id);
+  if (onlyControllingPlayerPresent) {
+    map.addUnit(territory);
+  }
 }
 
 export function onBuildSettlement(map: GameMap, territory: Territory) {

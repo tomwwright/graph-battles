@@ -230,6 +230,12 @@ describe('Map Model', () => {
       'Territory #T3 initial current action'
     );
     expect(map.territory('#T1').data.unitIds).to.have.length(3, 'Territory #T1 initial number of units');
+    expect(map.territory('#T2').data.currentAction).to.equal(
+      TerritoryAction.CREATE_UNIT,
+      '#T2 has the Create Unit action set'
+    );
+    expect(map.territory('#T2').data.unitIds).to.have.length(1, '#T2 has a 1 unit initially');
+
     expect(map.territory('#T3').data.currentAction).to.equal(
       TerritoryAction.BUILD_SETTLEMENT,
       'Territory #T3 initial current action'
@@ -242,7 +248,12 @@ describe('Map Model', () => {
     map.resolveTerritoryActions();
 
     expect(map.territory('#T1').data.currentAction).to.equal(null, 'Territory #T3 post-resolve current action');
-    expect(map.territory('#T1').data.unitIds).to.have.length(4, 'Territory #T1 post-resolve number of units');
+    expect(map.territory('#T1').data.unitIds).to.have.length(
+      3,
+      '#T1 still has 3 units because opposing units stifled the Create Unit'
+    );
+    expect(map.territory('#T2').data.currentAction).to.equal(null, '#T2 post-resolve current action is cleared');
+    expect(map.territory('#T2').data.unitIds).to.have.length(2, '#T2 has a new unit created by Create Unit');
     expect(map.territory('#T3').data.currentAction).to.equal(null, 'Territory #T3 post-resolve current action');
     expect(map.territory('#T3').hasProperty(TerritoryProperty.SETTLED)).to.equal(
       true,
@@ -263,7 +274,10 @@ describe('Map Model', () => {
       TerritoryAction.CREATE_UNIT,
       'Territory #T1 initial current action'
     );
-    expect(preresolveMap.territory('#T2').data.currentAction).to.equal(null, 'Territory #T2 initial current action');
+    expect(preresolveMap.territory('#T2').data.currentAction).to.equal(
+      TerritoryAction.CREATE_UNIT,
+      'Territory #T2 initial current action'
+    );
     expect(preresolveMap.territory('#T3').data.currentAction).to.equal(
       TerritoryAction.BUILD_SETTLEMENT,
       'Territory #T3 initial current action'
@@ -281,7 +295,10 @@ describe('Map Model', () => {
     expect(map.territory('#T5').data.playerId).to.equal('#PG', 'Territory #T5 post-resolve controller');
 
     expect(map.territory('#T1').data.currentAction).to.equal(null, 'Territory #T1 post-resolve current action');
-    expect(map.territory('#T2').data.currentAction).to.equal(null, 'Territory #T2 post-resolve current action');
+    expect(map.territory('#T2').data.currentAction).to.equal(
+      TerritoryAction.CREATE_UNIT,
+      'Territory #T2 post-resolve current action'
+    );
     expect(map.territory('#T3').data.currentAction).to.equal(
       TerritoryAction.BUILD_SETTLEMENT,
       'Territory #T3 post-resolve current action'

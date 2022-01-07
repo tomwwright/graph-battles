@@ -73,7 +73,7 @@ const testMap: GameMapData = {
       edgeIds: ['#E12', '#E23'],
       food: 2,
       properties: [],
-      currentAction: null,
+      currentAction: TerritoryAction.CREATE_UNIT,
     },
     '#T3': {
       id: '#T3',
