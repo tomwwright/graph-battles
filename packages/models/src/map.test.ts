@@ -18,15 +18,19 @@ describe('Map Model', () => {
   });
 
   it('getters', () => {
-    expect(map.units.map((unit) => unit.data.id)).to.have.members(map.data.unitIds);
-    expect(map.territories.map((territory) => territory.data.id)).to.have.members(map.data.territoryIds);
-    expect(map.edges.map((edge) => edge.data.id)).to.have.members(map.data.edgeIds);
-    expect(map.players.map((player) => player.data.id)).to.have.members(map.data.playerIds);
-
-    for (const unitId of map.data.unitIds) expect(map.unit(unitId).data.id).to.equal(unitId);
-    for (const territoryId of map.data.territoryIds) expect(map.territory(territoryId).data.id).to.equal(territoryId);
-    for (const edgeId of map.data.edgeIds) expect(map.edge(edgeId).data.id).to.equal(edgeId);
-    for (const playerId of map.data.playerIds) expect(map.player(playerId).data.id).to.equal(playerId);
+    expect(map.units.map((unit) => unit.data.id)).to.have.members(
+      ['#UR1', '#UR2', '#UR3', '#UR4', '#UB1', '#UB2', '#UB3', '#UB4', '#UG1', '#U1'],
+      'correct units ids'
+    );
+    expect(map.territories.map((territory) => territory.data.id)).to.have.members(
+      ['#T1', '#T2', '#T3', '#T4', '#T5'],
+      'correct territory ids'
+    );
+    expect(map.edges.map((edge) => edge.data.id)).to.have.members(
+      ['#E12', '#E13', '#E23', '#E34', '#E35', '#E45'],
+      'correct edge ids'
+    );
+    expect(map.players.map((player) => player.data.id)).to.have.members(['#PR', '#PB', '#PG'], 'correct player ids');
 
     for (const edge of map.edges) {
       expect(map.findEdge(edge.data.territoryAId, edge.data.territoryBId).data.id).to.equal(edge.data.id);
@@ -56,7 +60,7 @@ describe('Map Model', () => {
     );
     expect(map.data.nextId).to.equal(1, 'Map ID counter incremented');
     expect(map.unit('#0').data.playerId).to.equal(null, 'unit added to neutral territory has no player');
-    expect(map.data.unitIds).to.contain.members(['#0'], 'new unit added to map units');
+    expect(map.units.map((unit) => unit.data.id)).to.contain.members(['#0'], 'new unit added to map units');
 
     map.addUnit(map.territory('#T1'));
 
@@ -69,13 +73,13 @@ describe('Map Model', () => {
       map.territory('#T1').data.playerId,
       'unit added to territory has same controlling player'
     );
-    expect(map.data.unitIds).to.contain.members(['#1'], 'new unit added to map units');
+    expect(map.units.map((unit) => unit.data.id)).to.contain.members(['#1'], 'new unit added to map units');
   });
 
   it('remove unit', () => {
     const unit = map.unit('#UR1');
     expect(map.territory('#T1').units.map((unit) => unit.data.id)).to.contain('#UR1', 'unit exists on territory');
-    expect(map.data.unitIds).to.contain('#UR1', 'unit exists on map');
+    expect(map.units.map((unit) => unit.data.id)).to.contain('#UR1', 'unit exists on map');
     expect(unit.data.locationId).to.equal('#T1', 'unit location set to territory');
 
     map.removeUnit(unit);
@@ -84,7 +88,7 @@ describe('Map Model', () => {
       '#UR1',
       'unit removed from territory'
     );
-    expect(map.data.unitIds).to.not.contain('#UR1', 'unit removed from map');
+    expect(map.units.map((unit) => unit.data.id)).to.not.contain('#UR1', 'unit removed from map');
     expect(unit.data.locationId).to.equal(null, 'unit location unset');
   });
 

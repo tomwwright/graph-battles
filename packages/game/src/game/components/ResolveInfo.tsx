@@ -61,7 +61,9 @@ const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, ui
                 />
               );
             case ResolveState.GOLD:
-              const user = gameStore.game.users.find((user) => user.players.map((player) => player.id).includes(id));
+              const user = gameStore.game.users.find((user) =>
+                user.players.map((player) => player.data.id).includes(id)
+              );
               return <PlayerInfo key={i} player={gameStore.map.player(id)} user={user} isActive={false} />;
             case ResolveState.COMBATS:
               return <CombatInfo key={i} combat={gameStore.combats.find((combat) => combat.location.data.id === id)} />;

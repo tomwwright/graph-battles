@@ -9,7 +9,7 @@ import { NewPlayer } from 'lobby/components/NewPlayer';
 
 import { ViewData } from 'game/stores/phaser';
 
-import { GameData, GameMapData, PlayerData, UserData, Utils, Values } from '@battles/models';
+import { GameData, GameMap, GameMapData, PlayerData, UserData, Utils, Values } from '@battles/models';
 import { GameAPI } from 'game/providers/api';
 
 type NewGameProps = {
@@ -88,9 +88,10 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
     ]);
 
     const mapData: GameMapData = responses[0].data;
+    const map = new GameMap(mapData);
     const viewData: ViewData = responses[1].data;
 
-    const players = mapData.playerIds.map((playerId) => mapData.dataMap[playerId] as PlayerData);
+    const players = map.players.map((player) => player.data);
     for (let i = 0; i < players.length; i++) {
       players[i].colour = Number.parseInt(this.state.players[i].colour.substring(1), 16);
     }
@@ -119,7 +120,7 @@ export class NewGame extends React.Component<NewGameProps, NewGameState> {
         id: generateUserId(player, i),
         type: 'user' as 'user',
         name: player.name,
-        playerIds: [mapData.playerIds[i]],
+        playerIds: [map.playerIds[i]],
       })),
       maxTurns: this.state.turns,
       maxVictoryPoints: this.state.victoryPoints,

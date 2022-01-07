@@ -13,14 +13,8 @@ describe('Unit Model', () => {
     map = new GameMap(clone(testMapData));
   });
 
-  it('unit objects in the test map', () => {
-    expect(map.units.map((unit) => unit.data.id)).to.have.members(map.data.unitIds);
-  });
-
   it('getters', () => {
-    for (const unitId of map.data.unitIds) {
-      const unit = map.unit(unitId);
-
+    for (const unit of map.units) {
       expect(unit.location.data.id).to.be.equal(unit.data.locationId, `Unit ${unit.data.id}: Location getter`);
 
       if (unit.data.destinationId)

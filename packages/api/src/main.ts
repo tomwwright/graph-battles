@@ -2,7 +2,7 @@ import serverlessExpress from "@vendia/serverless-express";
 import express from "express";
 import cors from "cors";
 import { GameModel, PlayerActionsModel, table, ViewModel } from "./models";
-import { Game, GameData, GameMap, Actions, Player } from "@battles/models";
+import { Game, GameData, GameMap, Actions } from "@battles/models";
 
 const app = express();
 
@@ -19,7 +19,7 @@ app.get("/game/_all", async (_, res) => {
     const game = new Game(JSON.parse(gameRecord.gameData ?? "{}") as GameData);
     const leaderboard = game.users
       .map((user) => {
-        const player = new Player(new GameMap(game.latestMap), user.players[0]);
+        const player = user.players[0];
 
         return {
           name: user.data.name,
@@ -31,7 +31,7 @@ app.get("/game/_all", async (_, res) => {
 
     return {
       gameId: game.data.id,
-      numTerritories: game.latestMap.territoryIds.length,
+      numTerritories: new GameMap(game.latestMap).territories.length,
       turn: game.data.maps.length,
       maxTurns: game.data.maxTurns,
       maxVictoryPoints: game.data.maxVictoryPoints,

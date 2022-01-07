@@ -13,14 +13,8 @@ describe('Territory Model', () => {
     map = new GameMap(clone(testMapData));
   });
 
-  it('territory objects in the test map', () => {
-    expect(map.territories.map((territory) => territory.data.id)).to.have.members(map.data.territoryIds);
-  });
-
   it('getters', () => {
-    for (const territoryId of map.data.territoryIds) {
-      const territory = map.territory(territoryId);
-
+    for (const territory of map.territories) {
       if (territory.data.playerId)
         expect(territory.player.data.id).to.be.equal(
           territory.data.playerId,

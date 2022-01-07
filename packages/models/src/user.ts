@@ -1,9 +1,11 @@
 import { ID, HasID } from './utils';
 import { Game } from './game';
 import { PlayerData } from './player';
+import { GameMap } from '.';
 
 export type UserData = HasID & {
   name: string;
+  type: 'user';
   playerIds: ID[];
 };
 
@@ -17,6 +19,7 @@ export class User {
   }
 
   get players() {
-    return this.data.playerIds.map((id) => this.game.latestMap.dataMap[id] as PlayerData);
+    const map = new GameMap(this.game.latestMap);
+    return map.players.filter((player) => this.data.playerIds.includes(player.data.id));
   }
 }

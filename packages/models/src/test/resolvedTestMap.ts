@@ -5,10 +5,6 @@ const testMap: GameMapData = {
   id: 'test-map',
   type: 'map',
   nextId: 1,
-  playerIds: ['#PR', '#PB', '#PG'],
-  territoryIds: ['#T1', '#T2', '#T3', '#T4', '#T5'],
-  edgeIds: ['#E12', '#E13', '#E23', '#E34', '#E35', '#E45'],
-  unitIds: ['#UR1', '#UR2', '#UB3', '#U1', '#0'],
   dataMap: {
     '#0': {
       destinationId: null,

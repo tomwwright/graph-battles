@@ -72,9 +72,9 @@ export default class UiStore {
     const playerIds = this.filteredUserIds
       ? this.gameStore.game.users
           .filter((user) => this.filteredUserIds.includes(user.data.id))
-          .map((user) => user.players.map((player) => player.id))
+          .map((user) => user.players.map((player) => player.data.id))
           .flat()
-      : this.gameStore.map.data.playerIds;
+      : this.gameStore.map.playerIds;
 
     return playerIds;
   }
@@ -237,7 +237,7 @@ export default class UiStore {
     if (this.isResolving) {
       return;
     }
-    const focusIds = this.gameStore.resolveState === ResolveState.GOLD ? this.gameStore.map.data.territoryIds : [id];
+    const focusIds = this.gameStore.resolveState === ResolveState.GOLD ? this.gameStore.map.territoryIds : [id];
     this.isResolving = true;
     this.phaserStore.focusOn(focusIds).then(() => {
       runInAction(() => {
