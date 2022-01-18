@@ -1,9 +1,8 @@
-import { ID, Model } from './utils';
-import { GameMap } from './map';
-import { UnitContainer, UnitContainerData } from './unitcontainer';
+import { HasID, ID } from './utils';
+import { UnitContainer } from './unitcontainer';
 import { Territory } from './territory';
 
-export type EdgeData = UnitContainerData & {
+export type EdgeData = HasID & {
   type: 'edge';
   territoryAId: ID;
   territoryBId: ID;

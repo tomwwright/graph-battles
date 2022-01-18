@@ -37,17 +37,8 @@ describe('Player Model', () => {
   });
 
   it('calculates victory points', () => {
-    expect(map.player('#PR').victoryPoints).to.equal(
-      5 + 4 + 1 + 0 + 1 + 2 * 0 + 1,
-      'red player has correct victory points'
-    );
-    expect(map.player('#PB').victoryPoints).to.equal(
-      1 + 4 + 2 + 5 + 1 + 2 * 2 + 3,
-      'blue player has correct victory points'
-    );
-    expect(map.player('#PG').victoryPoints).to.equal(
-      10 + 1 + 1 + 2 + 0 + 2 * 0 + 0,
-      'green player has correct victory points'
-    );
+    expect(map.player('#PR').victoryPoints).to.equal(5 + 4 + 1 + 0, 'red player has correct victory points');
+    expect(map.player('#PB').victoryPoints).to.equal(1 + 4 + 2 + 5, 'blue player has correct victory points');
+    expect(map.player('#PG').victoryPoints).to.equal(10 + 1 + 1 + 2, 'green player has correct victory points');
   });
 });

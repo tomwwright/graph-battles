@@ -38,14 +38,10 @@ export class Unit extends Model<UnitData> {
     if (!this.movementEdge)
       throw new Error(`Unit ${this.data.id} moving to non-adjacent destination: ${this.data.destinationId}`);
 
-    this.location.data.unitIds = exclude(this.location.data.unitIds, this.data.id);
-
     if (this.data.locationId === this.movementEdge.data.id) {
-      this.destination.data.unitIds = include(this.destination.data.unitIds, this.data.id);
       this.data.locationId = this.destination.data.id;
       this.data.destinationId = null;
     } else {
-      this.movementEdge.data.unitIds = include(this.movementEdge.data.unitIds, this.data.id);
       this.data.locationId = this.movementEdge.data.id;
     }
   }

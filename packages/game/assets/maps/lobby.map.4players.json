@@ -2,209 +2,44 @@
   "id": "generated-map",
   "nextId": 20,
   "type": "map",
-  "playerIds": [
-    "#P1",
-    "#P2",
-    "#P3",
-    "#P4"
-  ],
-  "territoryIds": [
-    "#T1",
-    "#T2",
-    "#T3",
-    "#T4",
-    "#T5",
-    "#T6",
-    "#T7",
-    "#T8",
-    "#T9",
-    "#T10",
-    "#T11",
-    "#T12",
-    "#T13",
-    "#T14",
-    "#T15",
-    "#T16",
-    "#T17",
-    "#T18",
-    "#T19",
-    "#T20",
-    "#T21",
-    "#T22",
-    "#T23"
-  ],
-  "edgeIds": [
-    "#T1#T2",
-    "#T1#T3",
-    "#T1#T4",
-    "#T1#T6",
-    "#T2#T4",
-    "#T2#T5",
-    "#T3#T6",
-    "#T3#T7",
-    "#T4#T6",
-    "#T4#T8",
-    "#T5#T9",
-    "#T6#T7",
-    "#T7#T10",
-    "#T8#T11",
-    "#T8#T12",
-    "#T9#T12",
-    "#T9#T13",
-    "#T10#T11",
-    "#T10#T14",
-    "#T11#T12",
-    "#T11#T14",
-    "#T11#T15",
-    "#T12#T13",
-    "#T12#T15",
-    "#T12#T16",
-    "#T13#T16",
-    "#T14#T19",
-    "#T15#T16",
-    "#T15#T17",
-    "#T15#T18",
-    "#T16#T18",
-    "#T16#T21",
-    "#T17#T19",
-    "#T17#T20",
-    "#T17#T22",
-    "#T18#T21",
-    "#T18#T23",
-    "#T19#T22",
-    "#T20#T22",
-    "#T20#T23",
-    "#T21#T23"
-  ],
-  "unitIds": [
-    "#U0",
-    "#U1",
-    "#U2",
-    "#U3",
-    "#U4",
-    "#U5",
-    "#U6",
-    "#U7",
-    "#U8",
-    "#U9",
-    "#U10",
-    "#U11",
-    "#U12",
-    "#U13",
-    "#U14",
-    "#U15",
-    "#U16",
-    "#U17",
-    "#U18",
-    "#U19"
-  ],
   "dataMap": {
     "#P1": {
-      "unitIds": [
-        "#U0",
-        "#U1",
-        "#U2",
-        "#U3",
-        "#U4"
-      ],
-      "territoryIds": [
-        "#T1",
-        "#T4"
-      ],
       "colour": 0,
       "gold": 0,
       "goldProduction": 1,
       "ready": false,
-      "neutralTerritoryCaptures": 0,
-      "opponentTerritoryCaptures": 0,
-      "unitsDestroyed": 0,
       "type": "player",
       "id": "#P1"
     },
     "#P2": {
-      "unitIds": [
-        "#U5",
-        "#U6",
-        "#U10",
-        "#U11",
-        "#U12"
-      ],
-      "territoryIds": [
-        "#T9",
-        "#T13"
-      ],
       "colour": 0,
       "gold": 0,
       "goldProduction": 1,
       "ready": false,
-      "neutralTerritoryCaptures": 0,
-      "opponentTerritoryCaptures": 0,
-      "unitsDestroyed": 0,
       "type": "player",
       "id": "#P2"
     },
     "#P3": {
-      "unitIds": [
-        "#U7",
-        "#U8",
-        "#U9",
-        "#U13",
-        "#U14"
-      ],
-      "territoryIds": [
-        "#T10",
-        "#T14"
-      ],
       "colour": 0,
       "gold": 0,
       "goldProduction": 1,
       "ready": false,
-      "neutralTerritoryCaptures": 0,
-      "opponentTerritoryCaptures": 0,
-      "unitsDestroyed": 0,
       "type": "player",
       "id": "#P3"
     },
     "#P4": {
-      "unitIds": [
-        "#U15",
-        "#U16",
-        "#U17",
-        "#U18",
-        "#U19"
-      ],
-      "territoryIds": [
-        "#T20",
-        "#T23"
-      ],
       "colour": 0,
       "gold": 0,
       "goldProduction": 1,
       "ready": false,
-      "neutralTerritoryCaptures": 0,
-      "opponentTerritoryCaptures": 0,
-      "unitsDestroyed": 0,
       "type": "player",
       "id": "#P4"
     },
     "#T1": {
-      "unitIds": [
-        "#U0",
-        "#U1"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T1#T2",
-        "#T1#T3",
-        "#T1#T4",
-        "#T1#T6"
-      ],
+      "edgeIds": ["#T1#T2", "#T1#T3", "#T1#T4", "#T1#T6"],
       "currentAction": null,
-      "properties": [
-        0,
-        2,
-        3
-      ],
+      "properties": [0, 2, 3],
       "type": "territory",
       "id": "#T1",
       "playerId": "#P1"
@@ -226,50 +61,26 @@
       "statuses": []
     },
     "#T2": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T1#T2",
-        "#T2#T4",
-        "#T2#T5"
-      ],
+      "edgeIds": ["#T1#T2", "#T2#T4", "#T2#T5"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T2"
     },
     "#T3": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T1#T3",
-        "#T3#T6",
-        "#T3#T7"
-      ],
+      "edgeIds": ["#T1#T3", "#T3#T6", "#T3#T7"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T3"
     },
     "#T4": {
-      "unitIds": [
-        "#U2",
-        "#U3",
-        "#U4"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T1#T4",
-        "#T2#T4",
-        "#T4#T6",
-        "#T4#T8"
-      ],
+      "edgeIds": ["#T1#T4", "#T2#T4", "#T4#T6", "#T4#T8"],
       "currentAction": null,
-      "properties": [
-        0,
-        1,
-        3
-      ],
+      "properties": [0, 1, 3],
       "type": "territory",
       "id": "#T4",
       "playerId": "#P1"
@@ -299,74 +110,42 @@
       "statuses": []
     },
     "#T5": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T2#T5",
-        "#T5#T9"
-      ],
+      "edgeIds": ["#T2#T5", "#T5#T9"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T5"
     },
     "#T6": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T1#T6",
-        "#T3#T6",
-        "#T4#T6",
-        "#T6#T7"
-      ],
+      "edgeIds": ["#T1#T6", "#T3#T6", "#T4#T6", "#T6#T7"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T6"
     },
     "#T7": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T3#T7",
-        "#T6#T7",
-        "#T7#T10"
-      ],
+      "edgeIds": ["#T3#T7", "#T6#T7", "#T7#T10"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T7"
     },
     "#T8": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T4#T8",
-        "#T8#T11",
-        "#T8#T12"
-      ],
+      "edgeIds": ["#T4#T8", "#T8#T11", "#T8#T12"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T8"
     },
     "#T9": {
-      "unitIds": [
-        "#U5",
-        "#U6"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T5#T9",
-        "#T9#T12",
-        "#T9#T13"
-      ],
+      "edgeIds": ["#T5#T9", "#T9#T12", "#T9#T13"],
       "currentAction": null,
-      "properties": [
-        0,
-        2,
-        3
-      ],
+      "properties": [0, 2, 3],
       "type": "territory",
       "id": "#T9",
       "playerId": "#P2"
@@ -388,23 +167,10 @@
       "statuses": []
     },
     "#T10": {
-      "unitIds": [
-        "#U7",
-        "#U8",
-        "#U9"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T7#T10",
-        "#T10#T11",
-        "#T10#T14"
-      ],
+      "edgeIds": ["#T7#T10", "#T10#T11", "#T10#T14"],
       "currentAction": null,
-      "properties": [
-        0,
-        1,
-        3
-      ],
+      "properties": [0, 1, 3],
       "type": "territory",
       "id": "#T10",
       "playerId": "#P3"
@@ -434,54 +200,26 @@
       "statuses": []
     },
     "#T11": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T8#T11",
-        "#T10#T11",
-        "#T11#T12",
-        "#T11#T14",
-        "#T11#T15"
-      ],
+      "edgeIds": ["#T8#T11", "#T10#T11", "#T11#T12", "#T11#T14", "#T11#T15"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T11"
     },
     "#T12": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T8#T12",
-        "#T9#T12",
-        "#T11#T12",
-        "#T12#T13",
-        "#T12#T15",
-        "#T12#T16"
-      ],
+      "edgeIds": ["#T8#T12", "#T9#T12", "#T11#T12", "#T12#T13", "#T12#T15", "#T12#T16"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T12"
     },
     "#T13": {
-      "unitIds": [
-        "#U10",
-        "#U11",
-        "#U12"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T9#T13",
-        "#T12#T13",
-        "#T13#T16"
-      ],
+      "edgeIds": ["#T9#T13", "#T12#T13", "#T13#T16"],
       "currentAction": null,
-      "properties": [
-        0,
-        1,
-        3
-      ],
+      "properties": [0, 1, 3],
       "type": "territory",
       "id": "#T13",
       "playerId": "#P2"
@@ -511,22 +249,10 @@
       "statuses": []
     },
     "#T14": {
-      "unitIds": [
-        "#U13",
-        "#U14"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T10#T14",
-        "#T11#T14",
-        "#T14#T19"
-      ],
+      "edgeIds": ["#T10#T14", "#T11#T14", "#T14#T19"],
       "currentAction": null,
-      "properties": [
-        0,
-        2,
-        3
-      ],
+      "properties": [0, 2, 3],
       "type": "territory",
       "id": "#T14",
       "playerId": "#P3"
@@ -548,97 +274,50 @@
       "statuses": []
     },
     "#T15": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T11#T15",
-        "#T12#T15",
-        "#T15#T16",
-        "#T15#T17",
-        "#T15#T18"
-      ],
+      "edgeIds": ["#T11#T15", "#T12#T15", "#T15#T16", "#T15#T17", "#T15#T18"],
       "currentAction": null,
-      "properties": [
-        0,
-        3
-      ],
+      "properties": [0, 3],
       "type": "territory",
       "id": "#T15"
     },
     "#T16": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T12#T16",
-        "#T13#T16",
-        "#T15#T16",
-        "#T16#T18",
-        "#T16#T21"
-      ],
+      "edgeIds": ["#T12#T16", "#T13#T16", "#T15#T16", "#T16#T18", "#T16#T21"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T16"
     },
     "#T17": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T15#T17",
-        "#T17#T19",
-        "#T17#T20",
-        "#T17#T22"
-      ],
+      "edgeIds": ["#T15#T17", "#T17#T19", "#T17#T20", "#T17#T22"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T17"
     },
     "#T18": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T15#T18",
-        "#T16#T18",
-        "#T18#T21",
-        "#T18#T23"
-      ],
+      "edgeIds": ["#T15#T18", "#T16#T18", "#T18#T21", "#T18#T23"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T18"
     },
     "#T19": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T14#T19",
-        "#T17#T19",
-        "#T19#T22"
-      ],
+      "edgeIds": ["#T14#T19", "#T17#T19", "#T19#T22"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T19"
     },
     "#T20": {
-      "unitIds": [
-        "#U15",
-        "#U16",
-        "#U17"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T17#T20",
-        "#T20#T22",
-        "#T20#T23"
-      ],
+      "edgeIds": ["#T17#T20", "#T20#T22", "#T20#T23"],
       "currentAction": null,
-      "properties": [
-        0,
-        1,
-        3
-      ],
+      "properties": [0, 1, 3],
       "type": "territory",
       "id": "#T20",
       "playerId": "#P4"
@@ -668,48 +347,26 @@
       "statuses": []
     },
     "#T21": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T16#T21",
-        "#T18#T21",
-        "#T21#T23"
-      ],
+      "edgeIds": ["#T16#T21", "#T18#T21", "#T21#T23"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T21"
     },
     "#T22": {
-      "unitIds": [],
       "food": 3,
-      "edgeIds": [
-        "#T17#T22",
-        "#T19#T22",
-        "#T20#T22"
-      ],
+      "edgeIds": ["#T17#T22", "#T19#T22", "#T20#T22"],
       "currentAction": null,
       "properties": [],
       "type": "territory",
       "id": "#T22"
     },
     "#T23": {
-      "unitIds": [
-        "#U18",
-        "#U19"
-      ],
       "food": 3,
-      "edgeIds": [
-        "#T18#T23",
-        "#T20#T23",
-        "#T21#T23"
-      ],
+      "edgeIds": ["#T18#T23", "#T20#T23", "#T21#T23"],
       "currentAction": null,
-      "properties": [
-        0,
-        2,
-        3
-      ],
+      "properties": [0, 2, 3],
       "type": "territory",
       "id": "#T23",
       "playerId": "#P4"
@@ -732,287 +389,287 @@
     },
     "#T1#T2": {
       "id": "#T1#T2",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T1",
       "territoryBId": "#T2"
     },
     "#T1#T3": {
       "id": "#T1#T3",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T1",
       "territoryBId": "#T3"
     },
     "#T1#T4": {
       "id": "#T1#T4",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T1",
       "territoryBId": "#T4"
     },
     "#T1#T6": {
       "id": "#T1#T6",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T1",
       "territoryBId": "#T6"
     },
     "#T2#T4": {
       "id": "#T2#T4",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T2",
       "territoryBId": "#T4"
     },
     "#T2#T5": {
       "id": "#T2#T5",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T2",
       "territoryBId": "#T5"
     },
     "#T3#T6": {
       "id": "#T3#T6",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T3",
       "territoryBId": "#T6"
     },
     "#T3#T7": {
       "id": "#T3#T7",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T3",
       "territoryBId": "#T7"
     },
     "#T4#T6": {
       "id": "#T4#T6",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T4",
       "territoryBId": "#T6"
     },
     "#T4#T8": {
       "id": "#T4#T8",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T4",
       "territoryBId": "#T8"
     },
     "#T5#T9": {
       "id": "#T5#T9",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T5",
       "territoryBId": "#T9"
     },
     "#T6#T7": {
       "id": "#T6#T7",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T6",
       "territoryBId": "#T7"
     },
     "#T7#T10": {
       "id": "#T7#T10",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T7",
       "territoryBId": "#T10"
     },
     "#T8#T11": {
       "id": "#T8#T11",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T8",
       "territoryBId": "#T11"
     },
     "#T8#T12": {
       "id": "#T8#T12",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T8",
       "territoryBId": "#T12"
     },
     "#T9#T12": {
       "id": "#T9#T12",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T9",
       "territoryBId": "#T12"
     },
     "#T9#T13": {
       "id": "#T9#T13",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T9",
       "territoryBId": "#T13"
     },
     "#T10#T11": {
       "id": "#T10#T11",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T10",
       "territoryBId": "#T11"
     },
     "#T10#T14": {
       "id": "#T10#T14",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T10",
       "territoryBId": "#T14"
     },
     "#T11#T12": {
       "id": "#T11#T12",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T11",
       "territoryBId": "#T12"
     },
     "#T11#T14": {
       "id": "#T11#T14",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T11",
       "territoryBId": "#T14"
     },
     "#T11#T15": {
       "id": "#T11#T15",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T11",
       "territoryBId": "#T15"
     },
     "#T12#T13": {
       "id": "#T12#T13",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T12",
       "territoryBId": "#T13"
     },
     "#T12#T15": {
       "id": "#T12#T15",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T12",
       "territoryBId": "#T15"
     },
     "#T12#T16": {
       "id": "#T12#T16",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T12",
       "territoryBId": "#T16"
     },
     "#T13#T16": {
       "id": "#T13#T16",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T13",
       "territoryBId": "#T16"
     },
     "#T14#T19": {
       "id": "#T14#T19",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T14",
       "territoryBId": "#T19"
     },
     "#T15#T16": {
       "id": "#T15#T16",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T15",
       "territoryBId": "#T16"
     },
     "#T15#T17": {
       "id": "#T15#T17",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T15",
       "territoryBId": "#T17"
     },
     "#T15#T18": {
       "id": "#T15#T18",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T15",
       "territoryBId": "#T18"
     },
     "#T16#T18": {
       "id": "#T16#T18",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T16",
       "territoryBId": "#T18"
     },
     "#T16#T21": {
       "id": "#T16#T21",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T16",
       "territoryBId": "#T21"
     },
     "#T17#T19": {
       "id": "#T17#T19",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T17",
       "territoryBId": "#T19"
     },
     "#T17#T20": {
       "id": "#T17#T20",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T17",
       "territoryBId": "#T20"
     },
     "#T17#T22": {
       "id": "#T17#T22",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T17",
       "territoryBId": "#T22"
     },
     "#T18#T21": {
       "id": "#T18#T21",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T18",
       "territoryBId": "#T21"
     },
     "#T18#T23": {
       "id": "#T18#T23",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T18",
       "territoryBId": "#T23"
     },
     "#T19#T22": {
       "id": "#T19#T22",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T19",
       "territoryBId": "#T22"
     },
     "#T20#T22": {
       "id": "#T20#T22",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T20",
       "territoryBId": "#T22"
     },
     "#T20#T23": {
       "id": "#T20#T23",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T20",
       "territoryBId": "#T23"
     },
     "#T21#T23": {
       "id": "#T21#T23",
-      "unitIds": [],
+
       "type": "edge",
       "territoryAId": "#T21",
       "territoryBId": "#T23"

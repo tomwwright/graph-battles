@@ -56,7 +56,7 @@ export default class PhaserStore {
         const kineticScroller = new KineticScroller(this);
         this.phaser.world.add(kineticScroller.sprite);
 
-        for (const territoryId of this.gameStore.map.data.territoryIds) {
+        for (const territoryId of this.gameStore.map.territoryIds) {
           this.territoryViews.set(
             territoryId,
             new TerritoryView(
@@ -70,7 +70,7 @@ export default class PhaserStore {
           );
         }
 
-        for (const edgeId of this.gameStore.map.data.edgeIds) {
+        for (const edgeId of this.gameStore.map.edgeIds) {
           this.edgeViews.set(edgeId, new EdgeView(this, this.gameStore, edgeId));
         }
 
@@ -83,9 +83,8 @@ export default class PhaserStore {
 
   @action
   centreCamera(): Promise<{}> {
-    if (this.gameStore.map.data.territoryIds.length == 0)
-      throw new Error('No territories exist, cannot centre camera!');
-    return this.focusOn(this.gameStore.map.data.territoryIds);
+    if (this.gameStore.map.territoryIds.length == 0) throw new Error('No territories exist, cannot centre camera!');
+    return this.focusOn(this.gameStore.map.territoryIds);
   }
 
   @action
@@ -140,13 +139,13 @@ export default class PhaserStore {
 
   private initialiseUnitViews() {
     this.unitViews.forEach((unitView: UnitView, id: ID) => {
-      if (!Utils.contains(this.gameStore.map.data.unitIds, unitView.modelId)) {
+      if (!Utils.contains(this.gameStore.map.unitIds, unitView.modelId)) {
         this.unitViews.delete(unitView.modelId);
         unitView.destroy();
       }
     });
 
-    this.gameStore.map.data.unitIds.forEach((unitId) => {
+    this.gameStore.map.unitIds.forEach((unitId) => {
       const unitView = this.unitViews.get(unitId);
       if (!unitView) {
         this.unitViews.set(unitId, new UnitView(this, this.gameStore, this.uiStore, unitId));

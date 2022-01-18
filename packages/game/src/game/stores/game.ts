@@ -343,12 +343,12 @@ export default class GameStore {
   }
 
   private toGoldState() {
-    this.resolveIds = Utils.clone(this.map.data.playerIds);
+    this.resolveIds = Utils.clone(this.map.players.map((player) => player.data.id));
     this.resolveState = ResolveState.GOLD;
   }
 
   private toFoodState() {
-    this.resolveIds = Utils.clone(this.map.data.territoryIds);
+    this.resolveIds = Utils.clone(this.map.territories.map((territory) => territory.data.id));
 
     const invisibleResolveIds = this.resolveIds.filter((territoryId) => !this.isLocationVisible(territoryId));
     invisibleResolveIds.forEach((territoryId) => this.resolveFood(territoryId));
@@ -358,7 +358,7 @@ export default class GameStore {
   }
 
   private toTerritoryControlState() {
-    this.resolveIds = Utils.clone(this.map.data.territoryIds);
+    this.resolveIds = Utils.clone(this.map.territories.map((territory) => territory.data.id));
 
     const invisibleResolveIds = this.resolveIds.filter((territoryId) => !this.isLocationVisible(territoryId));
     invisibleResolveIds.forEach((territoryId) => this.resolveTerritoryControl(territoryId));

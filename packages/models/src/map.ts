@@ -1,4 +1,4 @@
-import { ID, HasID, ModelMap, DataMap, toID, clone, unique } from './utils';
+import { ID, HasID, ModelMap, DataMap, toID, clone, unique, ModelData, exclude } from './utils';
 import { Player, PlayerData } from './player';
 import { UnitContainer } from './unitcontainer';
 import { Combat } from './combat';
@@ -14,10 +14,6 @@ import { applyTerritoryAction } from './actions/territory';
 export type GameMapData = HasID & {
   type: 'map';
   dataMap: DataMap;
-  territoryIds: ID[];
-  playerIds: ID[];
-  edgeIds: ID[];
-  unitIds: ID[];
   nextId: number;
 };
 
@@ -27,39 +23,57 @@ export class GameMap extends UnitContainer<GameMapData> {
   constructor(data: GameMapData) {
     super(null, data);
     this.map = this;
-
-    data.playerIds.forEach((id) => (this.modelMap[id] = new Player(this, <PlayerData>data.dataMap[id])));
-    data.unitIds.forEach((id) => (this.modelMap[id] = new Unit(this, <UnitData>data.dataMap[id])));
-    data.territoryIds.forEach((id) => (this.modelMap[id] = new Territory(this, <TerritoryData>data.dataMap[id])));
-    data.edgeIds.forEach((id) => (this.modelMap[id] = new Edge(this, <EdgeData>data.dataMap[id])));
+    this.initialiseModelMap(data.dataMap);
   }
 
   get territories() {
-    return this.data.territoryIds.map((id) => <Territory>this.modelMap[id]);
+    return Object.values(this.modelMap).filter((model) => model.data.type === 'territory') as Territory[];
+  }
+
+  get territoryIds() {
+    return this.territories.map((territory) => territory.data.id);
   }
 
   get players() {
-    return this.data.playerIds.map((id) => <Player>this.modelMap[id]);
+    return Object.values(this.modelMap).filter((model) => model.data.type === 'player') as Player[];
+  }
+
+  get playerIds() {
+    return this.players.map((player) => player.data.id);
   }
 
   get edges() {
-    return this.data.edgeIds.map((id) => <Edge>this.modelMap[id]);
+    return Object.values(this.modelMap).filter((model) => model.data.type === 'edge') as Edge[];
+  }
+
+  get edgeIds() {
+    return this.edges.map((edge) => edge.data.id);
   }
 
   get units() {
-    return this.data.unitIds.map((id) => <Unit>this.modelMap[id]);
+    return Object.values(this.modelMap).filter((model) => model.data.type === 'unit') as Unit[];
+  }
+
+  get unitIds() {
+    return this.units.map((unit) => unit.data.id);
   }
 
   unit(unitId: ID) {
-    return this.units.find((unit) => unit.data.id === unitId);
+    const model = this.modelMap[unitId];
+    if (!model || model.data.type !== 'unit') return null;
+    return model as Unit;
   }
 
   territory(territoryId: ID) {
-    return this.territories.find((territory) => territory.data.id === territoryId);
+    const model = this.modelMap[territoryId];
+    if (!model || model.data.type !== 'territory') return null;
+    return model as Territory;
   }
 
   edge(edgeId: ID) {
-    return this.edges.find((edge) => edge.data.id === edgeId);
+    const model = this.modelMap[edgeId];
+    if (!model || model.data.type !== 'edge') return null;
+    return model as Edge;
   }
 
   findEdge(territoryAId: ID, territoryBId: ID) {
@@ -69,11 +83,13 @@ export class GameMap extends UnitContainer<GameMapData> {
   }
 
   player(playerId: ID) {
-    return this.players.find((player) => player.data.id === playerId);
+    const model = this.modelMap[playerId];
+    if (!model || model.data.type !== 'player') return null;
+    return model as Player;
   }
 
   getCombats() {
-    const combatLocations: UnitContainer[] = [];
+    const combatLocations: UnitContainer<ModelData>[] = [];
     for (const edge of this.edges) {
       if (edge.hasCombat()) combatLocations.push(edge);
     }
@@ -124,18 +140,12 @@ export class GameMap extends UnitContainer<GameMapData> {
     this.data.dataMap[unitData.id] = unitData;
     this.modelMap[unitData.id] = new Unit(this, unitData);
 
-    this.data.unitIds.push(unitData.id);
-    territory.data.unitIds.push(unitData.id);
-    if (territory.player) territory.player.data.unitIds.push(unitData.id);
-
     return this;
   }
 
   removeUnit(unit: Unit): GameMap {
-    if (unit.data.playerId) unit.player.remove(unit.data.id);
-    unit.location.remove(unit.data.id);
-    this.remove(unit.data.id);
     delete this.data.dataMap[unit.data.id];
+    delete this.modelMap[unit.data.id];
     unit.data.locationId = null;
 
     return this;
@@ -215,7 +225,7 @@ export class GameMap extends UnitContainer<GameMapData> {
   }
 
   resolveTerritoryControl(previous: GameMap) {
-    const populatedTerritories = this.territories.filter((territory) => territory.data.unitIds.length > 0);
+    const populatedTerritories = this.territories.filter((territory) => territory.units.length > 0);
     for (const territory of populatedTerritories) {
       const previousTerritory = previous.territory(territory.data.id);
       territory.resolveTerritoryControl(previousTerritory);
@@ -224,5 +234,24 @@ export class GameMap extends UnitContainer<GameMapData> {
 
   unreadyPlayers() {
     this.players.forEach((player) => (player.data.ready = false));
+  }
+
+  private initialiseModelMap(data: DataMap): void {
+    for (const modelData of Object.values(data)) {
+      switch (modelData.type) {
+        case 'edge':
+          this.modelMap[modelData.id] = new Edge(this, modelData);
+          break;
+        case 'player':
+          this.modelMap[modelData.id] = new Player(this, modelData);
+          break;
+        case 'territory':
+          this.modelMap[modelData.id] = new Territory(this, modelData);
+          break;
+        case 'unit':
+          this.modelMap[modelData.id] = new Unit(this, modelData);
+          break;
+      }
+    }
   }
 }

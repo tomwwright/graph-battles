@@ -39,7 +39,7 @@ export const SavedGameComponent: React.StatelessComponent<SavedGameProps> = ({ g
         <Box width={1 / 4} m={1}>
           <Subhead>{game.gameData.id}</Subhead>
           <Small>
-            <Text>{game.gameData.maps[0].territoryIds.length} territories</Text>
+            <Text>{latestMap.territoryIds.length} territories</Text>
             <PlayerList
               users={game.gameData.users}
               players={game.gameData.users.map(

@@ -1,8 +1,7 @@
-import { ID, include, exclude, contains, sum, clamp, unique } from './utils';
-import { UnitContainer, UnitContainerData } from './unitcontainer';
+import { ID, include, exclude, contains, sum, clamp, unique, HasID } from './utils';
+import { UnitContainer } from './unitcontainer';
 import { Player } from './player';
 import { Edge } from './edge';
-import { Unit } from './unit';
 import {
   TerritoryProperty,
   TerritoryAction,
@@ -12,7 +11,7 @@ import {
   Status,
 } from './values';
 
-export type TerritoryData = UnitContainerData & {
+export type TerritoryData = HasID & {
   type: 'territory';
   edgeIds: ID[];
   playerId: ID;
@@ -24,10 +23,6 @@ export type TerritoryData = UnitContainerData & {
 export class Territory extends UnitContainer<TerritoryData> {
   get player() {
     return <Player>this.map.modelMap[this.data.playerId] || null;
-  }
-
-  get units() {
-    return this.data.unitIds.map((id) => <Unit>this.map.modelMap[id]);
   }
 
   get edges() {
@@ -138,9 +133,7 @@ export class Territory extends UnitContainer<TerritoryData> {
       presentPlayerIds[0] === previousPlayerIds[0] &&
       presentPlayerIds[0] !== this.data.playerId
     ) {
-      if (this.player) this.player.data.territoryIds = exclude(this.player.data.territoryIds, this.data.id);
       this.data.playerId = presentPlayerIds[0];
-      this.player.data.territoryIds = include(this.player.data.territoryIds, this.data.id);
       this.data.currentAction = null;
     }
   }

@@ -38,7 +38,7 @@ const GameInfo: React.StatelessComponent<GameInfoProps> = ({ gameStore, uiStore 
     </InfoPane>
     {gameStore.map.players.map((player, i) => {
       const user = gameStore.game.users.find((user) =>
-        user.players.map((player) => player.id).includes(player.data.id)
+        user.players.map((player) => player.data.id).includes(player.data.id)
       );
       return <PlayerInfo key={i} player={player} user={user} isActive={gameStore.currentPlayerId === player.data.id} />;
     })}

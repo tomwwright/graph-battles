@@ -15,14 +15,6 @@ describe('UnitContainer Model', () => {
     combatMap = new GameMap(clone(combatTestMapData));
   });
 
-  it('retrieves units from the map', () => {
-    for (const territoryId of map.data.territoryIds)
-      expect(map.territory(territoryId).units.map((unit) => unit.data.id)).to.have.members(
-        map.territory(territoryId).data.unitIds,
-        `Territory ${territoryId} has units with correct IDs`
-      );
-  });
-
   it('reports has combat', () => {
     expect(combatMap.territory('#T1').hasCombat()).to.be.false;
     expect(combatMap.territory('#T5').hasCombat()).to.be.false;
