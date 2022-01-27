@@ -1,4 +1,4 @@
-import { ID, HasID, ModelMap, DataMap, toID, clone, unique, ModelData, exclude } from './utils';
+import { ID, HasID, ModelMap, DataMap, toID, clone, unique, ModelData, include, exclude, isEqual } from './utils';
 import { Player, PlayerData } from './player';
 import { UnitContainer } from './unitcontainer';
 import { Combat } from './combat';
@@ -14,6 +14,7 @@ export type GameMapData = HasID & {
   type: 'map';
   dataMap: DataMap;
   nextId: number;
+  actions: ModelAction[];
 };
 
 export class GameMap extends UnitContainer<GameMapData> {
@@ -120,6 +121,14 @@ export class GameMap extends UnitContainer<GameMapData> {
         break;
       case 'ready-player': // no-op
     }
+  }
+
+  addAction(action: ModelAction) {
+    this.data.actions = include(this.data.actions, action, isEqual);
+  }
+
+  removeAction(action: ModelAction) {
+    this.data.actions = exclude(this.data.actions, action, isEqual);
   }
 
   addUnit(territory: Territory): GameMap {
