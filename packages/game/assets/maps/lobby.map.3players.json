@@ -6,24 +6,18 @@
     "#PR": {
       "colour": 0,
       "gold": 0,
-      "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#PR"
     },
     "#PB": {
       "colour": 0,
       "gold": 0,
-      "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#PB"
     },
     "#PG": {
       "colour": 0,
       "gold": 0,
-      "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#PG"
     },

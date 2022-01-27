@@ -5,8 +5,6 @@ export type PlayerData = HasID & {
   type: 'player';
   colour: Colour;
   gold: number;
-  goldProduction: number;
-  ready: boolean;
 };
 
 export class Player extends Model<PlayerData> {
@@ -28,6 +26,6 @@ export class Player extends Model<PlayerData> {
   }
 
   resolveGold() {
-    this.data.gold += this.data.goldProduction + sum(this.territories.map((territory) => territory.goldProduction));
+    this.data.gold += sum(this.territories.map((territory) => territory.goldProduction));
   }
 }

@@ -27,9 +27,7 @@
           "colour": 16711680,
           "territoryIds": ["#T2"],
           "unitIds": ["#UR1", "#UR2", "#UR3", "#UR4"],
-          "gold": 5,
-          "goldProduction": 0,
-          "ready": false
+          "gold": 5
         },
         "#PB": {
           "id": "#PB",
@@ -37,9 +35,7 @@
           "colour": 255,
           "territoryIds": ["#T1", "#T3"],
           "unitIds": ["#UB1", "#UB2", "#UB3", "#UB4"],
-          "gold": 1,
-          "goldProduction": 1,
-          "ready": false
+          "gold": 1
         },
         "#PG": {
           "id": "#PG",
@@ -47,9 +43,7 @@
           "colour": 10027263,
           "territoryIds": ["#T5"],
           "unitIds": ["#UG1"],
-          "gold": 10,
-          "goldProduction": 2,
-          "ready": false
+          "gold": 10
         },
         "#T1": {
           "id": "#T1",

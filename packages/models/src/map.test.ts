@@ -105,9 +105,9 @@ describe('Map Model', () => {
 
     map.resolveGold();
 
-    expect(map.player('#PR').data.gold).to.equal(5 + 0 + 0, 'red player resolved gold');
-    expect(map.player('#PB').data.gold).to.equal(1 + 1 + 2, 'blue player resolved gold');
-    expect(map.player('#PG').data.gold).to.equal(10 + 2 + 1, 'green player resolved gold');
+    expect(map.player('#PR').data.gold).to.equal(5 + 0, 'red player resolved gold');
+    expect(map.player('#PB').data.gold).to.equal(1 + 2, 'blue player resolved gold');
+    expect(map.player('#PG').data.gold).to.equal(10 + 1, 'green player resolved gold');
   });
 
   it('resolve food', () => {

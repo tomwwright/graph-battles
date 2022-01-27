@@ -7,7 +7,6 @@ import { Edge, EdgeData } from './edge';
 import { Unit, UnitData } from './unit';
 
 import { ModelAction } from './actions';
-import { applyReadyPlayer } from './actions/ready';
 import { applyMoveUnits } from './actions/move';
 import { applyTerritoryAction } from './actions/territory';
 
@@ -113,15 +112,13 @@ export class GameMap extends UnitContainer<GameMapData> {
 
   applyAction(action: ModelAction) {
     switch (action.type) {
-      case 'ready-player':
-        applyReadyPlayer(this, action);
-        break;
       case 'move-units':
         applyMoveUnits(this, action);
         break;
       case 'territory':
         applyTerritoryAction(this, action);
         break;
+      case 'ready-player': // no-op
     }
   }
 
@@ -165,8 +162,6 @@ export class GameMap extends UnitContainer<GameMapData> {
 
     this.resolveTerritoryControl(previous);
     this.resolveTerritoryActions();
-
-    this.unreadyPlayers();
   }
 
   resolveGold() {
@@ -230,10 +225,6 @@ export class GameMap extends UnitContainer<GameMapData> {
       const previousTerritory = previous.territory(territory.data.id);
       territory.resolveTerritoryControl(previousTerritory);
     }
-  }
-
-  unreadyPlayers() {
-    this.players.forEach((player) => (player.data.ready = false));
   }
 
   private initialiseModelMap(data: DataMap): void {

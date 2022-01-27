@@ -48,8 +48,6 @@ function processPlayer(map, playerSeed) {
     territoryIds: [],
     colour: 0,
     gold: 0,
-    goldProduction: 1,
-    ready: false,
     ...playerSeed,
   };
 }

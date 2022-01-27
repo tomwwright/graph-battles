@@ -7,25 +7,19 @@
       "id": "#PR",
       "type": "player",
       "colour": 16711680,
-      "gold": 5,
-      "goldProduction": 0,
-      "ready": false
+      "gold": 5
     },
     "#PB": {
       "id": "#PB",
       "type": "player",
       "colour": 255,
-      "gold": 1,
-      "goldProduction": 1,
-      "ready": false
+      "gold": 1
     },
     "#PG": {
       "id": "#PG",
       "type": "player",
       "colour": 10027263,
-      "gold": 10,
-      "goldProduction": 2,
-      "ready": false
+      "gold": 10
     },
     "#T1": {
       "id": "#T1",

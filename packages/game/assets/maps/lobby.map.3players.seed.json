@@ -5,8 +5,7 @@
   },
   {
     "type": "player",
-    "id": "#PB",
-    "goldProduction": 1
+    "id": "#PB"
   },
   {
     "type": "player",
@@ -17,20 +16,14 @@
     "id": "#T1",
     "playerId": "#PR",
     "numUnits": 2,
-    "properties": [
-      0,
-      2,
-      3
-    ]
+    "properties": [0, 2, 3]
   },
   {
     "type": "territory",
     "id": "#T2",
     "playerId": "#PR",
     "numUnits": 2,
-    "properties": [
-      0
-    ]
+    "properties": [0]
   },
   {
     "type": "territory",
@@ -39,9 +32,7 @@
   {
     "type": "territory",
     "id": "#T4",
-    "properties": [
-      0
-    ]
+    "properties": [0]
   },
   {
     "type": "territory",
@@ -52,20 +43,14 @@
     "id": "#T6",
     "playerId": "#PB",
     "numUnits": 2,
-    "properties": [
-      0,
-      2,
-      3
-    ]
+    "properties": [0, 2, 3]
   },
   {
     "type": "territory",
     "id": "#T7",
     "playerId": "#PB",
     "numUnits": 2,
-    "properties": [
-      0
-    ]
+    "properties": [0]
   },
   {
     "type": "territory",
@@ -84,20 +69,14 @@
     "id": "#T11",
     "playerId": "#PG",
     "numUnits": 2,
-    "properties": [
-      0
-    ]
+    "properties": [0]
   },
   {
     "type": "territory",
     "id": "#T12",
     "playerId": "#PG",
     "numUnits": 2,
-    "properties": [
-      0,
-      2,
-      3
-    ]
+    "properties": [0, 2, 3]
   },
   {
     "type": "edge",

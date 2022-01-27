@@ -160,7 +160,6 @@ export default class GameStore {
     await this.applyModelAction({
       type: 'ready-player',
       playerId: this.currentPlayerId,
-      isReady: isReady,
     });
   }
 

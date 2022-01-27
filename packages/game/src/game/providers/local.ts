@@ -20,9 +20,10 @@ export class LocalGameProvider extends GameProvider {
     const game = new Game(savedGame.gameData);
     const map = new GameMap(game.latestMap);
     map.applyAction(action);
-    if (action.type === 'ready-player' && map.players.every((player) => player.data.ready)) {
-      game.resolveTurn();
-    }
+    // until actions are stored in the map this will be broken as ready has been removed from the player data
+    // if (action.type === 'ready-player' && map.players.every((player) => player.data.ready)) {
+    //   game.resolveTurn();
+    // }
     savedGame.gameData = game.data;
     savedGame.lastUpdated = Date.now();
     LocalStorage.saveGame(savedGame);

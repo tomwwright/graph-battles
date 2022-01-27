@@ -6,32 +6,24 @@
     "#P1": {
       "colour": 0,
       "gold": 0,
-      "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#P1"
     },
     "#P2": {
       "colour": 0,
       "gold": 0,
-      "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#P2"
     },
     "#P3": {
       "colour": 0,
       "gold": 0,
-      "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#P3"
     },
     "#P4": {
       "colour": 0,
       "gold": 0,
-      "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#P4"
     },
