@@ -1,8 +1,8 @@
 import { ReadyPlayerModelAction } from './ready';
-import { MoveUnitsModelAction } from './move';
+import { MoveUnitModelAction } from './move';
 import { TerritoryModelAction } from './territory';
 
-export type ModelAction = ReadyPlayerModelAction | MoveUnitsModelAction | TerritoryModelAction;
+export type ModelAction = ReadyPlayerModelAction | MoveUnitModelAction | TerritoryModelAction;
 
 export * from './ready';
 export * from './move';

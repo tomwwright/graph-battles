@@ -113,7 +113,7 @@ export class GameMap extends UnitContainer<GameMapData> {
 
   applyAction(action: ModelAction) {
     switch (action.type) {
-      case 'move-units':
+      case 'move-unit':
         applyMoveUnits(this, action);
         break;
       case 'territory':

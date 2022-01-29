@@ -147,12 +147,14 @@ export default class GameStore {
 
   @action
   async onMoveUnits(unitIds: ID[], territoryId: ID) {
-    await this.applyModelAction({
-      type: 'move-units',
-      playerId: this.currentPlayerId,
-      destinationId: territoryId,
-      unitIds: unitIds,
-    } as Actions.MoveUnitsModelAction);
+    for (const unitId of unitIds) {
+      await this.applyModelAction({
+        type: 'move-unit',
+        playerId: this.currentPlayerId,
+        destinationId: territoryId,
+        unitId: unitId,
+      } as Actions.MoveUnitModelAction);
+    }
   }
 
   @action
