@@ -139,6 +139,7 @@ export default class GameStore {
   async onTerritoryAction(territory: Territory, action: Values.TerritoryAction) {
     const modelAction: Actions.TerritoryModelAction = {
       type: 'territory',
+      playerId: territory.data.playerId,
       territoryId: territory.data.id,
       action: action,
     };
@@ -370,7 +371,7 @@ export default class GameStore {
 
   private toTerritoryActionState() {
     this.resolveIds = this.map.territories
-      .filter((territory) => territory.data.currentAction != null)
+      .filter((territory) => territory.action != null)
       .map((territory) => territory.data.id);
 
     const invisibleResolveIds = this.resolveIds.filter((territoryId) => !this.isLocationVisible(territoryId));

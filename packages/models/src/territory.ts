@@ -117,9 +117,11 @@ export class Territory extends UnitContainer<TerritoryData> {
     if (this.action) {
       const actionDefinition = TerritoryActionDefinitions[this.action.action];
 
-      // todo: compare current territory player and player of action to conditionally apply the action or not
-
-      actionDefinition.actionFunction(this.map, this);
+      // only apply the action if the player of that action still controls it
+      // if the territory controller changes, stifle the effect of the action
+      if (this.action.playerId == this.player.data.id) {
+        actionDefinition.actionFunction(this.map, this);
+      }
 
       this.map.removeAction(this.action);
     }

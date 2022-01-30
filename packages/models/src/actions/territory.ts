@@ -4,6 +4,7 @@ import { TerritoryAction } from '../values';
 
 export type TerritoryModelAction = {
   type: 'territory';
+  playerId: ID;
   territoryId: ID;
   action: TerritoryAction;
 };

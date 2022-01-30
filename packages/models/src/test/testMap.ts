@@ -38,16 +38,19 @@ const testMap: GameMapData = {
     },
     {
       type: 'territory',
+      playerId: '#PB',
       territoryId: '#T1',
       action: TerritoryAction.CREATE_UNIT,
     },
     {
       type: 'territory',
+      playerId: '#PR',
       territoryId: '#T2',
       action: TerritoryAction.CREATE_UNIT,
     },
     {
       type: 'territory',
+      playerId: '#PB',
       territoryId: '#T3',
       action: TerritoryAction.BUILD_SETTLEMENT,
     },
