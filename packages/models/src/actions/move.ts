@@ -9,20 +9,16 @@ export type MoveUnitModelAction = {
 };
 
 export function applyMoveUnitAction(map: GameMap, action: MoveUnitModelAction) {
-  const existingMoveForUnit = findMoveUnitActionByUnitId(map, action.unitId);
+  const existingMoveForUnit = map.unit(action.unitId)?.moveAction;
 
-  if (!action.destinationId) {
-    map.removeAction(existingMoveForUnit);
-  } else {
+  if (action.destinationId) {
     checkMoveUnit(map, action);
-
-    map.removeAction(existingMoveForUnit);
     map.addAction(action);
   }
-}
 
-function findMoveUnitActionByUnitId(map: GameMap, unitId: ID) {
-  return map.data.actions.find((action) => action.type == 'move-unit' && action.unitId === unitId);
+  if (existingMoveForUnit) {
+    map.removeAction(existingMoveForUnit);
+  }
 }
 
 function checkMoveUnit(map: GameMap, action: MoveUnitModelAction) {
