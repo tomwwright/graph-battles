@@ -10,6 +10,7 @@ import {
   propsToType,
   Status,
 } from './values';
+import { TerritoryModelAction } from './actions';
 
 export type TerritoryData = HasID & {
   type: 'territory';
@@ -17,7 +18,6 @@ export type TerritoryData = HasID & {
   playerId: ID;
   food: number;
   properties: TerritoryProperty[];
-  currentAction: TerritoryAction;
 };
 
 export class Territory extends UnitContainer<TerritoryData> {
@@ -78,28 +78,26 @@ export class Territory extends UnitContainer<TerritoryData> {
     this.data.properties = exclude(this.data.properties, property);
   }
 
-  setTerritoryAction(action: TerritoryAction) {
+  get action() {
+    const action = this.map.data.actions.find(
+      (action) => action.type == 'territory' && action.territoryId == this.data.id
+    ) as TerritoryModelAction;
+    return action ?? null;
+  }
+
+  checkActionValid(action: TerritoryAction) {
     if (!this.player) throw new Error('setTerritoryAction on Territory without Player');
 
     if (action && !contains(this.actions, action))
       throw new Error(`Territory ${this.data.id} does not have Action ${action} available`);
 
-    const currentAction = TerritoryActionDefinitions[this.data.currentAction];
-    const newAction = TerritoryActionDefinitions[action];
+    const actionDefinition = TerritoryActionDefinitions[action];
 
     let food = this.data.food;
     let gold = this.player.data.gold;
-    if (currentAction) {
-      food += currentAction.cost.food;
-      gold += currentAction.cost.gold;
-    }
-    const foodCost = newAction ? newAction.cost.food : 0;
-    const goldCost = newAction ? newAction.cost.gold : 0;
-    if (food < foodCost || gold < goldCost) throw new Error(`Territory ${this.data.id} cannot afford Action ${action}`);
 
-    this.data.food = food - foodCost;
-    this.player.data.gold = gold - goldCost;
-    this.data.currentAction = action;
+    if (food < actionDefinition.cost.food || gold < actionDefinition.cost.gold)
+      throw new Error(`Territory ${this.data.id} cannot afford Action ${action}`);
   }
 
   resolveFood() {
@@ -116,10 +114,14 @@ export class Territory extends UnitContainer<TerritoryData> {
   }
 
   resolveTerritoryAction() {
-    if (this.data.currentAction != null) {
-      const actionDefinition = TerritoryActionDefinitions[this.data.currentAction];
+    if (this.action) {
+      const actionDefinition = TerritoryActionDefinitions[this.action.action];
+
+      // todo: compare current territory player and player of action to conditionally apply the action or not
+
       actionDefinition.actionFunction(this.map, this);
-      this.data.currentAction = null;
+
+      this.map.removeAction(this.action);
     }
   }
 
@@ -134,7 +136,6 @@ export class Territory extends UnitContainer<TerritoryData> {
       presentPlayerIds[0] !== this.data.playerId
     ) {
       this.data.playerId = presentPlayerIds[0];
-      this.data.currentAction = null;
     }
   }
 }

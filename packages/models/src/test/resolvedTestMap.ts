@@ -45,7 +45,6 @@ const testMap: GameMapData = {
         TerritoryProperty.CITY,
         TerritoryProperty.CASTLE,
       ],
-      currentAction: null,
     },
     '#T2': {
       id: '#T2',
@@ -54,7 +53,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E12', '#E23'],
       food: 3,
       properties: [],
-      currentAction: null,
     },
     '#T3': {
       id: '#T3',
@@ -63,7 +61,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E13', '#E23', '#E34', '#E35'],
       food: 3,
       properties: [TerritoryProperty.SETTLED],
-      currentAction: null,
     },
     '#T4': {
       id: '#T4',
@@ -72,7 +69,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E34', '#E45'],
       food: 3,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.CITY],
-      currentAction: null,
     },
     '#T5': {
       id: '#T5',
@@ -81,7 +77,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E35', '#E45'],
       food: 7,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.FARM],
-      currentAction: null,
     },
     '#E12': {
       id: '#E12',

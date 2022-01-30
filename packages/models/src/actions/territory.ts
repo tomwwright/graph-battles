@@ -9,11 +9,22 @@ export type TerritoryModelAction = {
 };
 
 export function applyTerritoryAction(map: GameMap, action: TerritoryModelAction) {
-  const territory = map.territories.find((territory) => territory.data.id === action.territoryId);
+  checkTerritoryAction(map, action);
+
+  const existingActionForTerritory = map.territory(action.territoryId)?.action;
+
+  if (action.action) {
+    map.addAction(action);
+  }
+
+  if (existingActionForTerritory) {
+    map.removeAction(existingActionForTerritory);
+  }
+}
+
+function checkTerritoryAction(map: GameMap, action: TerritoryModelAction) {
+  const territory = map.territory(action.territoryId);
   if (!territory) throw new Error(`Invalid Territory ID ${action.territoryId}`);
 
-  if (action.action && !contains(territory.actions, action.action))
-    throw new Error(`Territory ${action.territoryId} cannot take Action ${action.action}`);
-
-  territory.setTerritoryAction(action.action);
+  territory.checkActionValid(action.action);
 }

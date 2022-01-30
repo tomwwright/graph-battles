@@ -155,6 +155,10 @@ export class GameMap extends UnitContainer<GameMapData> {
   }
 
   removeUnit(unit: Unit): GameMap {
+    if (unit.moveAction) {
+      this.removeAction(unit.moveAction);
+    }
+
     delete this.data.dataMap[unit.data.id];
     delete this.modelMap[unit.data.id];
     unit.data.locationId = null;

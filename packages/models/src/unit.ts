@@ -34,8 +34,10 @@ export class Unit extends Model<UnitData> {
   }
 
   get moveAction() {
-    const action = this.map.data.actions.find((action) => action.type == 'move-unit' && action.unitId == this.data.id);
-    return action as MoveUnitModelAction | undefined;
+    const action = this.map.data.actions.find(
+      (action) => action.type == 'move-unit' && action.unitId == this.data.id
+    ) as MoveUnitModelAction;
+    return action ?? null;
   }
 
   get foodConsumption() {

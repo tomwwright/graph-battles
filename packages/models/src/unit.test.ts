@@ -80,7 +80,7 @@ describe('Unit Model', () => {
       'Unit #UR3 not present in edge location post-post-move'
     );
     expect(map.unit('#UR3').data.locationId).to.equal('#T2', 'Unit #UR3 post-post-move location is destination');
-    expect(map.unit('#UR3').moveAction.destinationId).to.equal(null, 'Unit #UR3 has no destination post-post-move');
+    expect(map.unit('#UR3').moveAction).to.equal(null, 'Unit #UR3 has no destination post-post-move');
     expect(map.unit('#UR3').movementEdge).to.equal(null, 'Unit #UR3 has no movement edge post-post-move');
     expect(map.unit('#UR3').location.units.map((unit) => unit.data.id)).to.contain(
       '#UR3',

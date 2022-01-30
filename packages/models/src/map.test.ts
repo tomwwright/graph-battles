@@ -239,17 +239,17 @@ describe('Map Model', () => {
   });
 
   it('resolve territory actions', () => {
-    expect(map.territory('#T1').data.currentAction).to.equal(
+    expect(map.territory('#T1').action.action).to.equal(
       TerritoryAction.CREATE_UNIT,
       'Territory #T3 initial current action'
     );
     expect(map.territory('#T1').units).to.have.length(3, 'Territory #T1 initial number of units');
-    expect(map.territory('#T2').data.currentAction).to.equal(
+    expect(map.territory('#T2').action.action).to.equal(
       TerritoryAction.CREATE_UNIT,
       '#T2 has the Create Unit action set'
     );
     expect(map.territory('#T2').units).to.have.length(1, '#T2 has a 1 unit initially');
-    expect(map.territory('#T3').data.currentAction).to.equal(
+    expect(map.territory('#T3').action.action).to.equal(
       TerritoryAction.BUILD_SETTLEMENT,
       'Territory #T3 initial current action'
     );
@@ -260,14 +260,14 @@ describe('Map Model', () => {
 
     map.resolveTerritoryActions();
 
-    expect(map.territory('#T1').data.currentAction).to.equal(null, 'Territory #T1 post-resolve current action');
+    expect(map.territory('#T1').action).to.equal(null, 'Territory #T1 post-resolve current action');
     expect(map.territory('#T1').units).to.have.length(
       3,
       '#T1 still has 3 units because opposing units stifled the Create Unit'
     );
-    expect(map.territory('#T2').data.currentAction).to.equal(null, '#T2 post-resolve current action is cleared');
+    expect(map.territory('#T2').action).to.equal(null, '#T2 post-resolve current action is cleared');
     expect(map.territory('#T2').units).to.have.length(2, '#T2 has a new unit created by Create Unit');
-    expect(map.territory('#T3').data.currentAction).to.equal(null, 'Territory #T3 post-resolve current action');
+    expect(map.territory('#T3').action).to.equal(null, 'Territory #T3 post-resolve current action');
     expect(map.territory('#T3').hasProperty(TerritoryProperty.SETTLED)).to.equal(
       true,
       'Territory #T3 settled property post-resolve'
@@ -283,21 +283,6 @@ describe('Map Model', () => {
     expect(preresolveMap.territory('#T4').data.playerId).to.equal(null, 'Territory #T4 initial controller');
     expect(preresolveMap.territory('#T5').data.playerId).to.equal('#PG', 'Territory #T5 initial controller');
 
-    expect(preresolveMap.territory('#T1').data.currentAction).to.equal(
-      TerritoryAction.CREATE_UNIT,
-      'Territory #T1 initial current action'
-    );
-    expect(preresolveMap.territory('#T2').data.currentAction).to.equal(
-      TerritoryAction.CREATE_UNIT,
-      'Territory #T2 initial current action'
-    );
-    expect(preresolveMap.territory('#T3').data.currentAction).to.equal(
-      TerritoryAction.BUILD_SETTLEMENT,
-      'Territory #T3 initial current action'
-    );
-    expect(preresolveMap.territory('#T4').data.currentAction).to.equal(null, 'Territory #T4 initial current action');
-    expect(preresolveMap.territory('#T5').data.currentAction).to.equal(null, 'Territory #T5 initial current action');
-
     map.resolveMoves();
     map.resolveTerritoryControl(preresolveMap);
 
@@ -306,17 +291,5 @@ describe('Map Model', () => {
     expect(map.territory('#T3').data.playerId).to.equal('#PB', 'Territory #T3 post-resolve controller');
     expect(map.territory('#T4').data.playerId).to.equal(null, 'Territory #T4 post-resolve controller');
     expect(map.territory('#T5').data.playerId).to.equal('#PG', 'Territory #T5 post-resolve controller');
-
-    expect(map.territory('#T1').data.currentAction).to.equal(null, 'Territory #T1 post-resolve current action');
-    expect(map.territory('#T2').data.currentAction).to.equal(
-      TerritoryAction.CREATE_UNIT,
-      'Territory #T2 post-resolve current action'
-    );
-    expect(map.territory('#T3').data.currentAction).to.equal(
-      TerritoryAction.BUILD_SETTLEMENT,
-      'Territory #T3 post-resolve current action'
-    );
-    expect(map.territory('#T4').data.currentAction).to.equal(null, 'Territory #T4 post-resolve current action');
-    expect(map.territory('#T5').data.currentAction).to.equal(null, 'Territory #T5 post-resolve current action');
   });
 });

@@ -82,22 +82,4 @@ describe('Territory Model', () => {
       'remove city property: city removed'
     );
   });
-
-  it('set territory action', () => {
-    let territory = map.territory('#T5');
-
-    expect(territory.data.currentAction).to.equal(null, 'territory action is initially no action');
-    expect(
-      territory.setTerritoryAction.bind(territory, TerritoryAction.BUILD_SETTLEMENT),
-      'set to unavailable action'
-    ).to.throw();
-    territory.setTerritoryAction(TerritoryAction.BUILD_CITY);
-    expect(territory.data.currentAction).to.equal(TerritoryAction.BUILD_CITY, 'set to valid action: build city');
-    expect(territory.player.data.gold).to.equal(10 - 5, 'player gold after setting build city');
-    expect(territory.data.food).to.equal(6 - 2, 'territory food after setting build city');
-    territory.setTerritoryAction(null);
-    expect(territory.data.currentAction).to.equal(null, 'set to no action');
-    expect(territory.player.data.gold).to.equal(10, 'player gold after setting no action');
-    expect(territory.data.food).to.equal(6, 'territory food after setting no action');
-  });
 });

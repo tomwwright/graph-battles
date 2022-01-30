@@ -36,6 +36,21 @@ const testMap: GameMapData = {
       unitId: '#UG1',
       destinationId: '#T4',
     },
+    {
+      type: 'territory',
+      territoryId: '#T1',
+      action: TerritoryAction.CREATE_UNIT,
+    },
+    {
+      type: 'territory',
+      territoryId: '#T2',
+      action: TerritoryAction.CREATE_UNIT,
+    },
+    {
+      type: 'territory',
+      territoryId: '#T3',
+      action: TerritoryAction.BUILD_SETTLEMENT,
+    },
   ],
   dataMap: {
     '#PR': {
@@ -69,7 +84,6 @@ const testMap: GameMapData = {
         TerritoryProperty.CITY,
         TerritoryProperty.CASTLE,
       ],
-      currentAction: TerritoryAction.CREATE_UNIT,
     },
     '#T2': {
       id: '#T2',
@@ -78,7 +92,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E12', '#E23'],
       food: 2,
       properties: [],
-      currentAction: TerritoryAction.CREATE_UNIT,
     },
     '#T3': {
       id: '#T3',
@@ -87,7 +100,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E13', '#E23', '#E34', '#E35'],
       food: 3,
       properties: [],
-      currentAction: TerritoryAction.BUILD_SETTLEMENT,
     },
     '#T4': {
       id: '#T4',
@@ -96,7 +108,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E34', '#E45'],
       food: 3,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.CITY],
-      currentAction: null,
     },
     '#T5': {
       id: '#T5',
@@ -105,7 +116,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E35', '#E45'],
       food: 6,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.FARM],
-      currentAction: null,
     },
     '#E12': {
       id: '#E12',
