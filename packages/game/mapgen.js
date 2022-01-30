@@ -86,7 +86,6 @@ function processTerritory(map, territorySeed) {
       id: unitId,
       playerId: territory.playerId || null,
       locationId: territory.id,
-      destinationId: null,
       statuses: [],
     };
 

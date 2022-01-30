@@ -3,12 +3,12 @@ import { Player } from './player';
 import { Territory } from './territory';
 import { Edge } from './edge';
 import { Status } from './values';
+import { MoveUnitModelAction } from './actions';
 
 export type UnitData = HasID & {
   type: 'unit';
   playerId: ID;
   locationId: ID;
-  destinationId: ID;
   statuses: Status[];
 };
 
@@ -19,28 +19,40 @@ export class Unit extends Model<UnitData> {
   get location() {
     return <Edge | Territory>this.map.modelMap[this.data.locationId] || null;
   }
+
   get destination() {
-    return <Territory>this.map.modelMap[this.data.destinationId] || null;
+    if (!this.moveAction) return null;
+    return this.map.territory(this.moveAction.destinationId);
   }
+
   get movementEdge() {
     return (
-      this.map.edge(this.data.locationId) || this.map.findEdge(this.data.locationId, this.data.destinationId) || null
+      this.map.edge(this.data.locationId) ||
+      this.map.findEdge(this.data.locationId, this.moveAction?.destinationId) ||
+      null
     );
   }
+
+  get moveAction() {
+    const action = this.map.data.actions.find((action) => action.type == 'move-unit' && action.unitId == this.data.id);
+    return action as MoveUnitModelAction | undefined;
+  }
+
   get foodConsumption() {
     return 1;
   }
 
   resolveMove() {
-    if (!this.data.destinationId) throw new Error(`Unit ${this.data.id} moving without destination set`);
+    const moveAction = this.moveAction;
+    if (!moveAction) throw new Error(`Unit ${this.data.id} moving without move action!`);
     if (!this.destination)
-      throw new Error(`Unit ${this.data.id} moving with invalid destination set: ${this.data.destinationId}`);
+      throw new Error(`Unit ${this.data.id} moving with invalid destination set: ${moveAction.destinationId}`);
     if (!this.movementEdge)
-      throw new Error(`Unit ${this.data.id} moving to non-adjacent destination: ${this.data.destinationId}`);
+      throw new Error(`Unit ${this.data.id} moving to non-adjacent destination: ${moveAction.destinationId}`);
 
     if (this.data.locationId === this.movementEdge.data.id) {
       this.data.locationId = this.destination.data.id;
-      this.data.destinationId = null;
+      this.map.removeAction(moveAction);
     } else {
       this.data.locationId = this.movementEdge.data.id;
     }
@@ -51,27 +63,7 @@ export class Unit extends Model<UnitData> {
   }
 
   resolveAddDefendStatus(previous: Unit) {
-    if (previous && !previous.data.destinationId) this.addStatus(Status.DEFEND);
-  }
-
-  setDestination(destination: Territory) {
-    if (destination) {
-      const location: Territory = this.location as Territory;
-      if (!location.edges)
-        throw new Error(
-          `Unable to set destination of Unit ${this.data.id}: Location ${this.location.data.id} not a Territory`
-        );
-
-      const adjacentTerritories = location.edges.map((edge) => edge.other(location));
-      if (!adjacentTerritories.find((territory) => territory.data.id === destination.data.id))
-        throw new Error(
-          `Unable to set destination of Unit ${this.data.id}: Territory ${destination.data.id} is not adjacent to Location ${this.location.data.id}`
-        );
-
-      this.data.destinationId = destination.data.id;
-    } else {
-      this.data.destinationId = null;
-    }
+    if (previous && !previous.moveAction) this.addStatus(Status.DEFEND);
   }
 
   addStatus(status: Status) {

@@ -23,9 +23,9 @@ const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, isPlanning, o
       <Small>
         <Text>Location {unit.location.data.id}</Text>
         <Text>Food Consumption {unit.foodConsumption}</Text>
-        <Text>{unit.data.statuses.map(status => StatusDefinitions[status].text).join(', ')}</Text>
+        <Text>{unit.data.statuses.map((status) => StatusDefinitions[status].text).join(', ')}</Text>
       </Small>
-      {unit.data.destinationId && isPlanning ? <Button onClick={onCancelMoveClick}>Cancel Move</Button> : ''}
+      {unit.moveAction && isPlanning ? <Button onClick={onCancelMoveClick}>Cancel Move</Button> : ''}
     </Box>
   </Card>
 );

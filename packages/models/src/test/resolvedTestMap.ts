@@ -5,9 +5,9 @@ const testMap: GameMapData = {
   id: 'test-map',
   type: 'map',
   nextId: 1,
+  actions: [],
   dataMap: {
     '#0': {
-      destinationId: null,
       id: '#0',
       locationId: '#T2',
       playerId: '#PR',
@@ -124,7 +124,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
     '#UR2': {
@@ -132,7 +131,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
     '#UB3': {
@@ -140,7 +138,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T3',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
     '#U1': {
@@ -148,7 +145,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: null,
       locationId: '#T4',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
   },

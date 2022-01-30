@@ -5,6 +5,38 @@ const testMap: GameMapData = {
   id: 'test-map',
   type: 'map',
   nextId: 0,
+  actions: [
+    {
+      type: 'move-unit',
+      unitId: '#UR3',
+      destinationId: '#T2',
+    },
+    {
+      type: 'move-unit',
+      unitId: '#UR4',
+      destinationId: '#T3',
+    },
+    {
+      type: 'move-unit',
+      unitId: '#UB1',
+      destinationId: '#T2',
+    },
+    {
+      type: 'move-unit',
+      unitId: '#UB2',
+      destinationId: '#T2',
+    },
+    {
+      type: 'move-unit',
+      unitId: '#UB4',
+      destinationId: '#T4',
+    },
+    {
+      type: 'move-unit',
+      unitId: '#UG1',
+      destinationId: '#T4',
+    },
+  ],
   dataMap: {
     '#PR': {
       id: '#PR',
@@ -116,7 +148,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [],
     },
     '#UR2': {
@@ -124,7 +155,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [],
     },
     '#UR3': {
@@ -132,7 +162,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: '#T2',
       statuses: [],
     },
     '#UR4': {
@@ -140,7 +169,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T2',
-      destinationId: '#T3',
       statuses: [Status.DEFEND],
     },
     '#UB1': {
@@ -148,7 +176,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T3',
-      destinationId: '#T2',
       statuses: [],
     },
     '#UB2': {
@@ -156,7 +183,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T3',
-      destinationId: '#T2',
       statuses: [],
     },
     '#UB3': {
@@ -164,7 +190,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T3',
-      destinationId: null,
       statuses: [Status.STARVE],
     },
     '#UB4': {
@@ -172,7 +197,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T3',
-      destinationId: '#T4',
       statuses: [Status.STARVE],
     },
     '#UG1': {
@@ -180,7 +204,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PG',
       locationId: '#T5',
-      destinationId: '#T4',
       statuses: [],
     },
     '#U1': {
@@ -188,7 +211,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: null,
       locationId: '#T4',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
   },

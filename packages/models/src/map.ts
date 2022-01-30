@@ -6,8 +6,8 @@ import { Territory, TerritoryData } from './territory';
 import { Edge, EdgeData } from './edge';
 import { Unit, UnitData } from './unit';
 
-import { ModelAction } from './actions';
-import { applyMoveUnits } from './actions/move';
+import { applyReadyPlayerAction, ModelAction } from './actions';
+import { applyMoveUnitAction, MoveUnitModelAction } from './actions/move';
 import { applyTerritoryAction } from './actions/territory';
 
 export type GameMapData = HasID & {
@@ -113,13 +113,15 @@ export class GameMap extends UnitContainer<GameMapData> {
 
   applyAction(action: ModelAction) {
     switch (action.type) {
-      case 'move-unit':
-        applyMoveUnits(this, action);
-        break;
       case 'territory':
         applyTerritoryAction(this, action);
         break;
-      case 'ready-player': // no-op
+      case 'move-unit':
+        applyMoveUnitAction(this, action);
+        break;
+      case 'ready-player':
+        applyReadyPlayerAction(this, action);
+        break;
     }
   }
 
@@ -131,13 +133,16 @@ export class GameMap extends UnitContainer<GameMapData> {
     this.data.actions = exclude(this.data.actions, action, isEqual);
   }
 
+  clearActions() {
+    this.data.actions = [];
+  }
+
   addUnit(territory: Territory): GameMap {
     const unitData: UnitData = {
       type: 'unit',
       id: toID(this.data.nextId),
       playerId: territory.data.playerId,
       locationId: territory.data.id,
-      destinationId: null,
       statuses: [],
     };
 
@@ -171,6 +176,8 @@ export class GameMap extends UnitContainer<GameMapData> {
 
     this.resolveTerritoryControl(previous);
     this.resolveTerritoryActions();
+
+    this.clearActions();
   }
 
   resolveGold() {
@@ -198,7 +205,10 @@ export class GameMap extends UnitContainer<GameMapData> {
 
   resolveMoves() {
     // push all moving units onto their respective Edge
-    const movingUnits = this.units.filter((unit) => unit.data.destinationId !== null && unit.movementEdge);
+    const movingUnits = this.data.actions
+      .filter((action) => action.type == 'move-unit')
+      .map((action) => action as MoveUnitModelAction)
+      .map((action) => this.unit(action.unitId));
     movingUnits.forEach((unit) => unit.resolveMove());
 
     // now safe edges can immediately be resolved

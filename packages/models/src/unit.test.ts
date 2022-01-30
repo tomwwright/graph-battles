@@ -17,9 +17,9 @@ describe('Unit Model', () => {
     for (const unit of map.units) {
       expect(unit.location.data.id).to.be.equal(unit.data.locationId, `Unit ${unit.data.id}: Location getter`);
 
-      if (unit.data.destinationId)
+      if (unit.moveAction)
         expect(unit.destination.data.id).to.be.equal(
-          unit.data.destinationId,
+          unit.moveAction.destinationId,
           `Unit ${unit.data.id}: destination getter`
         );
       else expect(unit.destination).to.be.null;
@@ -48,17 +48,6 @@ describe('Unit Model', () => {
     expect(unit.data.statuses).to.have.members([Status.STARVE], 'remove defend twice: unit has starve');
   });
 
-  it('set destination', () => {
-    const unit = map.unit('#UG1');
-
-    unit.setDestination(null);
-    expect(unit.data.destinationId).to.equal(null, 'clearing unit destination');
-    unit.setDestination(map.territory('#T4'));
-    expect(unit.data.destinationId).to.be.equal('#T4', 'setting to valid destination');
-
-    expect(unit.setDestination.bind(unit, map.territory('#T1'))).to.throw();
-  });
-
   it('move', () => {
     expect(map.unit('#UR1').data.locationId).to.equal('#T1', 'Unit #UR1 initial location');
     expect(
@@ -67,7 +56,7 @@ describe('Unit Model', () => {
     ).to.throw();
 
     expect(map.unit('#UR3').data.locationId).to.equal('#T1', 'Unit #UR3 initial location');
-    expect(map.unit('#UR3').data.destinationId).to.equal('#T2', 'Unit #UR3 initial destination');
+    expect(map.unit('#UR3').moveAction.destinationId).to.equal('#T2', 'Unit #UR3 initial destination');
     expect(map.unit('#UR3').movementEdge.data.id).to.equal('#E12', 'Unit #UR3 initial movement edge');
     expect(map.unit('#UR3').location.units.map((unit) => unit.data.id)).to.contain(
       '#UR3',
@@ -79,7 +68,7 @@ describe('Unit Model', () => {
       'Unit #UR3 not present in initial location post-move'
     );
     expect(map.unit('#UR3').data.locationId).to.equal('#E12', 'Unit #UR3 post-move location');
-    expect(map.unit('#UR3').data.destinationId).to.equal('#T2', 'Unit #UR3 post-move destination');
+    expect(map.unit('#UR3').moveAction.destinationId).to.equal('#T2', 'Unit #UR3 post-move destination');
     expect(map.unit('#UR3').movementEdge.data.id).to.equal('#E12', 'Unit #UR3 post-move movement edge');
     expect(map.unit('#UR3').location.units.map((unit) => unit.data.id)).to.contain(
       '#UR3',
@@ -91,7 +80,7 @@ describe('Unit Model', () => {
       'Unit #UR3 not present in edge location post-post-move'
     );
     expect(map.unit('#UR3').data.locationId).to.equal('#T2', 'Unit #UR3 post-post-move location is destination');
-    expect(map.unit('#UR3').data.destinationId).to.equal(null, 'Unit #UR3 has no destination post-post-move');
+    expect(map.unit('#UR3').moveAction.destinationId).to.equal(null, 'Unit #UR3 has no destination post-post-move');
     expect(map.unit('#UR3').movementEdge).to.equal(null, 'Unit #UR3 has no movement edge post-post-move');
     expect(map.unit('#UR3').location.units.map((unit) => unit.data.id)).to.contain(
       '#UR3',

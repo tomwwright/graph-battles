@@ -300,7 +300,7 @@ export default class GameStore {
   }
 
   private toMovesState() {
-    this.resolveIds = this.map.units.filter((unit) => unit.data.destinationId).map((unit) => unit.data.id);
+    this.resolveIds = this.map.units.filter((unit) => !!unit.moveAction).map((unit) => unit.data.id);
 
     const invisibleResolveIds = this.resolveIds.filter((unitId) => !this.isUnitVisible(unitId));
     invisibleResolveIds.forEach((unitId) => this.resolveMove(unitId));
@@ -311,7 +311,7 @@ export default class GameStore {
 
   private toEdgeMovesState() {
     this.resolveIds = this.map.units
-      .filter((unit) => unit.data.destinationId && !unit.location.hasCombat())
+      .filter((unit) => unit.moveAction && !unit.location.hasCombat())
       .map((unit) => unit.data.id);
 
     const invisibleResolveIds = this.resolveIds.filter((unitId) => !this.isUnitVisible(unitId));
@@ -386,7 +386,7 @@ export default class GameStore {
     let visible = locationVisibility;
 
     // when in replay mode, units are visible if they occupy a visible location OR occupy a currently visible location NEXT turn
-    if (this.isReplaying && model.data.destinationId) {
+    if (this.isReplaying && model.moveAction) {
       const futureModel = new GameMap(this.game.data.maps[this.turn]).unit(unitId);
       if (futureModel) {
         const futureLocationVisibility = this.visibility.get(futureModel.location.data.id);
