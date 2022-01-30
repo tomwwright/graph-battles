@@ -39,10 +39,10 @@ describe('Map Model', () => {
   });
 
   it('winning players', () => {
-    expect(map.winningPlayers(10, false).map((player) => player.data.id)).to.have.members(['#PG']);
+    expect(map.winningPlayers(10, false).map((player) => player.data.id)).to.have.members(['#PB', '#PG']);
     expect(map.winningPlayers(15, false).map((player) => player.data.id)).to.be.empty;
     expect(map.winningPlayers(25, false).map((player) => player.data.id)).to.be.empty;
-    expect(map.winningPlayers(25, true).map((player) => player.data.id)).to.have.members(['#PG']);
+    expect(map.winningPlayers(25, true).map((player) => player.data.id)).to.have.members(['#PB', '#PG']);
   });
 
   it('add unit', () => {
@@ -100,13 +100,13 @@ describe('Map Model', () => {
 
   it('resolve gold', () => {
     expect(map.player('#PR').data.gold).to.equal(5, 'red player starting gold');
-    expect(map.player('#PB').data.gold).to.equal(1, 'blue player starting gold');
+    expect(map.player('#PB').data.gold).to.equal(3, 'blue player starting gold');
     expect(map.player('#PG').data.gold).to.equal(10, 'green player starting gold');
 
     map.resolveGold();
 
     expect(map.player('#PR').data.gold).to.equal(5 + 0, 'red player resolved gold');
-    expect(map.player('#PB').data.gold).to.equal(1 + 2, 'blue player resolved gold');
+    expect(map.player('#PB').data.gold).to.equal(3 + 2, 'blue player resolved gold');
     expect(map.player('#PG').data.gold).to.equal(10 + 1, 'green player resolved gold');
   });
 
@@ -122,8 +122,11 @@ describe('Map Model', () => {
     expect(map.unit('#UG1').data.statuses).to.not.contain(Status.STARVE, 'Unit #UG1 not starving before resolve food');
     expect(map.unit('#U1').data.statuses).to.not.contain(Status.STARVE, 'Unit #U1 not starving before resolve food');
 
+    // modify Territory #T1 food to give the starving conditions we need
+    map.territory('#T1').data.food = 0;
+
     expect(map.territory('#T1').data.food).to.equal(0, 'Territory #T1 has correct initial food');
-    expect(map.territory('#T2').data.food).to.equal(2, 'Territory #T2 has correct initial food');
+    expect(map.territory('#T2').data.food).to.equal(3, 'Territory #T2 has correct initial food');
     expect(map.territory('#T3').data.food).to.equal(3, 'Territory #T3 has correct initial food');
     expect(map.territory('#T4').data.food).to.equal(3, 'Territory #T4 has correct initial food');
     expect(map.territory('#T5').data.food).to.equal(6, 'Territory #T5 has correct initial food');
@@ -145,7 +148,7 @@ describe('Map Model', () => {
       0,
       'Territory #T1 has correct resolved food: caps at zero, units starve'
     );
-    expect(map.territory('#T2').data.food).to.equal(2, 'Territory #T2 has correct resolved food');
+    expect(map.territory('#T2').data.food).to.equal(3, 'Territory #T2 has correct resolved food');
     expect(map.territory('#T3').data.food).to.equal(0, 'Territory #T3 has correct resolved food: exactly zero');
     expect(map.territory('#T4').data.food).to.equal(3, 'Territory #T4 has correct resolved food');
     expect(map.territory('#T5').data.food).to.equal(7, 'Territory #T5 has correct resolved food: caps at max');
@@ -244,11 +247,16 @@ describe('Map Model', () => {
       'Territory #T3 initial current action'
     );
     expect(map.territory('#T1').units).to.have.length(3, 'Territory #T1 initial number of units');
+    expect(map.territory('#T1').data.food).to.equal(3, 'Territory #T1 initial food');
+
     expect(map.territory('#T2').action.action).to.equal(
       TerritoryAction.CREATE_UNIT,
       '#T2 has the Create Unit action set'
     );
     expect(map.territory('#T2').units).to.have.length(1, '#T2 has a 1 unit initially');
+    expect(map.territory('#T2').data.food).to.equal(3, 'Territory #T2 initial food');
+    expect(map.territory('#T2').player.data.gold).to.equal(5, 'Territory #T2 controller initial gold');
+
     expect(map.territory('#T3').action.action).to.equal(
       TerritoryAction.BUILD_SETTLEMENT,
       'Territory #T3 initial current action'
@@ -257,6 +265,8 @@ describe('Map Model', () => {
       false,
       'Territory #T3 settled property'
     );
+    expect(map.territory('#T3').data.food).to.equal(3, 'Territory #T3 initial food');
+    expect(map.territory('#T3').player.data.gold).to.equal(3, 'Territory #T3 controller initial gold');
 
     map.resolveTerritoryActions();
 
@@ -265,13 +275,20 @@ describe('Map Model', () => {
       3,
       '#T1 still has 3 units because opposing units stifled the Create Unit'
     );
+    expect(map.territory('#T1').data.food).to.equal(0, 'Territory #T1 food still paid even though action stifled');
+
     expect(map.territory('#T2').action).to.equal(null, '#T2 post-resolve current action is cleared');
     expect(map.territory('#T2').units).to.have.length(2, '#T2 has a new unit created by Create Unit');
+    expect(map.territory('#T2').data.food).to.equal(0, 'Territory #T2 food paid');
+    expect(map.territory('#T2').player.data.gold).to.equal(5, 'Territory #T2 controller gold paid');
+
     expect(map.territory('#T3').action).to.equal(null, 'Territory #T3 post-resolve current action');
     expect(map.territory('#T3').hasProperty(TerritoryProperty.SETTLED)).to.equal(
       true,
       'Territory #T3 settled property post-resolve'
     );
+    expect(map.territory('#T3').data.food).to.equal(3, 'Territory #T3 food paid');
+    expect(map.territory('#T3').player.data.gold).to.equal(0, 'Territory #T3 controller gold paid');
   });
 
   it('resolve territory control', () => {

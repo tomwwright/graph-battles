@@ -38,7 +38,7 @@ describe('Player Model', () => {
 
   it('calculates victory points', () => {
     expect(map.player('#PR').victoryPoints).to.equal(5 + 4 + 1 + 0, 'red player has correct victory points');
-    expect(map.player('#PB').victoryPoints).to.equal(1 + 4 + 2 + 5, 'blue player has correct victory points');
+    expect(map.player('#PB').victoryPoints).to.equal(3 + 4 + 2 + 5, 'blue player has correct victory points');
     expect(map.player('#PG').victoryPoints).to.equal(10 + 1 + 1 + 2, 'green player has correct victory points');
   });
 });

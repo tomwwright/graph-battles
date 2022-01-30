@@ -24,7 +24,7 @@ const testMap: GameMapData = {
       id: '#PB',
       type: 'player',
       colour: 255,
-      gold: 3,
+      gold: 2,
     },
     '#PG': {
       id: '#PG',
@@ -51,7 +51,7 @@ const testMap: GameMapData = {
       type: 'territory',
       playerId: '#PR',
       edgeIds: ['#E12', '#E23'],
-      food: 3,
+      food: 0,
       properties: [],
     },
     '#T3': {

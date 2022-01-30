@@ -66,7 +66,7 @@ const testMap: GameMapData = {
       id: '#PB',
       type: 'player',
       colour: 255,
-      gold: 1,
+      gold: 3,
     },
     '#PG': {
       id: '#PG',
@@ -79,7 +79,7 @@ const testMap: GameMapData = {
       type: 'territory',
       playerId: '#PB',
       edgeIds: ['#E12', '#E13'],
-      food: 0,
+      food: 3,
       properties: [
         TerritoryProperty.SETTLED,
         TerritoryProperty.FARM,
@@ -93,7 +93,7 @@ const testMap: GameMapData = {
       type: 'territory',
       playerId: '#PR',
       edgeIds: ['#E12', '#E23'],
-      food: 2,
+      food: 3,
       properties: [],
     },
     '#T3': {

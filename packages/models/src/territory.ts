@@ -117,6 +117,9 @@ export class Territory extends UnitContainer<TerritoryData> {
     if (this.action) {
       const actionDefinition = TerritoryActionDefinitions[this.action.action];
 
+      this.data.food -= actionDefinition.cost.food;
+      this.player.data.gold -= actionDefinition.cost.gold;
+
       // only apply the action if the player of that action still controls it
       // if the territory controller changes, stifle the effect of the action
       if (this.action.playerId == this.player.data.id) {
