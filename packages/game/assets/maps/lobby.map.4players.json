@@ -2,6 +2,7 @@
   "id": "generated-map",
   "nextId": 20,
   "type": "map",
+  "actions": [],
   "dataMap": {
     "#P1": {
       "colour": 0,

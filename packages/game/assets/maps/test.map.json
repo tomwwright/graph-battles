@@ -2,6 +2,7 @@
   "id": "test-map",
   "type": "map",
   "nextId": 0,
+  "actions": [],
   "dataMap": {
     "#PR": {
       "id": "#PR",
