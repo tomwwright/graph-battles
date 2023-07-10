@@ -34,6 +34,8 @@ export class ApplicationStage extends cdk.Stage {
   }
 }
 
+new ApplicationStage(app, "Local", { env });
+
 const pipelineStack = new PipelineStack(app, "Pipeline", {
   env: {
     ...env,
@@ -41,3 +43,5 @@ const pipelineStack = new PipelineStack(app, "Pipeline", {
   },
 });
 pipelineStack.pipeline.addStage(new ApplicationStage(app, "Dev", { env }));
+
+app.synth();
