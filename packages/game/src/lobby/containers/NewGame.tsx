@@ -42,6 +42,7 @@ const SliderWrapper = Styled.div`
   margin-bottom: 15px;
 `;
 
+// @ts-expect-error Decorators in old MobX version not compatible with TS 6
 @inject('savedGameStore')
 export class NewGame extends React.Component<NewGameProps, NewGameState> {
   state: NewGameState = {

@@ -25,4 +25,5 @@ const RemoteGameListComponent: React.StatelessComponent<RemoteGameListProps> = (
   );
 };
 
-export const RemoteGameList = inject('remoteGameStore')(observer(RemoteGameListComponent));
+// @ts-expect-error Decorators in old MobX version not compatible with TS 6
+export const RemoteGameList: React.StatelessComponent<RemoteGameListProps> = inject('remoteGameStore')(observer(RemoteGameListComponent));
