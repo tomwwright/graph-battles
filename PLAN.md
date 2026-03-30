@@ -59,46 +59,78 @@ Replace the state machine in `packages/game/src/game/stores/game.ts`:
 - Remove resolution methods from `Unit`, `Territory`, `Player` that are now handled by the resolver
 - Remove `Game.resolveTurn()` wrapper in `packages/models/src/game.ts`
 
-## 5. Separate query and mutation — make models read-only
+## 5. Lift action state out of models, strip mutation logic
 
-Strip mutation methods from model classes so only the resolver performs mutations.
+Action intent (moves, territory actions, readiness) is currently stored on the entities themselves (`unit.data.destinationId`, `territory.data.currentAction`, `player.data.ready`). This step lifts that state to the map level as pending action lists, and moves complex mutation logic (validation, cost calculations) out of models into the action/resolver layer. Simple data operations (add/remove from arrays, set a scalar) stay on models.
 
-### Classes to make read-only:
+### 5.1 Lift action state to `GameMapData`
+
+Add pending action lists to `GameMapData`:
+
+```typescript
+type GameMapData = HasID & {
+  type: 'map';
+  dataMap: DataMap;
+  nextId: number;
+  pendingMoves: PendingMove[];       // { unitId, destinationId }
+  pendingTerritoryActions: PendingTerritoryAction[]; // { territoryId, action }
+  readyPlayerIds: ID[];
+};
+```
+
+Remove from entity data types:
+- `destinationId` from `UnitData`
+- `currentAction` from `TerritoryData`
+- `ready` from `PlayerData`
+
+### 5.2 Update model getters to use map-level state
+
+- `Unit.destination` → computed lookup from `map.data.pendingMoves`
+- `Unit.movementEdge` → computed lookup from `map.data.pendingMoves`
+- `Territory.currentAction` → computed lookup from `map.data.pendingTerritoryActions` (if needed by UI)
+- `Player.ready` → computed lookup from `map.data.readyPlayerIds` (if needed by UI)
+
+### 5.3 Update action application
+
+Rewrite `applyMoveUnits()`, `applyTerritoryAction()`, `applyReadyPlayer()` to write to the pending action lists on `GameMapData` instead of mutating entity data:
+
+- `applyMoveUnits()` → adds/removes entries in `map.data.pendingMoves` (validation logic currently in `Unit.setDestination()` moves here)
+- `applyTerritoryAction()` → adds/replaces entries in `map.data.pendingTerritoryActions` (validation and cost logic currently in `Territory.setTerritoryAction()` moves here)
+- `applyReadyPlayer()` → adds/removes from `map.data.readyPlayerIds`
+
+### 5.4 Update resolver to consume pending actions
+
+- `resolveMoves()` reads from `map.data.pendingMoves` to determine which units are moving, mutates `unit.data.locationId` directly
+- `resolveTerritoryActions()` reads from `map.data.pendingTerritoryActions`, executes action functions, then clears the list
+- `unreadyPlayers()` clears `map.data.readyPlayerIds`
+- `resolveAddDefendStatus()` / `resolveRemoveDefendStatus()` check pending moves instead of `unit.data.destinationId`
+
+### 5.5 Strip complex mutation methods from models
 
 | Class | Remove | Keep |
 |-------|--------|------|
-| **Unit** | `setDestination()`, `resolveMove()`, `addStatus()`, `removeStatus()`, `resolveAddDefendStatus()`, `resolveRemoveDefendStatus()` | Getters: `destination`, `movementEdge`, `location`, `player` |
-| **Territory** | `addProperty()`, `removeProperty()`, `setTerritoryAction()`, `resolveFood()`, `resolveTerritoryControl()`, `resolveTerritoryAction()` | Getters: `type`, `units`, `food`, `player` |
-| **Player** | `resolveGold()` | Getters: `gold`, `territories`, `units` |
-| **Combat** | `resolve()` | Getters: computed combat results |
+| **Unit** | `setDestination()`, `resolveMove()`, `resolveAddDefendStatus()`, `resolveRemoveDefendStatus()` | `addStatus()`, `removeStatus()` (simple array ops), getters |
+| **Territory** | `setTerritoryAction()`, `resolveFood()`, `resolveTerritoryControl()`, `resolveTerritoryAction()` | `addProperty()`, `removeProperty()` (simple array ops), getters |
+| **Player** | `resolveGold()` | Getters |
+| **Combat** | `resolve()` | Getters (computed combat results) |
 
-### Action application
+Mutation logic from removed methods moves into the resolver (Step 5.4) and action application (Step 5.3).
 
-Move `applyMoveUnits()`, `applyReadyPlayer()`, `applyTerritoryAction()` logic into the resolver or into dedicated resolver methods. `GameMap.applyAction()` should delegate to the resolver layer.
+### 5.6 Keep low-level data operations on models
 
-> **Note:** The provider layer (`packages/game/src/game/providers/` — local, api, mock) calls `map.applyAction()`. Check these consumers when changing action application.
+- `GameMap.addUnit()` / `removeUnit()` — low-level data structure ops, stay as primitives called by resolvers
+- `Unit.addStatus()` / `removeStatus()` — simple array include/exclude
+- `Territory.addProperty()` / `removeProperty()` — simple array include/exclude
 
-### `GameMap.addUnit()` / `removeUnit()`
-
-These mutation methods on GameMap are used by combat resolution and territory action resolvers (`onCreateUnit`). Decision: keep these as internal primitives that only resolvers call, rather than moving the logic into the resolver itself. They are low-level data structure operations, not domain logic.
-
-### Territory action resolvers
+### 5.7 Territory action resolvers
 
 `packages/models/src/territoryActionResolvers.ts` functions (`onCreateUnit`, `onBuildSettlement`, etc.) already follow a resolver-like pattern. Move them under the resolver umbrella.
 
-## 6. Remove `destinationId` from units
+### 5.8 Update tests
 
-Replace `destinationId` on `UnitData` with `MoveAction` tracking at the `GameMap` level.
+Update all tests to reflect the new data structures (no `destinationId` on units, no `currentAction` on territories, no `ready` on players) and new action application paths.
 
-### Changes:
-
-- Remove `destinationId` from `UnitData` type
-- Add `pendingMoves: MoveAction[]` (or similar) to `GameMapData`
-- `Unit.destination` getter becomes a computed lookup: find the unit's pending move in the map's move list
-- `Unit.movementEdge` getter similarly uses the pending move data
-- Update `applyMoveUnits()` to write to the pending moves list instead of `unit.data.destinationId`
-- Resolver reads and clears pending moves during resolution
-- Update tests to reflect new data structure
+> **Note:** The provider layer (`packages/game/src/game/providers/` — local, api, mock) calls `map.applyAction()`. Check these consumers when changing action application.
 
 ## Key file paths
 
