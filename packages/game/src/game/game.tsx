@@ -15,7 +15,7 @@ import { LocalGameProvider, SavedGame, LocalStorage } from 'game/providers/local
 import { APIGameProvider } from 'game/providers/api';
 import { MockGameProvider } from 'game/providers/mock';
 
-import { GameData, GameMap, GameMapData, Utils } from '@battles/models';
+import { GameData, GameMap, GameMapData, resolveTurnSync, Utils } from '@battles/models';
 
 // enable Mobx strict mode (no state mutation outside of @action)
 useStrict(true);
@@ -84,7 +84,7 @@ async function startExampleGame() {
   gameData.maps.push(mapData);
 
   const nextTurn = new GameMap(Utils.clone(mapData));
-  nextTurn.resolveTurn();
+  resolveTurnSync(nextTurn);
   gameData.maps.push(nextTurn.data);
 
   initialise(
