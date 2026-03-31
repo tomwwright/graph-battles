@@ -169,8 +169,8 @@ export default class GameStore {
     const locationVisible = this.visibility.get(unit.location.data.id) ?? false;
 
     // Also consider destination: show a move if the unit is heading to or from a visible area
-    if (unit.data.destinationId) {
-      const destinationVisible = this.visibility.get(unit.data.destinationId) ?? false;
+    if (unit.destinationId) {
+      const destinationVisible = this.visibility.get(unit.destinationId) ?? false;
       return locationVisible || destinationVisible;
     }
 

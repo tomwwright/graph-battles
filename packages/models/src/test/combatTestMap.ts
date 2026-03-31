@@ -1,10 +1,17 @@
-import { GameMapData } from '../map';
+import { GameMapData, PendingActionType } from '../map';
 import { Status, TerritoryType, TerritoryProperty, TerritoryAction, propsToType, propsToActions } from '../values';
 
 const combatTestMap: GameMapData = {
   id: 'test-map',
   type: 'map',
   nextId: 0,
+  pendingActions: [
+    { type: PendingActionType.MOVE, unitId: '#UR4', destinationId: '#T3' },
+    { type: PendingActionType.MOVE, unitId: '#UB1', destinationId: '#T2' },
+    { type: PendingActionType.MOVE, unitId: '#UB2', destinationId: '#T2' },
+    { type: PendingActionType.TERRITORY, territoryId: '#T1', action: TerritoryAction.CREATE_UNIT },
+    { type: PendingActionType.TERRITORY, territoryId: '#T3', action: TerritoryAction.BUILD_SETTLEMENT },
+  ],
   dataMap: {
     '#PR': {
       id: '#PR',
@@ -12,7 +19,6 @@ const combatTestMap: GameMapData = {
       colour: 16711680,
       gold: 5,
       goldProduction: 0,
-      ready: false,
     },
     '#PB': {
       id: '#PB',
@@ -20,7 +26,6 @@ const combatTestMap: GameMapData = {
       colour: 255,
       gold: 1,
       goldProduction: 1,
-      ready: false,
     },
     '#PG': {
       id: '#PG',
@@ -28,7 +33,6 @@ const combatTestMap: GameMapData = {
       colour: 10027263,
       gold: 10,
       goldProduction: 2,
-      ready: false,
     },
     '#T1': {
       id: '#T1',
@@ -43,7 +47,6 @@ const combatTestMap: GameMapData = {
         TerritoryProperty.CITY,
         TerritoryProperty.CASTLE,
       ],
-      currentAction: TerritoryAction.CREATE_UNIT,
     },
     '#T2': {
       id: '#T2',
@@ -52,7 +55,6 @@ const combatTestMap: GameMapData = {
       edgeIds: ['#E12', '#E23'],
       food: 2,
       properties: [],
-      currentAction: null,
     },
     '#T3': {
       id: '#T3',
@@ -61,7 +63,6 @@ const combatTestMap: GameMapData = {
       edgeIds: ['#E13', '#E23', '#E34', '#E35'],
       food: 3,
       properties: [],
-      currentAction: TerritoryAction.BUILD_SETTLEMENT,
     },
     '#T4': {
       id: '#T4',
@@ -70,7 +71,6 @@ const combatTestMap: GameMapData = {
       edgeIds: ['#E34', '#E45'],
       food: 3,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.CITY],
-      currentAction: null,
     },
     '#T5': {
       id: '#T5',
@@ -79,7 +79,6 @@ const combatTestMap: GameMapData = {
       edgeIds: ['#E35', '#E45'],
       food: 3,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.FARM],
-      currentAction: null,
     },
     '#E12': {
       id: '#E12',
@@ -122,7 +121,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [],
     },
     '#UR2': {
@@ -130,7 +128,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [],
     },
     '#UR3': {
@@ -138,7 +135,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T2',
-      destinationId: null,
       statuses: [],
     },
     '#UR4': {
@@ -146,7 +142,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#E23',
-      destinationId: '#T3',
       statuses: [],
     },
     '#UB1': {
@@ -154,7 +149,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#E23',
-      destinationId: '#T2',
       statuses: [],
     },
     '#UB2': {
@@ -162,7 +156,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#E23',
-      destinationId: '#T2',
       statuses: [],
     },
     '#UB3': {
@@ -170,7 +163,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T3',
-      destinationId: null,
       statuses: [Status.STARVE],
     },
     '#UB4': {
@@ -178,7 +170,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T4',
-      destinationId: null,
       statuses: [Status.STARVE],
     },
     '#UG1': {
@@ -186,7 +177,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: '#PG',
       locationId: '#T4',
-      destinationId: null,
       statuses: [],
     },
     '#U1': {
@@ -194,7 +184,6 @@ const combatTestMap: GameMapData = {
       type: 'unit',
       playerId: null,
       locationId: '#T4',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
   },

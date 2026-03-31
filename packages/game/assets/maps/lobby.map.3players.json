@@ -7,7 +7,6 @@
       "colour": 0,
       "gold": 0,
       "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#PR"
     },
@@ -15,7 +14,6 @@
       "colour": 0,
       "gold": 0,
       "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#PB"
     },
@@ -23,15 +21,20 @@
       "colour": 0,
       "gold": 0,
       "goldProduction": 1,
-      "ready": false,
       "type": "player",
       "id": "#PG"
     },
     "#T1": {
       "food": 3,
-      "edgeIds": ["#T1#T2", "#T1#T3"],
-      "currentAction": null,
-      "properties": [0, 2, 3],
+      "edgeIds": [
+        "#T1#T2",
+        "#T1#T3"
+      ],
+      "properties": [
+        0,
+        2,
+        3
+      ],
       "type": "territory",
       "id": "#T1",
       "playerId": "#PR"
@@ -41,7 +44,6 @@
       "id": "#U0",
       "playerId": "#PR",
       "locationId": "#T1",
-      "destinationId": null,
       "statuses": []
     },
     "#U1": {
@@ -49,14 +51,19 @@
       "id": "#U1",
       "playerId": "#PR",
       "locationId": "#T1",
-      "destinationId": null,
       "statuses": []
     },
     "#T2": {
       "food": 3,
-      "edgeIds": ["#T1#T2", "#T2#T3", "#T2#T4", "#T2#T5"],
-      "currentAction": null,
-      "properties": [0],
+      "edgeIds": [
+        "#T1#T2",
+        "#T2#T3",
+        "#T2#T4",
+        "#T2#T5"
+      ],
+      "properties": [
+        0
+      ],
       "type": "territory",
       "id": "#T2",
       "playerId": "#PR"
@@ -66,7 +73,6 @@
       "id": "#U2",
       "playerId": "#PR",
       "locationId": "#T2",
-      "destinationId": null,
       "statuses": []
     },
     "#U3": {
@@ -74,38 +80,57 @@
       "id": "#U3",
       "playerId": "#PR",
       "locationId": "#T2",
-      "destinationId": null,
       "statuses": []
     },
     "#T3": {
       "food": 3,
-      "edgeIds": ["#T1#T3", "#T2#T3", "#T3#T10"],
-      "currentAction": null,
+      "edgeIds": [
+        "#T1#T3",
+        "#T2#T3",
+        "#T3#T10"
+      ],
       "properties": [],
       "type": "territory",
       "id": "#T3"
     },
     "#T4": {
       "food": 3,
-      "edgeIds": ["#T2#T4", "#T4#T5", "#T4#T7", "#T4#T8", "#T4#T9"],
-      "currentAction": null,
-      "properties": [0],
+      "edgeIds": [
+        "#T2#T4",
+        "#T4#T5",
+        "#T4#T7",
+        "#T4#T8",
+        "#T4#T9"
+      ],
+      "properties": [
+        0
+      ],
       "type": "territory",
       "id": "#T4"
     },
     "#T5": {
       "food": 3,
-      "edgeIds": ["#T2#T5", "#T4#T5", "#T5#T6", "#T5#T7"],
-      "currentAction": null,
+      "edgeIds": [
+        "#T2#T5",
+        "#T4#T5",
+        "#T5#T6",
+        "#T5#T7"
+      ],
       "properties": [],
       "type": "territory",
       "id": "#T5"
     },
     "#T6": {
       "food": 3,
-      "edgeIds": ["#T5#T6", "#T6#T7"],
-      "currentAction": null,
-      "properties": [0, 2, 3],
+      "edgeIds": [
+        "#T5#T6",
+        "#T6#T7"
+      ],
+      "properties": [
+        0,
+        2,
+        3
+      ],
       "type": "territory",
       "id": "#T6",
       "playerId": "#PB"
@@ -115,7 +140,6 @@
       "id": "#U4",
       "playerId": "#PB",
       "locationId": "#T6",
-      "destinationId": null,
       "statuses": []
     },
     "#U5": {
@@ -123,14 +147,19 @@
       "id": "#U5",
       "playerId": "#PB",
       "locationId": "#T6",
-      "destinationId": null,
       "statuses": []
     },
     "#T7": {
       "food": 3,
-      "edgeIds": ["#T4#T7", "#T5#T7", "#T6#T7", "#T7#T8"],
-      "currentAction": null,
-      "properties": [0],
+      "edgeIds": [
+        "#T4#T7",
+        "#T5#T7",
+        "#T6#T7",
+        "#T7#T8"
+      ],
+      "properties": [
+        0
+      ],
       "type": "territory",
       "id": "#T7",
       "playerId": "#PB"
@@ -140,7 +169,6 @@
       "id": "#U6",
       "playerId": "#PB",
       "locationId": "#T7",
-      "destinationId": null,
       "statuses": []
     },
     "#U7": {
@@ -148,38 +176,53 @@
       "id": "#U7",
       "playerId": "#PB",
       "locationId": "#T7",
-      "destinationId": null,
       "statuses": []
     },
     "#T8": {
       "food": 3,
-      "edgeIds": ["#T4#T8", "#T7#T8", "#T8#T9", "#T8#T12"],
-      "currentAction": null,
+      "edgeIds": [
+        "#T4#T8",
+        "#T7#T8",
+        "#T8#T9",
+        "#T8#T12"
+      ],
       "properties": [],
       "type": "territory",
       "id": "#T8"
     },
     "#T9": {
       "food": 3,
-      "edgeIds": ["#T4#T9", "#T8#T9", "#T9#T10", "#T9#T11"],
-      "currentAction": null,
+      "edgeIds": [
+        "#T4#T9",
+        "#T8#T9",
+        "#T9#T10",
+        "#T9#T11"
+      ],
       "properties": [],
       "type": "territory",
       "id": "#T9"
     },
     "#T10": {
       "food": 3,
-      "edgeIds": ["#T3#T10", "#T9#T10", "#T10#T11"],
-      "currentAction": null,
+      "edgeIds": [
+        "#T3#T10",
+        "#T9#T10",
+        "#T10#T11"
+      ],
       "properties": [],
       "type": "territory",
       "id": "#T10"
     },
     "#T11": {
       "food": 3,
-      "edgeIds": ["#T9#T11", "#T10#T11", "#T11#T12"],
-      "currentAction": null,
-      "properties": [0],
+      "edgeIds": [
+        "#T9#T11",
+        "#T10#T11",
+        "#T11#T12"
+      ],
+      "properties": [
+        0
+      ],
       "type": "territory",
       "id": "#T11",
       "playerId": "#PG"
@@ -189,7 +232,6 @@
       "id": "#U8",
       "playerId": "#PG",
       "locationId": "#T11",
-      "destinationId": null,
       "statuses": []
     },
     "#U9": {
@@ -197,14 +239,19 @@
       "id": "#U9",
       "playerId": "#PG",
       "locationId": "#T11",
-      "destinationId": null,
       "statuses": []
     },
     "#T12": {
       "food": 3,
-      "edgeIds": ["#T8#T12", "#T11#T12"],
-      "currentAction": null,
-      "properties": [0, 2, 3],
+      "edgeIds": [
+        "#T8#T12",
+        "#T11#T12"
+      ],
+      "properties": [
+        0,
+        2,
+        3
+      ],
       "type": "territory",
       "id": "#T12",
       "playerId": "#PG"
@@ -214,7 +261,6 @@
       "id": "#U10",
       "playerId": "#PG",
       "locationId": "#T12",
-      "destinationId": null,
       "statuses": []
     },
     "#U11": {
@@ -222,148 +268,128 @@
       "id": "#U11",
       "playerId": "#PG",
       "locationId": "#T12",
-      "destinationId": null,
       "statuses": []
     },
     "#T1#T2": {
       "id": "#T1#T2",
-
       "type": "edge",
       "territoryAId": "#T1",
       "territoryBId": "#T2"
     },
     "#T1#T3": {
       "id": "#T1#T3",
-
       "type": "edge",
       "territoryAId": "#T1",
       "territoryBId": "#T3"
     },
     "#T2#T3": {
       "id": "#T2#T3",
-
       "type": "edge",
       "territoryAId": "#T2",
       "territoryBId": "#T3"
     },
     "#T2#T4": {
       "id": "#T2#T4",
-
       "type": "edge",
       "territoryAId": "#T2",
       "territoryBId": "#T4"
     },
     "#T2#T5": {
       "id": "#T2#T5",
-
       "type": "edge",
       "territoryAId": "#T2",
       "territoryBId": "#T5"
     },
     "#T3#T10": {
       "id": "#T3#T10",
-
       "type": "edge",
       "territoryAId": "#T3",
       "territoryBId": "#T10"
     },
     "#T4#T5": {
       "id": "#T4#T5",
-
       "type": "edge",
       "territoryAId": "#T4",
       "territoryBId": "#T5"
     },
     "#T4#T7": {
       "id": "#T4#T7",
-
       "type": "edge",
       "territoryAId": "#T4",
       "territoryBId": "#T7"
     },
     "#T4#T8": {
       "id": "#T4#T8",
-
       "type": "edge",
       "territoryAId": "#T4",
       "territoryBId": "#T8"
     },
     "#T4#T9": {
       "id": "#T4#T9",
-
       "type": "edge",
       "territoryAId": "#T4",
       "territoryBId": "#T9"
     },
     "#T5#T6": {
       "id": "#T5#T6",
-
       "type": "edge",
       "territoryAId": "#T5",
       "territoryBId": "#T6"
     },
     "#T5#T7": {
       "id": "#T5#T7",
-
       "type": "edge",
       "territoryAId": "#T5",
       "territoryBId": "#T7"
     },
     "#T6#T7": {
       "id": "#T6#T7",
-
       "type": "edge",
       "territoryAId": "#T6",
       "territoryBId": "#T7"
     },
     "#T7#T8": {
       "id": "#T7#T8",
-
       "type": "edge",
       "territoryAId": "#T7",
       "territoryBId": "#T8"
     },
     "#T8#T9": {
       "id": "#T8#T9",
-
       "type": "edge",
       "territoryAId": "#T8",
       "territoryBId": "#T9"
     },
     "#T8#T12": {
       "id": "#T8#T12",
-
       "type": "edge",
       "territoryAId": "#T8",
       "territoryBId": "#T12"
     },
     "#T9#T10": {
       "id": "#T9#T10",
-
       "type": "edge",
       "territoryAId": "#T9",
       "territoryBId": "#T10"
     },
     "#T9#T11": {
       "id": "#T9#T11",
-
       "type": "edge",
       "territoryAId": "#T9",
       "territoryBId": "#T11"
     },
     "#T10#T11": {
       "id": "#T10#T11",
-
       "type": "edge",
       "territoryAId": "#T10",
       "territoryBId": "#T11"
     },
     "#T11#T12": {
       "id": "#T11#T12",
-
       "type": "edge",
       "territoryAId": "#T11",
       "territoryBId": "#T12"
     }
-  }
+  },
+  "pendingActions": []
 }

@@ -10,11 +10,38 @@ import { ModelAction } from './actions';
 import { applyReadyPlayer } from './actions/ready';
 import { applyMoveUnits } from './actions/move';
 import { applyTerritoryAction } from './actions/territory';
+import { TerritoryAction } from './values';
+
+export enum PendingActionType {
+  MOVE = 'move',
+  TERRITORY = 'territory',
+  READY = 'ready',
+}
+
+export type PendingMoveAction = {
+  type: PendingActionType.MOVE;
+  unitId: ID;
+  destinationId: ID;
+};
+
+export type PendingTerritoryAction = {
+  type: PendingActionType.TERRITORY;
+  territoryId: ID;
+  action: TerritoryAction;
+};
+
+export type PendingReadyAction = {
+  type: PendingActionType.READY;
+  playerId: ID;
+};
+
+export type PendingAction = PendingMoveAction | PendingTerritoryAction | PendingReadyAction;
 
 export type GameMapData = HasID & {
   type: 'map';
   dataMap: DataMap;
   nextId: number;
+  pendingActions: PendingAction[];
 };
 
 export class GameMap extends UnitContainer<GameMapData> {
@@ -131,7 +158,6 @@ export class GameMap extends UnitContainer<GameMapData> {
       id: toID(this.data.nextId),
       playerId: territory.data.playerId,
       locationId: territory.data.id,
-      destinationId: null,
       statuses: [],
     };
 
@@ -146,6 +172,9 @@ export class GameMap extends UnitContainer<GameMapData> {
   removeUnit(unit: Unit): GameMap {
     delete this.data.dataMap[unit.data.id];
     delete this.modelMap[unit.data.id];
+    this.data.pendingActions = this.data.pendingActions.filter(
+      (a) => !(a.type === PendingActionType.MOVE && a.unitId === unit.data.id)
+    );
     unit.data.locationId = null;
 
     return this;

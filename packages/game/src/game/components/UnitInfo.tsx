@@ -25,7 +25,7 @@ const UnitInfo: React.StatelessComponent<UnitInfoProps> = ({ unit, isPlanning, o
         <Text>Food Consumption {unit.foodConsumption}</Text>
         <Text>{unit.data.statuses.map(status => StatusDefinitions[status].text).join(', ')}</Text>
       </Small>
-      {unit.data.destinationId && isPlanning ? <Button onClick={onCancelMoveClick}>Cancel Move</Button> : ''}
+      {unit.destinationId && isPlanning ? <Button onClick={onCancelMoveClick}>Cancel Move</Button> : ''}
     </Box>
   </Card>
 );

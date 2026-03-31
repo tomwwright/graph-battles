@@ -42,14 +42,14 @@ const TerritoryInfo: React.StatelessComponent<TerritoryInfoProps> = ({
       </Card>
       {isControlledByCurrentPlayer && isPlanning
         ? territory.actions.map((action, i) =>
-            territory.data.currentAction === action ? (
+            territory.currentAction === action ? (
               <SelectedTerritoryAction key={i} action={action} onClickUnbuy={setTerritoryAction} />
             ) : (
               <TerritoryAction key={i} onClickBuy={setTerritoryAction} action={action} territory={territory} />
             )
           )
-        : territory.data.currentAction != null && (
-            <SelectedTerritoryAction action={territory.data.currentAction} onClickUnbuy={null} />
+        : territory.currentAction != null && (
+            <SelectedTerritoryAction action={territory.currentAction} onClickUnbuy={null} />
           )}
     </div>
   );

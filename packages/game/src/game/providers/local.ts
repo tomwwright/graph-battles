@@ -20,7 +20,7 @@ export class LocalGameProvider extends GameProvider {
     const game = new Game(savedGame.gameData);
     const map = new GameMap(game.latestMap);
     map.applyAction(action);
-    if (action.type === 'ready-player' && map.players.every((player) => player.data.ready)) {
+    if (action.type === 'ready-player' && map.players.every((player) => player.ready)) {
       game.resolveTurn();
     }
     savedGame.gameData = game.data;

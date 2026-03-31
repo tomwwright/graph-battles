@@ -1,13 +1,13 @@
-import { GameMapData } from '../map';
+import { GameMapData, PendingActionType } from '../map';
 import { Status, TerritoryType, TerritoryProperty, TerritoryAction, propsToType, propsToActions } from '../values';
 
 const testMap: GameMapData = {
   id: 'test-map',
   type: 'map',
   nextId: 1,
+  pendingActions: [],
   dataMap: {
     '#0': {
-      destinationId: null,
       id: '#0',
       locationId: '#T2',
       playerId: '#PR',
@@ -20,7 +20,6 @@ const testMap: GameMapData = {
       colour: 16711680,
       gold: 5,
       goldProduction: 0,
-      ready: false,
     },
     '#PB': {
       id: '#PB',
@@ -28,7 +27,6 @@ const testMap: GameMapData = {
       colour: 255,
       gold: 4,
       goldProduction: 1,
-      ready: false,
     },
     '#PG': {
       id: '#PG',
@@ -36,7 +34,6 @@ const testMap: GameMapData = {
       colour: 10027263,
       gold: 13,
       goldProduction: 2,
-      ready: false,
     },
     '#T1': {
       id: '#T1',
@@ -51,7 +48,6 @@ const testMap: GameMapData = {
         TerritoryProperty.CITY,
         TerritoryProperty.CASTLE,
       ],
-      currentAction: null,
     },
     '#T2': {
       id: '#T2',
@@ -60,7 +56,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E12', '#E23'],
       food: 3,
       properties: [],
-      currentAction: null,
     },
     '#T3': {
       id: '#T3',
@@ -69,7 +64,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E13', '#E23', '#E34', '#E35'],
       food: 3,
       properties: [TerritoryProperty.SETTLED],
-      currentAction: null,
     },
     '#T4': {
       id: '#T4',
@@ -78,7 +72,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E34', '#E45'],
       food: 3,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.CITY],
-      currentAction: null,
     },
     '#T5': {
       id: '#T5',
@@ -87,7 +80,6 @@ const testMap: GameMapData = {
       edgeIds: ['#E35', '#E45'],
       food: 7,
       properties: [TerritoryProperty.SETTLED, TerritoryProperty.FARM],
-      currentAction: null,
     },
     '#E12': {
       id: '#E12',
@@ -130,7 +122,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
     '#UR2': {
@@ -138,7 +129,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PR',
       locationId: '#T1',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
     '#UB3': {
@@ -146,7 +136,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: '#PB',
       locationId: '#T3',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
     '#U1': {
@@ -154,7 +143,6 @@ const testMap: GameMapData = {
       type: 'unit',
       playerId: null,
       locationId: '#T4',
-      destinationId: null,
       statuses: [Status.DEFEND],
     },
   },
