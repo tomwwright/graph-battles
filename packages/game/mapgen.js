@@ -14,6 +14,7 @@ const map = {
   id: 'generated-map',
   nextId: 0,
   type: 'map',
+  pendingActions: [],
   playerIds: [],
   territoryIds: [],
   edgeIds: [],
@@ -49,7 +50,6 @@ function processPlayer(map, playerSeed) {
     colour: 0,
     gold: 0,
     goldProduction: 1,
-    ready: false,
     ...playerSeed,
   };
 }
@@ -65,7 +65,6 @@ function processTerritory(map, territorySeed) {
     unitIds: [],
     food: 3,
     edgeIds: [],
-    currentAction: null,
     properties: [],
     ...territorySeed,
   };
@@ -88,7 +87,6 @@ function processTerritory(map, territorySeed) {
       id: unitId,
       playerId: territory.playerId || null,
       locationId: territory.id,
-      destinationId: null,
       statuses: [],
     };
 

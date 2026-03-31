@@ -1,5 +1,5 @@
 import { ID, intersection } from '../utils';
-import { GameMap } from '../map';
+import { GameMap, PendingActionType } from '../map';
 import { Territory } from '../territory';
 
 export type MoveUnitsModelAction = {
@@ -33,12 +33,23 @@ export function applyMoveUnits(map: GameMap, action: MoveUnitsModelAction) {
     if (adjacentTerritoryIds.indexOf(action.destinationId) === -1)
       throw new Error(`Territory ${action.destinationId} not adjacent to all Units ${JSON.stringify(action.unitIds)}`);
 
-    units.forEach((unit) => {
-      unit.data.destinationId = action.destinationId;
-    });
+    for (const unit of units) {
+      // Remove any existing pending move for this unit
+      map.data.pendingActions = map.data.pendingActions.filter(
+        (a) => !(a.type === PendingActionType.MOVE && a.unitId === unit.data.id)
+      );
+      // Add the new pending move
+      map.data.pendingActions.push({
+        type: PendingActionType.MOVE,
+        unitId: unit.data.id,
+        destinationId: action.destinationId,
+      });
+    }
   } else {
-    units.forEach((unit) => {
-      unit.data.destinationId = null;
-    });
+    // Clear pending moves for these units
+    const unitIdSet = new Set(action.unitIds);
+    map.data.pendingActions = map.data.pendingActions.filter(
+      (a) => !(a.type === PendingActionType.MOVE && unitIdSet.has(a.unitId))
+    );
   }
 }

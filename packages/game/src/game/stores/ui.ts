@@ -1,8 +1,8 @@
 import { observable, action, computed, runInAction } from 'mobx';
 
-import GameStore, { ResolveState, VisibilityMode } from 'game/stores/game';
+import GameStore, { VisibilityMode } from 'game/stores/game';
 import PhaserStore from 'game/stores/phaser';
-import { ID, Territory, Utils } from '@battles/models';
+import { ID, Resolution, Territory, Utils } from '@battles/models';
 
 type Selected =
   | null
@@ -233,21 +233,38 @@ export default class UiStore {
   }
 
   @action
-  onClickResolve(id: ID) {
+  onClickResolveNext() {
     if (this.isResolving) {
       return;
     }
-    const focusIds = this.gameStore.resolveState === ResolveState.GOLD ? this.gameStore.map.territoryIds : [id];
+    const resolution = this.gameStore.currentResolution;
+    const focusIds = resolution ? this.getFocusIds(resolution) : this.gameStore.map.territoryIds;
     this.isResolving = true;
     this.phaserStore.focusOn(focusIds).then(() => {
       runInAction(() => {
-        this.gameStore.resolve(id);
+        this.gameStore.resolveNext();
         this.isResolving = false;
 
-        if (this.gameStore.resolveState == ResolveState.NONE && this.gameStore.game.winners.length == 0) {
+        if (this.gameStore.isResolutionComplete && this.gameStore.game.winners.length == 0) {
           this.setTurn(this.gameStore.turn + 1);
         }
       });
     });
+  }
+
+  private getFocusIds(resolution: Resolution): ID[] {
+    switch (resolution.phase) {
+      case 'gold':
+        return this.gameStore.map.territoryIds;
+      case 'move':
+      case 'add-defend':
+        return [resolution.unitId];
+      case 'combat':
+        return [resolution.locationId];
+      case 'food':
+      case 'territory-control':
+      case 'territory-action':
+        return [resolution.territoryId];
+    }
   }
 }

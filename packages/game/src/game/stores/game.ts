@@ -1,25 +1,12 @@
 import { observable, action, computed } from 'mobx';
 import PhaserStore from 'game/stores/phaser';
 import { GameProvider } from 'game/providers/base';
-import { Actions, Game, GameData, GameMap, GameMapData, ID, Player, Territory, Utils, Values } from '@battles/models';
+import { Actions, Game, GameData, GameMap, GameMapData, ID, Player, Resolution, Territory, Utils, Values, resolveTurn } from '@battles/models';
 
 export enum VisibilityMode {
   VISIBLE,
   NOT_VISIBLE,
   CURRENT_PLAYER,
-}
-
-export enum ResolveState {
-  START = 'start',
-  NONE = 'none',
-  MOVES = 'moves',
-  EDGE_MOVES = 'edge-moves',
-  COMBATS = 'combats',
-  ADD_DEFEND = 'add-defend',
-  GOLD = 'gold',
-  FOOD = 'food',
-  TERRITORY_CONTROL = 'territory-control',
-  TERRITORY_ACTIONS = 'territory-actions',
 }
 
 export default class GameStore {
@@ -28,9 +15,8 @@ export default class GameStore {
 
   @observable.ref game: Game;
   @observable.ref map: GameMap = null;
-  @observable resolveState: ResolveState = ResolveState.NONE;
-  @observable unresolvedMap: GameMap = null;
-  @observable resolveIds: ID[] = [];
+  @observable.ref generator: Generator<Resolution> | null = null;
+  @observable.ref currentResolution: Resolution | null = null;
 
   @observable turn: number = 1;
   @observable currentPlayerId: ID;
@@ -48,6 +34,11 @@ export default class GameStore {
   @computed
   get isReplaying() {
     return this.turn < this.game.turn;
+  }
+
+  @computed
+  get isResolutionComplete() {
+    return this.isReplaying && this.generator === null;
   }
 
   @computed
@@ -117,14 +108,13 @@ export default class GameStore {
     this.turn = turn;
     if (this.isReplaying) {
       this.setMap(Utils.clone(this.game.data.maps[turn - 1]));
-      this.unresolvedMap = new GameMap(Utils.clone(this.game.data.maps[turn - 1]));
-      this.resolveState = ResolveState.START;
-      this.changeResolveState();
+      this.generator = resolveTurn(this.map);
+      this.currentResolution = null;
+      this.advanceToNextVisible();
     } else {
       this.setMap(this.game.data.maps[turn - 1]); // don't clone, we need to apply model actions to the real copy!
-      this.unresolvedMap = null;
-      this.resolveIds = [];
-      this.resolveState = ResolveState.NONE;
+      this.generator = null;
+      this.currentResolution = null;
     }
   }
 
@@ -165,238 +155,62 @@ export default class GameStore {
   }
 
   @action
-  resolve(id: ID) {
-    if (!Utils.contains(this.resolveIds, id)) throw new Error(`ID ${id} not a valid resolve ID!`);
-
-    this.resolveIds = Utils.exclude(this.resolveIds, id);
-
-    switch (this.resolveState) {
-      case ResolveState.MOVES:
-      case ResolveState.EDGE_MOVES:
-        this.resolveMove(id);
-        break;
-      case ResolveState.COMBATS:
-        this.resolveCombat(id);
-        break;
-      case ResolveState.ADD_DEFEND:
-        this.resolveAddDefend(id);
-        break;
-      case ResolveState.FOOD:
-        this.resolveFood(id);
-        break;
-      case ResolveState.GOLD:
-        this.resolveGold(id);
-        break;
-      case ResolveState.TERRITORY_CONTROL:
-        this.resolveTerritoryControl(id);
-        break;
-      case ResolveState.TERRITORY_ACTIONS:
-        this.resolveTerritoryAction(id);
-        break;
-    }
-
-    if (this.resolveIds.length == 0) {
-      this.changeResolveState();
-    }
-
+  resolveNext() {
+    if (!this.generator) return;
+    // advanceToNextVisible calls gen.next() which applies currentResolution then finds the next visible step
+    this.advanceToNextVisible();
     this.setMap(this.map.data);
   }
 
-  private changeResolveState() {
-    switch (this.resolveState) {
-      case ResolveState.START:
-        this.toMovesState();
-        break;
-      case ResolveState.MOVES:
-        this.toEdgeMovesState();
-        break;
-      case ResolveState.EDGE_MOVES:
-        this.toCombatsState();
-        if (this.resolveIds.length == 0) {
-          this.toAddDefendState();
-        }
-        break;
-      case ResolveState.COMBATS:
-        this.toEdgeMovesState();
-        if (this.resolveIds.length == 0) {
-          this.toAddDefendState();
-        }
-        break;
-      case ResolveState.ADD_DEFEND:
-        this.toFoodState();
-        break;
-      case ResolveState.FOOD:
-        this.toGoldState();
-        break;
-      case ResolveState.GOLD:
-        this.toTerritoryControlState();
-        break;
-      case ResolveState.TERRITORY_CONTROL:
-        this.toTerritoryActionState();
-        break;
-      case ResolveState.TERRITORY_ACTIONS:
-        this.resolveState = ResolveState.NONE;
-        break;
-    }
-
-    if (this.resolveState != ResolveState.NONE && this.resolveIds.length == 0) {
-      this.changeResolveState();
-    }
-  }
-
-  private resolveMove(unitId: ID) {
-    const unit = this.map.unit(unitId);
-    if (!unit) throw new Error(`No unit ${unitId}`);
-
-    unit.resolveRemoveDefendStatus();
-    unit.resolveMove();
-  }
-
-  private resolveCombat(locationId: ID) {
-    const combat = this.map.getCombats().find((combat) => combat.location.data.id === locationId);
-    if (!combat) throw new Error(`No combat on Location ${locationId}`);
-
-    combat.resolve();
-  }
-
-  private resolveAddDefend(unitId: ID) {
-    const unit = this.map.unit(unitId);
-    if (!unit) throw new Error(`No unit ${unitId}`);
-
-    const unresolvedUnit = this.unresolvedMap.unit(unitId);
-
-    unit.resolveAddDefendStatus(unresolvedUnit);
-  }
-
-  private resolveFood(territoryId: ID) {
-    const territory = this.map.territory(territoryId);
-    if (!territory) throw new Error(`No territory ${territoryId}`);
-
-    territory.resolveFood();
-  }
-
-  private resolveGold(playerId: ID) {
-    const player = this.map.player(playerId);
-    if (!player) throw new Error(`No player ${playerId}`);
-
-    player.resolveGold();
-  }
-
-  private resolveTerritoryControl(territoryId: ID) {
-    const territory = this.map.territory(territoryId);
-    if (!territory) throw new Error(`No territory ${territoryId}`);
-
-    const unresolveTerritory = this.unresolvedMap.territory(territoryId);
-
-    territory.resolveTerritoryControl(unresolveTerritory);
-  }
-
-  private resolveTerritoryAction(territoryId: ID) {
-    const territory = this.map.territory(territoryId);
-    if (!territory) throw new Error(`No territory ${territoryId}`);
-
-    territory.resolveTerritoryAction();
-  }
-
-  private toMovesState() {
-    this.resolveIds = this.map.units.filter((unit) => unit.data.destinationId).map((unit) => unit.data.id);
-
-    const invisibleResolveIds = this.resolveIds.filter((unitId) => !this.isUnitVisible(unitId));
-    invisibleResolveIds.forEach((unitId) => this.resolveMove(unitId));
-    this.resolveIds = Utils.excludeAll(this.resolveIds, invisibleResolveIds);
-
-    this.resolveState = ResolveState.MOVES;
-  }
-
-  private toEdgeMovesState() {
-    this.resolveIds = this.map.units
-      .filter((unit) => unit.data.destinationId && !unit.location.hasCombat())
-      .map((unit) => unit.data.id);
-
-    const invisibleResolveIds = this.resolveIds.filter((unitId) => !this.isUnitVisible(unitId));
-    invisibleResolveIds.forEach((unitId) => this.resolveMove(unitId));
-    this.resolveIds = Utils.excludeAll(this.resolveIds, invisibleResolveIds);
-
-    this.resolveState = ResolveState.EDGE_MOVES;
-  }
-
-  private toCombatsState() {
-    this.resolveIds = this.map.getCombats().map((combat) => combat.location.data.id);
-
-    const invisibleResolveIds = this.resolveIds.filter((locationId) => !this.isLocationVisible(locationId));
-    invisibleResolveIds.forEach((locationId) => this.resolveCombat(locationId));
-    this.resolveIds = Utils.excludeAll(this.resolveIds, invisibleResolveIds);
-
-    this.resolveState = ResolveState.COMBATS;
-  }
-
-  private toAddDefendState() {
-    this.resolveIds = this.map.units
-      .filter((unit) => !Utils.contains(unit.data.statuses, Values.Status.DEFEND))
-      .map((unit) => unit.data.id);
-
-    const invisibleResolveIds = this.resolveIds.filter((unitId) => !this.isUnitVisible(unitId));
-    invisibleResolveIds.forEach((unitId) => this.resolveAddDefend(unitId));
-    this.resolveIds = Utils.excludeAll(this.resolveIds, invisibleResolveIds);
-
-    this.resolveState = ResolveState.ADD_DEFEND;
-  }
-
-  private toGoldState() {
-    this.resolveIds = Utils.clone(this.map.players.map((player) => player.data.id));
-    this.resolveState = ResolveState.GOLD;
-  }
-
-  private toFoodState() {
-    this.resolveIds = Utils.clone(this.map.territories.map((territory) => territory.data.id));
-
-    const invisibleResolveIds = this.resolveIds.filter((territoryId) => !this.isLocationVisible(territoryId));
-    invisibleResolveIds.forEach((territoryId) => this.resolveFood(territoryId));
-    this.resolveIds = Utils.excludeAll(this.resolveIds, invisibleResolveIds);
-
-    this.resolveState = ResolveState.FOOD;
-  }
-
-  private toTerritoryControlState() {
-    this.resolveIds = Utils.clone(this.map.territories.map((territory) => territory.data.id));
-
-    const invisibleResolveIds = this.resolveIds.filter((territoryId) => !this.isLocationVisible(territoryId));
-    invisibleResolveIds.forEach((territoryId) => this.resolveTerritoryControl(territoryId));
-    this.resolveIds = Utils.excludeAll(this.resolveIds, invisibleResolveIds);
-
-    this.resolveState = ResolveState.TERRITORY_CONTROL;
-  }
-
-  private toTerritoryActionState() {
-    this.resolveIds = this.map.territories
-      .filter((territory) => territory.data.currentAction != null)
-      .map((territory) => territory.data.id);
-
-    const invisibleResolveIds = this.resolveIds.filter((territoryId) => !this.isLocationVisible(territoryId));
-    invisibleResolveIds.forEach((territoryId) => this.resolveTerritoryAction(territoryId));
-    this.resolveIds = Utils.excludeAll(this.resolveIds, invisibleResolveIds);
-
-    this.resolveState = ResolveState.TERRITORY_ACTIONS;
-  }
-
   public isUnitVisible(unitId: ID): boolean {
-    const model = this.map.unit(unitId);
-    const locationVisibility = this.visibility.get(model.location.data.id);
-    let visible = locationVisibility;
+    const unit = this.map.unit(unitId);
+    if (!unit) return false;
 
-    // when in replay mode, units are visible if they occupy a visible location OR occupy a currently visible location NEXT turn
-    if (this.isReplaying && model.data.destinationId) {
-      const futureModel = new GameMap(this.game.data.maps[this.turn]).unit(unitId);
-      if (futureModel) {
-        const futureLocationVisibility = this.visibility.get(futureModel.location.data.id);
-        visible = locationVisibility || futureLocationVisibility;
-      }
+    const locationVisible = this.visibility.get(unit.location.data.id) ?? false;
+
+    // Also consider destination: show a move if the unit is heading to or from a visible area
+    if (unit.destinationId) {
+      const destinationVisible = this.visibility.get(unit.destinationId) ?? false;
+      return locationVisible || destinationVisible;
     }
 
-    return visible;
+    return locationVisible;
   }
 
-  public isLocationVisible(locationId): boolean {
-    return this.visibility.get(locationId);
+  public isLocationVisible(locationId: ID): boolean {
+    return this.visibility.get(locationId) ?? false;
+  }
+
+  private isResolutionVisible(resolution: Resolution): boolean {
+    switch (resolution.phase) {
+      case 'move':
+      case 'add-defend':
+        return this.isUnitVisible(resolution.unitId);
+      case 'combat':
+        return this.isLocationVisible(resolution.locationId);
+      case 'food':
+      case 'territory-control':
+      case 'territory-action':
+        return this.isLocationVisible(resolution.territoryId);
+      case 'gold':
+        return true;
+    }
+  }
+
+  private advanceToNextVisible() {
+    while (true) {
+      const { value, done } = this.generator.next();
+      if (done) {
+        this.generator = null;
+        this.currentResolution = null;
+        return;
+      }
+      if (this.isResolutionVisible(value)) {
+        this.currentResolution = value;
+        return;
+      }
+      // Invisible — the step was yielded and will be applied on the next .next() call,
+      // but we're calling .next() in the next loop iteration, which applies it. Correct.
+    }
   }
 }

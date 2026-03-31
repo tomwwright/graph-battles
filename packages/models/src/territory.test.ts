@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { describe, it, beforeEach } from 'mocha';
 
 import testMapData from './test/testMap';
+import { applyTerritoryAction } from './actions/territory';
 
 let map: GameMap;
 
@@ -50,6 +51,12 @@ describe('Territory Model', () => {
     expect(map.territory('#T5').type).to.be.equal(TerritoryType.FARM, 'Territory #T5 type');
   });
 
+  it('currentAction getter reads from pending territory actions', () => {
+    expect(map.territory('#T1').currentAction).to.equal(TerritoryAction.CREATE_UNIT);
+    expect(map.territory('#T4').currentAction).to.equal(null);
+    expect(map.territory('#T5').currentAction).to.equal(null);
+  });
+
   it('territory properties', () => {
     const territory = map.territory('#T4');
 
@@ -83,20 +90,19 @@ describe('Territory Model', () => {
     );
   });
 
-  it('set territory action', () => {
+  it('apply territory action', () => {
     let territory = map.territory('#T5');
 
-    expect(territory.data.currentAction).to.equal(null, 'territory action is initially no action');
-    expect(
-      territory.setTerritoryAction.bind(territory, TerritoryAction.BUILD_SETTLEMENT),
-      'set to unavailable action'
+    expect(territory.currentAction).to.equal(null, 'territory action is initially no action');
+    expect(() =>
+      applyTerritoryAction(map, { type: 'territory', territoryId: '#T5', action: TerritoryAction.BUILD_SETTLEMENT })
     ).to.throw();
-    territory.setTerritoryAction(TerritoryAction.BUILD_CITY);
-    expect(territory.data.currentAction).to.equal(TerritoryAction.BUILD_CITY, 'set to valid action: build city');
+    applyTerritoryAction(map, { type: 'territory', territoryId: '#T5', action: TerritoryAction.BUILD_CITY });
+    expect(territory.currentAction).to.equal(TerritoryAction.BUILD_CITY, 'set to valid action: build city');
     expect(territory.player.data.gold).to.equal(10 - 5, 'player gold after setting build city');
     expect(territory.data.food).to.equal(6 - 2, 'territory food after setting build city');
-    territory.setTerritoryAction(null);
-    expect(territory.data.currentAction).to.equal(null, 'set to no action');
+    applyTerritoryAction(map, { type: 'territory', territoryId: '#T5', action: null });
+    expect(territory.currentAction).to.equal(null, 'set to no action');
     expect(territory.player.data.gold).to.equal(10, 'player gold after setting no action');
     expect(territory.data.food).to.equal(6, 'territory food after setting no action');
   });

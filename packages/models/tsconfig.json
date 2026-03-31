@@ -4,6 +4,7 @@
     "composite": true,
     "declaration": true,
     "experimentalDecorators": true,
+    "downlevelIteration": true,
     //"strictNullChecks": true,
     "rootDir": "src/",
     "outDir": "build",

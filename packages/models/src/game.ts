@@ -1,4 +1,5 @@
 import { GameMap, GameMapData } from './map';
+import { resolveTurnSync } from './resolver';
 import { User, UserData } from './user';
 import { clone } from './utils';
 
@@ -38,7 +39,7 @@ export class Game {
   resolveTurn() {
     if (this.winners.length > 0) throw new Error('Unable to resolve turn -- game is in a completed state!');
     const next = new GameMap(clone(this.latestMap));
-    next.resolveTurn();
+    resolveTurnSync(next);
     this.data.maps.push(next.data);
   }
 }

@@ -109,7 +109,7 @@ export default class TerritoryView {
   onUpdateActionIndicator() {
     const model = this.findModel();
     this.spriteActionIndicator.visible =
-      this.gameStore.visibility.get(model.data.id) && model.data.currentAction != null;
+      this.gameStore.visibility.get(model.data.id) && model.currentAction != null;
   }
 
   onUpdateTerritorySprite() {

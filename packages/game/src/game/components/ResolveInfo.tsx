@@ -5,13 +5,8 @@ import UnitInfo from 'game/components/UnitInfo';
 import PlayerInfo from 'game/components/PlayerInfo';
 import TerritoryInfo from 'game/components/TerritoryInfo';
 import CombatInfo from 'game/components/CombatInfo';
-import UnitListItem from 'game/components/UnitListItem';
-import PlayerListItem from 'game/components/PlayerListItem';
-import CombatListItem from 'game/components/CombatListItem';
-import TerritoryListItem from 'game/components/TerritoryListItem';
 
-import GameStore, { ResolveState } from 'game/stores/game';
-
+import GameStore from 'game/stores/game';
 import UiStore from 'game/stores/ui';
 
 type ResolveInfoProps = {
@@ -19,17 +14,44 @@ type ResolveInfoProps = {
   uiStore: UiStore;
 };
 
+const phaseText: Record<string, string> = {
+  move: 'Movement',
+  combat: 'Combat',
+  'add-defend': 'Defenders',
+  food: 'Food',
+  gold: 'Gold',
+  'territory-control': 'Territory Captures',
+  'territory-action': 'Territory Actions',
+};
+
 const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, uiStore }) => {
-  const resolveStateTexts = {
-    [ResolveState.ADD_DEFEND]: 'Defenders',
-    [ResolveState.COMBATS]: 'Combats',
-    [ResolveState.EDGE_MOVES]: 'Movement',
-    [ResolveState.MOVES]: 'Movement',
-    [ResolveState.FOOD]: 'Food',
-    [ResolveState.GOLD]: 'Gold',
-    [ResolveState.TERRITORY_ACTIONS]: 'Territory Actions',
-    [ResolveState.TERRITORY_CONTROL]: 'Territory Captures',
-    [ResolveState.NONE]: '---',
+  const resolution = gameStore.currentResolution;
+
+  const renderDetail = () => {
+    if (!resolution) return null;
+
+    switch (resolution.phase) {
+      case 'move':
+      case 'add-defend':
+        return <UnitInfo unit={gameStore.map.unit(resolution.unitId)} isPlanning={false} />;
+      case 'combat':
+        return <CombatInfo combat={gameStore.combats.find((c) => c.location.data.id === resolution.locationId)} />;
+      case 'food':
+      case 'territory-control':
+      case 'territory-action':
+        return (
+          <TerritoryInfo
+            territory={gameStore.map.territory(resolution.territoryId)}
+            currentPlayer={gameStore.currentPlayer}
+            isPlanning={false}
+          />
+        );
+      case 'gold':
+        const user = gameStore.game.users.find((user) =>
+          user.players.map((player) => player.data.id).includes(resolution.playerId)
+        );
+        return <PlayerInfo player={gameStore.map.player(resolution.playerId)} user={user} isActive={false} />;
+    }
   };
 
   return (
@@ -38,55 +60,11 @@ const ResolveInfo: React.StatelessComponent<ResolveInfoProps> = ({ gameStore, ui
         <Text>
           <Small>Replaying</Small>
         </Text>
-        <Text>{resolveStateTexts[gameStore.resolveState]}</Text>
-        <Button onClick={() => uiStore.onClickResolve(gameStore.resolveIds[0])}>Resolve Next</Button>
+        <Text>{resolution ? phaseText[resolution.phase] : '---'}</Text>
+        <Button onClick={() => uiStore.onClickResolveNext()}>Resolve Next</Button>
       </InfoPane>
 
-      {gameStore.resolveIds.map((id, i) => {
-        if (i == 0) {
-          switch (gameStore.resolveState) {
-            case ResolveState.ADD_DEFEND:
-            case ResolveState.EDGE_MOVES:
-            case ResolveState.MOVES:
-              return <UnitInfo key={i} unit={gameStore.map.unit(id)} isPlanning={false} />;
-            case ResolveState.FOOD:
-            case ResolveState.TERRITORY_ACTIONS:
-            case ResolveState.TERRITORY_CONTROL:
-              return (
-                <TerritoryInfo
-                  key={i}
-                  territory={gameStore.map.territory(id)}
-                  currentPlayer={gameStore.currentPlayer}
-                  isPlanning={false}
-                />
-              );
-            case ResolveState.GOLD:
-              const user = gameStore.game.users.find((user) =>
-                user.players.map((player) => player.data.id).includes(id)
-              );
-              return <PlayerInfo key={i} player={gameStore.map.player(id)} user={user} isActive={false} />;
-            case ResolveState.COMBATS:
-              return <CombatInfo key={i} combat={gameStore.combats.find((combat) => combat.location.data.id === id)} />;
-          }
-        } else {
-          switch (gameStore.resolveState) {
-            case ResolveState.ADD_DEFEND:
-            case ResolveState.EDGE_MOVES:
-            case ResolveState.MOVES:
-              return <UnitListItem key={i} unit={gameStore.map.unit(id)} />;
-            case ResolveState.FOOD:
-            case ResolveState.TERRITORY_ACTIONS:
-            case ResolveState.TERRITORY_CONTROL:
-              return <TerritoryListItem key={i} territory={gameStore.map.territory(id)} />;
-            case ResolveState.GOLD:
-              return <PlayerListItem key={i} player={gameStore.map.player(id)} />;
-            case ResolveState.COMBATS:
-              return (
-                <CombatListItem key={i} combat={gameStore.combats.find((combat) => combat.location.data.id === id)} />
-              );
-          }
-        }
-      })}
+      {renderDetail()}
     </div>
   );
 };

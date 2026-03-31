@@ -1,5 +1,7 @@
 export * as Actions from './actions';
 export * from './combat';
+export * from './resolution';
+export * from './resolver';
 export * from './edge';
 export * from './game';
 export * from './map';

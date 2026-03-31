@@ -107,3 +107,11 @@ export function unique<T>(things: T[]): T[] {
 export function toHexColour(colour: Colour) {
   return ('000000' + colour.toString(16)).substr(-6);
 }
+
+export function* concat<T>(generators: Generator<T>[]): Generator<T> {
+  for (const g of generators) {
+    for (const t of g) {
+      yield t;
+    }
+  }
+}

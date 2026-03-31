@@ -10,11 +10,38 @@ import { ModelAction } from './actions';
 import { applyReadyPlayer } from './actions/ready';
 import { applyMoveUnits } from './actions/move';
 import { applyTerritoryAction } from './actions/territory';
+import { TerritoryAction } from './values';
+
+export enum PendingActionType {
+  MOVE = 'move',
+  TERRITORY = 'territory',
+  READY = 'ready',
+}
+
+export type PendingMoveAction = {
+  type: PendingActionType.MOVE;
+  unitId: ID;
+  destinationId: ID;
+};
+
+export type PendingTerritoryAction = {
+  type: PendingActionType.TERRITORY;
+  territoryId: ID;
+  action: TerritoryAction;
+};
+
+export type PendingReadyAction = {
+  type: PendingActionType.READY;
+  playerId: ID;
+};
+
+export type PendingAction = PendingMoveAction | PendingTerritoryAction | PendingReadyAction;
 
 export type GameMapData = HasID & {
   type: 'map';
   dataMap: DataMap;
   nextId: number;
+  pendingActions: PendingAction[];
 };
 
 export class GameMap extends UnitContainer<GameMapData> {
@@ -131,7 +158,6 @@ export class GameMap extends UnitContainer<GameMapData> {
       id: toID(this.data.nextId),
       playerId: territory.data.playerId,
       locationId: territory.data.id,
-      destinationId: null,
       statuses: [],
     };
 
@@ -146,94 +172,12 @@ export class GameMap extends UnitContainer<GameMapData> {
   removeUnit(unit: Unit): GameMap {
     delete this.data.dataMap[unit.data.id];
     delete this.modelMap[unit.data.id];
+    this.data.pendingActions = this.data.pendingActions.filter(
+      (a) => !(a.type === PendingActionType.MOVE && a.unitId === unit.data.id)
+    );
     unit.data.locationId = null;
 
     return this;
-  }
-
-  resolveTurn() {
-    const previous = new GameMap(clone(this.data));
-
-    this.resolveRemoveDefendStatus();
-
-    this.resolveMovesAndCombats();
-
-    this.resolveAddDefendStatus(previous);
-
-    this.resolveFood();
-    this.resolveGold();
-
-    this.resolveTerritoryControl(previous);
-    this.resolveTerritoryActions();
-
-    this.unreadyPlayers();
-  }
-
-  resolveGold() {
-    this.players.forEach((player) => player.resolveGold());
-  }
-
-  resolveFood() {
-    for (let territory of this.territories) {
-      territory.resolveFood();
-    }
-  }
-
-  resolveRemoveDefendStatus() {
-    for (const unit of this.units) {
-      unit.resolveRemoveDefendStatus();
-    }
-  }
-
-  resolveAddDefendStatus(previous: GameMap) {
-    for (const unit of this.units) {
-      const previousUnit = previous.unit(unit.data.id);
-      unit.resolveAddDefendStatus(previousUnit);
-    }
-  }
-
-  resolveMoves() {
-    // push all moving units onto their respective Edge
-    const movingUnits = this.units.filter((unit) => unit.data.destinationId !== null && unit.movementEdge);
-    movingUnits.forEach((unit) => unit.resolveMove());
-
-    // now safe edges can immediately be resolved
-    const safeEdges = this.edges.filter((edge) => !edge.hasCombat());
-    for (const edge of safeEdges) {
-      edge.units.forEach((unit) => unit.resolveMove());
-    }
-  }
-
-  resolveMovesAndCombats() {
-    this.resolveMoves();
-
-    // resolve all combats (and then check if more combats occurred)
-    let combats = this.getCombats();
-    while (combats.length > 0) {
-      for (const combat of combats) {
-        combat.resolve();
-      }
-      this.resolveMoves();
-      combats = this.getCombats();
-    }
-  }
-
-  resolveTerritoryActions() {
-    for (let territory of this.territories) {
-      territory.resolveTerritoryAction();
-    }
-  }
-
-  resolveTerritoryControl(previous: GameMap) {
-    const populatedTerritories = this.territories.filter((territory) => territory.units.length > 0);
-    for (const territory of populatedTerritories) {
-      const previousTerritory = previous.territory(territory.data.id);
-      territory.resolveTerritoryControl(previousTerritory);
-    }
-  }
-
-  unreadyPlayers() {
-    this.players.forEach((player) => (player.data.ready = false));
   }
 
   private initialiseModelMap(data: DataMap): void {

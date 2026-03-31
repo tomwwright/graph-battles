@@ -18,7 +18,7 @@ export class MockGameProvider extends GameProvider {
   public async action(action: Actions.ModelAction) {
     const map = new GameMap(this.game.latestMap);
     map.applyAction(action);
-    if (action.type === 'ready-player' && map.players.every((player) => player.data.ready)) {
+    if (action.type === 'ready-player' && map.players.every((player) => player.ready)) {
       this.game.resolveTurn();
     }
     return this.game;
