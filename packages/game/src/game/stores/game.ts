@@ -205,6 +205,9 @@ export default class GameStore {
         this.currentResolution = null;
         return;
       }
+      // generator.next() mutates the map, but MobX @computed visibility is stale
+      // within this loop -- re-wrap the map to trigger recomputation
+      this.setMap(this.map.data);
       if (this.isResolutionVisible(value)) {
         this.currentResolution = value;
         return;

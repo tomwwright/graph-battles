@@ -80,8 +80,10 @@ export function resolveRemoveDefendStatus(map: GameMap) {
 export function* resolveAddDefendStatus(map: GameMap, previous: GameMap): Generator<Resolution> {
   for (const unit of map.units) {
     const previousUnit = previous.unit(unit.data.id);
-    yield { phase: 'add-defend', unitId: unit.data.id };
-    if (previousUnit && !previousUnit.destinationId) unit.addStatus(Status.DEFEND);
+    if (previousUnit && !previousUnit.destinationId) {
+      yield { phase: 'add-defend', unitId: unit.data.id };
+      unit.addStatus(Status.DEFEND);
+    }
   }
 }
 
