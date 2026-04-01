@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Small, Text } from 'rebass';
 import InfoPane from 'game/components/InfoPane';
 import { Player, User, Values } from '@battles/models';
-import { userInfo } from 'os';
 
 type PlayerInfoProps = {
   user: User;
