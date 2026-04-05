@@ -1,0 +1,1 @@
+export { GameRenderer } from './GameRenderer';
