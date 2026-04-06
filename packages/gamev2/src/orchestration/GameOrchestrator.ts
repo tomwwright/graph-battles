@@ -4,6 +4,7 @@ import { UserActionDispatch } from '../state/types';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { ResolutionRunner } from './ResolutionRunner';
 import { GameProvider } from '../providers/GameProvider';
+import { ParsedMap } from '../map/MapParser';
 
 /**
  * Central coordinator. Owns GameStore, GameRenderer, ResolutionRunner, GameProvider.
@@ -17,16 +18,13 @@ export class GameOrchestrator implements UserActionDispatch {
   private renderer: GameRenderer;
   private resolutionRunner: ResolutionRunner;
   private provider: GameProvider;
+  private parsedMap: ParsedMap | null = null;
 
   // Resolution control
   private advanceResolve: ((value: 'next' | 'skip') => void) | null = null;
   private abortController: AbortController | null = null;
 
-  constructor(
-    store: GameStore,
-    renderer: GameRenderer,
-    provider: GameProvider
-  ) {
+  constructor(store: GameStore, renderer: GameRenderer, provider: GameProvider) {
     this.store = store;
     this.renderer = renderer;
     this.resolutionRunner = new ResolutionRunner(store, renderer);
@@ -37,7 +35,9 @@ export class GameOrchestrator implements UserActionDispatch {
    * Initialise the orchestrator: load game from provider, set up renderer,
    * register input callbacks.
    */
-  async initialise(): Promise<void> {
+  async initialise(parsedMap: ParsedMap): Promise<void> {
+    this.parsedMap = parsedMap;
+
     const game = await this.provider.get();
     const map = new GameMap(game.latestMap);
 
@@ -54,8 +54,16 @@ export class GameOrchestrator implements UserActionDispatch {
       visibilityMode: 'current-player',
     });
 
-    // TODO: Initialise renderer with map data
-    // TODO: Register territory click/hover callbacks
+    // Build territory properties map for renderer
+    const territoryProperties = new Map<ID, Values.TerritoryProperty[]>();
+    for (const t of parsedMap.territories) {
+      const territory = map.territory(t.id);
+      territoryProperties.set(t.id, territory?.data.properties ?? []);
+    }
+
+    await this.renderer.initialise(parsedMap, territoryProperties);
+
+    // Register input callbacks
     this.renderer.onTerritoryClick((territoryId) => this.handleTerritoryClick(territoryId));
     this.renderer.onTerritoryHover((territoryId) => this.handleTerritoryHover(territoryId));
   }
@@ -92,7 +100,8 @@ export class GameOrchestrator implements UserActionDispatch {
   // --- Input handlers (from renderer callbacks) ---
 
   private handleTerritoryClick(territoryId: ID): void {
-    // TODO: Implement click logic - select territory, select/move units
+    console.log('[GameOrchestrator] Territory clicked:', territoryId);
+    this.store.setState({ selectedTerritoryId: territoryId });
   }
 
   private handleTerritoryHover(territoryId: ID | null): void {
@@ -109,11 +118,7 @@ export class GameOrchestrator implements UserActionDispatch {
 
     const generator = resolveTurn(map);
 
-    await this.resolutionRunner.run(
-      generator,
-      () => this.waitForAdvance(),
-      this.abortController.signal
-    );
+    await this.resolutionRunner.run(generator, () => this.waitForAdvance(), this.abortController.signal);
 
     this.abortController = null;
     // TODO: Post-resolution sync - check victory, advance to next player/turn

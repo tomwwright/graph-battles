@@ -1,9 +1,11 @@
-import { createContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { GameStore } from '../state/GameStore';
 import { UserActionDispatch } from '../state/types';
 import { GameOrchestrator } from '../orchestration/GameOrchestrator';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { GameProvider } from '../providers/GameProvider';
+import { ParsedMap } from '../map/MapParser';
 import { useBabylonJs } from './BabylonJsProvider';
 
 export const GameStoreContext = createContext<GameStore | null>(null);
@@ -11,21 +13,28 @@ export const UserActionDispatchContext = createContext<UserActionDispatch | null
 
 type GameContextProviderProps = {
   provider: GameProvider;
+  parsedMap: ParsedMap;
   children: ReactNode;
 };
 
 /**
  * Creates the orchestrator from BabylonJs context, initialises it,
  * then provides GameStoreContext and UserActionDispatchContext to children.
+ * Uses a ref to ensure only one orchestrator is created even under StrictMode double-mount.
  */
-export function GameContextProvider({ provider, children }: GameContextProviderProps) {
+export function GameContextProvider({ provider, parsedMap, children }: GameContextProviderProps) {
   const { scene, camera } = useBabylonJs();
+  const orchestratorRef = useRef<GameOrchestrator | null>(null);
   const [orchestrator, setOrchestrator] = useState<GameOrchestrator | null>(null);
 
   useEffect(() => {
-    const renderer = new GameRenderer(scene, camera);
+    if (orchestratorRef.current != null) {
+      setOrchestrator(orchestratorRef.current);
+      return;
+    }
 
-    // Create store with a placeholder initial state — orchestrator.initialise() will set the real state
+    const renderer = new GameRenderer(scene, camera as ArcRotateCamera);
+
     const store = new GameStore({
       game: null!,
       map: null!,
@@ -40,18 +49,17 @@ export function GameContextProvider({ provider, children }: GameContextProviderP
     });
 
     const orch = new GameOrchestrator(store, renderer, provider);
+    orchestratorRef.current = orch;
 
-    orch.initialise().then(() => {
+    orch.initialise(parsedMap).then(() => {
       setOrchestrator(orch);
     });
 
-    return () => {
-      renderer.dispose();
-    };
-  }, [scene, camera, provider]);
+    // Don't dispose on cleanup — StrictMode remounts effects in dev
+  }, [scene, camera, provider, parsedMap]);
 
   if (!orchestrator) {
-    return null; // Loading state — orchestrator not yet initialised
+    return null;
   }
 
   return (

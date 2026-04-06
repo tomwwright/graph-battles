@@ -1,104 +1,177 @@
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Scene } from '@babylonjs/core/scene';
-import { Camera } from '@babylonjs/core/Cameras/camera';
-import { ID } from '@battles/models';
+import { ID, Values } from '@battles/models';
+import { HexCoord, hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
+import { SceneRenderer } from './SceneRenderer';
+import { CameraController } from './CameraController';
+import { HexGridController } from './HexGridController';
+import { AssetLoader } from './AssetLoader';
+import { MapRenderer } from './MapRenderer';
+import { ParsedMap } from '../map/MapParser';
 
 type TerritoryClickCallback = (territoryId: ID) => void;
 type TerritoryHoverCallback = (territoryId: ID | null) => void;
 
 /**
  * Facade for the rendering layer. Only rendering interface the orchestrator uses.
- * Delegates to internal renderer classes (SceneRenderer, CameraController,
- * HexGridController, MapRenderer, UnitRenderer).
+ * Delegates to internal renderer classes.
  */
 export class GameRenderer {
-  private scene: Scene;
-  private camera: Camera;
+  private readonly sceneRenderer: SceneRenderer;
+  private readonly cameraController: CameraController;
+  readonly grid: HexGridController;
+  private readonly assetLoader: AssetLoader;
+  private readonly mapRenderer: MapRenderer;
 
-  private territoryClickCallback: TerritoryClickCallback | null = null;
-  private territoryHoverCallback: TerritoryHoverCallback | null = null;
+  private parsedMap: ParsedMap | null = null;
+  // territory ID → hex coord, for camera focus
+  private territoryCoordMap = new Map<ID, HexCoord>();
 
-  constructor(scene: Scene, camera: Camera) {
-    this.scene = scene;
-    this.camera = camera;
-
-    // TODO: Instantiate internal renderers:
-    // - SceneRenderer (lighting, shadows, SSAO, skybox, ground)
-    // - CameraController (bounds, panning, rotation)
-    // - HexGridController (hit detection tiles, overlays)
-    // - AssetLoader (GLB loading/caching)
-    // - MapRenderer (territory mesh placement)
-    // - UnitRenderer (unit mesh management)
+  constructor(scene: Scene, camera: ArcRotateCamera) {
+    this.sceneRenderer = new SceneRenderer(scene, camera);
+    this.cameraController = new CameraController(camera);
+    this.grid = new HexGridController(scene);
+    this.assetLoader = new AssetLoader(scene);
+    this.mapRenderer = new MapRenderer(scene, this.grid, this.assetLoader);
   }
 
   // --- Lifecycle ---
 
-  /**
-   * Initialise the scene environment and load the map.
-   */
-  async initialise(): Promise<void> {
-    // TODO: Set up scene environment via SceneRenderer
-    // TODO: Load assets via AssetLoader
-    // TODO: Build hex grid via HexGridController
-    // TODO: Place map tiles via MapRenderer
+  async initialise(
+    parsedMap: ParsedMap,
+    territoryProperties: Map<ID, Values.TerritoryProperty[]>
+  ): Promise<void> {
+    this.parsedMap = parsedMap;
+
+    // Build territory coord lookup
+    this.territoryCoordMap.clear();
+    for (const t of parsedMap.territories) {
+      this.territoryCoordMap.set(t.id, t.coord);
+    }
+
+    // Load GLB assets
+    await this.assetLoader.loadAll();
+
+    // Size the tile grid
+    const rows = Math.max(...parsedMap.territories.map((t) => t.coord.x), ...parsedMap.grassCells.map((g) => g.x)) + 1;
+    const cols = Math.max(...parsedMap.territories.map((t) => t.coord.z), ...parsedMap.grassCells.map((g) => g.z)) + 1;
+    const gridSize = tileGridSize(rows, cols);
+    this.grid.setSize(gridSize);
+
+    // Register territory map for click/hover resolution
+    this.grid.setTerritoryMap(parsedMap.territories);
+
+    // Place tile meshes
+    const territories = parsedMap.territories.map((t) => ({
+      ...t,
+      properties: territoryProperties.get(t.id) ?? [],
+    }));
+    const meshes = this.mapRenderer.loadMap(territories, parsedMap.grassCells);
+
+    // Register meshes for shadows and reflections
+    this.sceneRenderer.registerMeshes(meshes);
+
+    // Size skybox/ground to extend beyond what the camera can see at max zoom
+    const sceneSize =
+      (Math.max(this.grid.maxX, this.grid.maxZ) + this.cameraController.maxVisibleSurroundingDistance) * 2;
+    this.sceneRenderer.resize(sceneSize, this.grid.maxX / 2, this.grid.maxZ / 2);
+
+    // Set camera bounds and center
+    this.cameraController.setBounds(this.grid.maxX, this.grid.maxZ);
+    this.cameraController.centerOnMap(this.grid.maxX, this.grid.maxZ);
   }
 
   dispose(): void {
-    // TODO: Clean up all renderers
+    this.mapRenderer.dispose();
+    this.grid.dispose();
   }
 
   // --- Input callbacks ---
 
   onTerritoryClick(callback: TerritoryClickCallback): void {
-    this.territoryClickCallback = callback;
+    this.grid.onTerritoryClick(callback);
   }
 
   onTerritoryHover(callback: TerritoryHoverCallback): void {
-    this.territoryHoverCallback = callback;
+    this.grid.onTerritoryHover(callback);
   }
 
   // --- Camera ---
 
   async focusOn(territoryId: ID): Promise<void> {
-    // TODO: Animate camera to focus on territory via CameraController
+    const coord = this.territoryCoordMap.get(territoryId);
+    if (!coord) return;
+    const centerTile = hexCenterTile(coord);
+    const worldPos = this.grid.getWorldPosition(centerTile);
+    await this.cameraController.focusOn(worldPos);
   }
 
-  async centerOnMap(): Promise<void> {
-    // TODO: Center camera on map bounds via CameraController
+  centerOnMap(): void {
+    this.cameraController.centerOnMap(this.grid.maxX, this.grid.maxZ);
+  }
+
+  rotate(direction: 'left' | 'right'): void {
+    this.cameraController.rotate(direction);
   }
 
   // --- Map rendering ---
 
-  updateTerritoryOverlay(territoryId: ID, color: string | null, alpha?: number): void {
-    // TODO: Set overlay on territory's hex tiles via HexGridController
+  updateTerritoryOverlay(territoryId: ID, color: Color3 | null, alpha: number = 0.12): void {
+    const coord = this.territoryCoordMap.get(territoryId);
+    if (!coord) return;
+
+    const tiles = hexToTileCoords(coord);
+    for (const tile of tiles) {
+      if (color) {
+        this.grid.setTileOverlay(tile, color, alpha);
+      } else {
+        this.grid.setTileOverlay(tile, Color3.Black(), 0);
+      }
+    }
   }
 
-  updateTerritoryComposition(territoryId: ID): void {
-    // TODO: Recompute and swap tile meshes via MapRenderer + TerritoryComposition
+  clearOverlays(): void {
+    this.grid.clearAllOverlays();
   }
 
-  // --- Unit rendering ---
+  updateTerritoryComposition(
+    territoryId: ID,
+    prevProperties: Values.TerritoryProperty[],
+    nextProperties: Values.TerritoryProperty[]
+  ): void {
+    const coord = this.territoryCoordMap.get(territoryId);
+    if (!coord) return;
+
+    const newMeshes = this.mapRenderer.updateTerritory(territoryId, coord, prevProperties, nextProperties);
+    if (newMeshes.length > 0) {
+      this.sceneRenderer.registerMeshes(newMeshes);
+    }
+  }
+
+  // --- Unit rendering (stubs for Phase 4) ---
 
   addUnit(unitId: ID, territoryId: ID, playerId: ID): void {
-    // TODO: Create unit mesh at territory position via UnitRenderer
+    // TODO: Phase 4 — UnitRenderer
   }
 
   removeUnit(unitId: ID): void {
-    // TODO: Remove unit mesh via UnitRenderer
+    // TODO: Phase 4 — UnitRenderer
   }
 
   async animateUnitMove(unitId: ID, fromTerritoryId: ID, toTerritoryId: ID, signal?: AbortSignal): Promise<void> {
-    // TODO: Animate unit along path (territory -> grass -> territory) via UnitRenderer
+    // TODO: Phase 4 — UnitRenderer
   }
 
   setUnitPosition(unitId: ID, territoryId: ID): void {
-    // TODO: Snap unit to territory position (no animation) via UnitRenderer
+    // TODO: Phase 4 — UnitRenderer
   }
 
   setUnitStatus(unitId: ID, statuses: number[]): void {
-    // TODO: Update unit status indicators via UnitRenderer
+    // TODO: Phase 4 — UnitRenderer
   }
 
   setUnitDestination(unitId: ID, destinationId: ID | null): void {
-    // TODO: Show/hide planned move line via UnitRenderer
+    // TODO: Phase 4 — UnitRenderer
   }
 }

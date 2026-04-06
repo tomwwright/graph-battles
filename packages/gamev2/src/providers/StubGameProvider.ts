@@ -1,63 +1,83 @@
 import { Game, Values } from '@battles/models';
 import type { GameData, GameMapData } from '@battles/models';
 import type { GameProvider } from './GameProvider';
+import type { ParsedMap } from '../map/MapParser';
 
-function createStubGameData(): GameData {
+/**
+ * Creates a stub GameData from a ParsedMap.
+ * Assigns players to alternating territories and places one unit on the first territory.
+ */
+function createStubGameData(parsedMap: ParsedMap): GameData {
+  const dataMap: Record<string, any> = {};
+
+  // Two players
+  dataMap['p1'] = {
+    id: 'p1',
+    type: 'player',
+    colour: Values.Colour.RED,
+    gold: 5,
+    goldProduction: 1,
+  };
+  dataMap['p2'] = {
+    id: 'p2',
+    type: 'player',
+    colour: Values.Colour.BLUE,
+    gold: 5,
+    goldProduction: 1,
+  };
+
+  // Territories — alternate ownership between players
+  let edgeNextId = 1;
+  const edgeIds: Record<string, string[]> = {};
+
+  for (const t of parsedMap.territories) {
+    edgeIds[t.id] = [];
+  }
+
+  // Create edges
+  for (const e of parsedMap.edges) {
+    const edgeId = `e${edgeNextId++}`;
+    edgeIds[e.territoryA]?.push(edgeId);
+    edgeIds[e.territoryB]?.push(edgeId);
+    dataMap[edgeId] = {
+      id: edgeId,
+      type: 'edge',
+      territoryAId: e.territoryA,
+      territoryBId: e.territoryB,
+    };
+  }
+
+  // Create territories
+  for (let i = 0; i < parsedMap.territories.length; i++) {
+    const t = parsedMap.territories[i];
+    const playerId = i % 2 === 0 ? 'p1' : 'p2';
+    dataMap[t.id] = {
+      id: t.id,
+      type: 'territory',
+      edgeIds: edgeIds[t.id] ?? [],
+      playerId,
+      food: 3,
+      properties: [Values.TerritoryProperty.SETTLED],
+    };
+  }
+
+  // One unit on the first territory
+  if (parsedMap.territories.length > 0) {
+    dataMap['u1'] = {
+      id: 'u1',
+      type: 'unit',
+      playerId: 'p1',
+      locationId: parsedMap.territories[0].id,
+      statuses: [],
+    };
+  }
+
   const mapData: GameMapData = {
-    id: '#0',
+    id: 'map0',
     type: 'map',
-    nextId: 10,
+    nextId: 100,
     pendingActions: [],
-    dataMap: {
-      '#1': {
-        id: '#1',
-        type: 'player',
-        colour: Values.Colour.RED,
-        gold: 5,
-        goldProduction: 1,
-      },
-      '#2': {
-        id: '#2',
-        type: 'player',
-        colour: Values.Colour.BLUE,
-        gold: 5,
-        goldProduction: 1,
-      },
-      '#3': {
-        id: '#3',
-        type: 'territory',
-        edgeIds: ['#6', '#7'],
-        playerId: '#1',
-        food: 3,
-        properties: [Values.TerritoryProperty.SETTLED],
-      },
-      '#4': {
-        id: '#4',
-        type: 'territory',
-        edgeIds: ['#6', '#8'],
-        playerId: '#2',
-        food: 3,
-        properties: [Values.TerritoryProperty.SETTLED],
-      },
-      '#5': {
-        id: '#5',
-        type: 'territory',
-        edgeIds: ['#7', '#8'],
-        playerId: '',
-        food: 0,
-        properties: [],
-      },
-      '#6': { id: '#6', type: 'edge', territoryAId: '#3', territoryBId: '#4' },
-      '#7': { id: '#7', type: 'edge', territoryAId: '#3', territoryBId: '#5' },
-      '#8': { id: '#8', type: 'edge', territoryAId: '#4', territoryBId: '#5' },
-      '#9': {
-        id: '#9',
-        type: 'unit',
-        playerId: '#1',
-        locationId: '#3',
-        statuses: [],
-      },
-    },
+    dataMap,
   };
 
   return {
@@ -66,22 +86,26 @@ function createStubGameData(): GameData {
     maxVictoryPoints: 30,
     maps: [mapData],
     users: [
-      { id: 'user-1', type: 'user', name: 'Player 1', playerIds: ['#1'] },
-      { id: 'user-2', type: 'user', name: 'Player 2', playerIds: ['#2'] },
+      { id: 'user-1', type: 'user', name: 'Player 1', playerIds: ['p1'] },
+      { id: 'user-2', type: 'user', name: 'Player 2', playerIds: ['p2'] },
     ],
   };
 }
 
-export const stubProvider: GameProvider = {
-  async get() {
-    return new Game(createStubGameData());
-  },
-  async action(action) {
-    console.warn('[StubGameProvider] action() called — no-op in stub mode', action);
-    return new Game(createStubGameData());
-  },
-  async create() {
-    console.warn('[StubGameProvider] create() called — returning default stub game');
-    return new Game(createStubGameData());
-  },
-};
+export function createStubProvider(parsedMap: ParsedMap): GameProvider {
+  const gameData = createStubGameData(parsedMap);
+
+  return {
+    async get() {
+      return new Game(gameData);
+    },
+    async action(action) {
+      console.warn('[StubGameProvider] action() called — no-op in stub mode', action);
+      return new Game(gameData);
+    },
+    async create() {
+      console.warn('[StubGameProvider] create() called — returning default stub game');
+      return new Game(gameData);
+    },
+  };
+}
