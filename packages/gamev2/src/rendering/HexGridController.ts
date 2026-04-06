@@ -10,16 +10,17 @@ import {
 } from '@babylonjs/core';
 import { ID } from '@battles/models';
 import { HexCoord, OffsetCoord, hexToTileCoords, tileToHex, coordKey } from './HexCoordinates';
+import type { HoverInfo } from '../state/types';
 
 type TileOverlay = { color: Color3; alpha: number };
 
 type TerritoryClickCallback = (territoryId: ID) => void;
-type TerritoryHoverCallback = (territoryId: ID | null) => void;
+type HoverCallback = (hover: HoverInfo) => void;
 
 /**
  * Creates tile-level hex meshes for hit detection and overlay display.
- * Maps tile clicks/hovers to territory IDs. Highlights all 7 tiles of
- * a hovered territory's hex cluster rather than row/column cross.
+ * Maps tile clicks/hovers to territory IDs or edge info.
+ * Highlights all 7 tiles of a hovered hex cluster (territory or grass edge).
  */
 export class HexGridController {
   grid: Mesh[][] = [];
@@ -33,14 +34,19 @@ export class HexGridController {
 
   private mapSize = 0;
   private clickCallback: TerritoryClickCallback | null = null;
-  private hoverCallback: TerritoryHoverCallback | null = null;
+  private hoverCallback: HoverCallback | null = null;
   private overlays = new Map<string, TileOverlay>();
-  private hoveredTerritoryId: ID | null = null;
 
-  // Maps from hex coord key → territory ID (set during map load)
+  // Currently hovered hex (either territory or edge grass)
+  private hoveredHexKey: string | null = null;
+  private hoveredHexCoord: HexCoord | null = null;
+
+  // Maps from hex coord key → territory ID
   private territoryLookup = new Map<string, ID>();
-  // Maps from territory ID → hex coord (for hover highlight)
+  // Maps from territory ID → hex coord
   private territoryCoords = new Map<ID, HexCoord>();
+  // Maps from grass hex coord key → edge info (connected territories)
+  private edgeLookup = new Map<string, { territoryA: ID; territoryB: ID }>();
 
   constructor(private readonly scene: Scene) {}
 
@@ -48,20 +54,29 @@ export class HexGridController {
     this.clickCallback = callback;
   }
 
-  onTerritoryHover(callback: TerritoryHoverCallback): void {
+  onHover(callback: HoverCallback): void {
     this.hoverCallback = callback;
   }
 
   /**
-   * Register the territory hex coordinates so we can map tile clicks to territory IDs
-   * and highlight territory clusters on hover.
+   * Register territory and edge hex coordinates for click/hover resolution.
    */
-  setTerritoryMap(territories: { id: ID; coord: HexCoord }[]): void {
+  setTerritoryMap(
+    territories: { id: ID; coord: HexCoord }[],
+    edges: { territoryA: ID; territoryB: ID; grassCoord: HexCoord }[]
+  ): void {
     this.territoryLookup.clear();
     this.territoryCoords.clear();
+    this.edgeLookup.clear();
+
     for (const t of territories) {
       this.territoryLookup.set(coordKey(t.coord), t.id);
       this.territoryCoords.set(t.id, t.coord);
+    }
+
+    for (const e of edges) {
+      const key = coordKey(e.grassCoord);
+      this.edgeLookup.set(key, { territoryA: e.territoryA, territoryB: e.territoryB });
     }
   }
 
@@ -175,62 +190,73 @@ export class HexGridController {
     }
   }
 
-  private getTerritoryIdForTile(tile: OffsetCoord): ID | null {
-    const hex = tileToHex(tile);
-    return this.territoryLookup.get(coordKey(hex)) ?? null;
+  private setHexHighlight(hexCoord: HexCoord, color: Color3, alpha: number): void {
+    const tiles = hexToTileCoords(hexCoord);
+    for (const tile of tiles) {
+      if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize) {
+        this.setColorAndAlpha(tile.x, tile.z, color, alpha);
+      }
+    }
+  }
+
+  private unsetHexHighlight(hexCoord: HexCoord): void {
+    const tiles = hexToTileCoords(hexCoord);
+    for (const tile of tiles) {
+      if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize) {
+        this.restoreAtPosition(tile.x, tile.z);
+      }
+    }
+  }
+
+  private clearCurrentHover(): void {
+    if (this.hoveredHexCoord) {
+      this.unsetHexHighlight(this.hoveredHexCoord);
+    }
+    this.hoveredHexKey = null;
+    this.hoveredHexCoord = null;
   }
 
   private makePointerHandlers(tileCoord: OffsetCoord) {
-    const highlightColor = new Color3(0.5, 0.8, 1.0);
+    const territoryHighlightColor = new Color3(0.5, 0.8, 1.0);
+    const edgeHighlightColor = new Color3(0.8, 0.7, 0.3);
     const highlightAlpha = 0.08;
-
-    const setTerritoryHighlight = (territoryId: ID) => {
-      const hexCoord = this.territoryCoords.get(territoryId);
-      if (!hexCoord) return;
-      const tiles = hexToTileCoords(hexCoord);
-      for (const tile of tiles) {
-        if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize) {
-          this.setColorAndAlpha(tile.x, tile.z, highlightColor, highlightAlpha);
-        }
-      }
-    };
-
-    const unsetTerritoryHighlight = (territoryId: ID) => {
-      const hexCoord = this.territoryCoords.get(territoryId);
-      if (!hexCoord) return;
-      const tiles = hexToTileCoords(hexCoord);
-      for (const tile of tiles) {
-        if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize) {
-          this.restoreAtPosition(tile.x, tile.z);
-        }
-      }
-    };
 
     return {
       onPointerOver: () => {
-        const territoryId = this.getTerritoryIdForTile(tileCoord);
-        if (territoryId && territoryId !== this.hoveredTerritoryId) {
-          if (this.hoveredTerritoryId) {
-            unsetTerritoryHighlight(this.hoveredTerritoryId);
-          }
-          this.hoveredTerritoryId = territoryId;
-          setTerritoryHighlight(territoryId);
-          this.hoverCallback?.(territoryId);
-        } else if (!territoryId && this.hoveredTerritoryId) {
-          unsetTerritoryHighlight(this.hoveredTerritoryId);
-          this.hoveredTerritoryId = null;
-          this.hoverCallback?.(null);
+        const hex = tileToHex(tileCoord);
+        const hexKey = coordKey(hex);
+
+        if (hexKey === this.hoveredHexKey) return;
+
+        this.clearCurrentHover();
+
+        const territoryId = this.territoryLookup.get(hexKey);
+        if (territoryId) {
+          this.hoveredHexKey = hexKey;
+          this.hoveredHexCoord = hex;
+          this.setHexHighlight(hex, territoryHighlightColor, highlightAlpha);
+          this.hoverCallback?.({ type: 'territory', territoryId, hexCoord: hex });
+          return;
         }
+
+        const edge = this.edgeLookup.get(hexKey);
+        if (edge) {
+          this.hoveredHexKey = hexKey;
+          this.hoveredHexCoord = hex;
+          this.setHexHighlight(hex, edgeHighlightColor, highlightAlpha);
+          this.hoverCallback?.({ type: 'edge', ...edge, hexCoord: hex });
+          return;
+        }
+
+        this.hoverCallback?.(null);
       },
       onPointerOut: () => {
-        if (this.hoveredTerritoryId) {
-          unsetTerritoryHighlight(this.hoveredTerritoryId);
-          this.hoveredTerritoryId = null;
-          this.hoverCallback?.(null);
-        }
+        this.clearCurrentHover();
+        this.hoverCallback?.(null);
       },
       onPick: () => {
-        const territoryId = this.getTerritoryIdForTile(tileCoord);
+        const hex = tileToHex(tileCoord);
+        const territoryId = this.territoryLookup.get(coordKey(hex));
         if (territoryId) {
           this.clickCallback?.(territoryId);
         }

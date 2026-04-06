@@ -9,9 +9,10 @@ import { HexGridController } from './HexGridController';
 import { AssetLoader } from './AssetLoader';
 import { MapRenderer } from './MapRenderer';
 import { ParsedMap } from '../map/MapParser';
+import type { HoverInfo } from '../state/types';
 
 type TerritoryClickCallback = (territoryId: ID) => void;
-type TerritoryHoverCallback = (territoryId: ID | null) => void;
+type HoverCallback = (hover: HoverInfo) => void;
 
 /**
  * Facade for the rendering layer. Only rendering interface the orchestrator uses.
@@ -59,8 +60,8 @@ export class GameRenderer {
     const gridSize = tileGridSize(rows, cols);
     this.grid.setSize(gridSize);
 
-    // Register territory map for click/hover resolution
-    this.grid.setTerritoryMap(parsedMap.territories);
+    // Register territory and edge map for click/hover resolution
+    this.grid.setTerritoryMap(parsedMap.territories, parsedMap.edges);
 
     // Place tile meshes
     const territories = parsedMap.territories.map((t) => ({
@@ -93,8 +94,8 @@ export class GameRenderer {
     this.grid.onTerritoryClick(callback);
   }
 
-  onTerritoryHover(callback: TerritoryHoverCallback): void {
-    this.grid.onTerritoryHover(callback);
+  onHover(callback: HoverCallback): void {
+    this.grid.onHover(callback);
   }
 
   // --- Camera ---

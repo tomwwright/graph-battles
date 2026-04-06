@@ -43,7 +43,7 @@ export function GameContextProvider({ provider, parsedMap, children }: GameConte
       turnPhase: 'planning',
       selectedUnitIds: [],
       selectedTerritoryId: null,
-      hoveredTerritoryId: null,
+      hover: null,
       currentResolution: null,
       visibilityMode: 'current-player',
     });

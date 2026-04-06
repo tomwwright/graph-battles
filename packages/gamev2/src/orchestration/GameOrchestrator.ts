@@ -49,7 +49,7 @@ export class GameOrchestrator implements UserActionDispatch {
       turnPhase: 'planning',
       selectedUnitIds: [],
       selectedTerritoryId: null,
-      hoveredTerritoryId: null,
+      hover: null,
       currentResolution: null,
       visibilityMode: 'current-player',
     });
@@ -65,7 +65,7 @@ export class GameOrchestrator implements UserActionDispatch {
 
     // Register input callbacks
     this.renderer.onTerritoryClick((territoryId) => this.handleTerritoryClick(territoryId));
-    this.renderer.onTerritoryHover((territoryId) => this.handleTerritoryHover(territoryId));
+    this.renderer.onHover((hover) => this.store.setState({ hover }));
   }
 
   // --- UserActionDispatch implementation ---
@@ -102,10 +102,6 @@ export class GameOrchestrator implements UserActionDispatch {
   private handleTerritoryClick(territoryId: ID): void {
     console.log('[GameOrchestrator] Territory clicked:', territoryId);
     this.store.setState({ selectedTerritoryId: territoryId });
-  }
-
-  private handleTerritoryHover(territoryId: ID | null): void {
-    this.store.setState({ hoveredTerritoryId: territoryId });
   }
 
   // --- Resolution replay ---

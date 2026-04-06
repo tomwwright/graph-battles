@@ -1,10 +1,13 @@
 import { useGameStore } from '../state/useGameStore';
+import { hexCenterTile } from '../rendering/HexCoordinates';
 
 export function App() {
   const turnPhase = useGameStore((s) => s.turnPhase);
   const turn = useGameStore((s) => s.turn);
   const selectedTerritoryId = useGameStore((s) => s.selectedTerritoryId);
-  const hoveredTerritoryId = useGameStore((s) => s.hoveredTerritoryId);
+  const hover = useGameStore((s) => s.hover);
+
+  const centerTile = hover ? hexCenterTile(hover.hexCoord) : null;
 
   return (
     <div
@@ -21,7 +24,13 @@ export function App() {
       }}
     >
       <div>Turn {turn} — {turnPhase}</div>
-      {hoveredTerritoryId && <div>Hovered: {hoveredTerritoryId}</div>}
+      {hover?.type === 'territory' && <div>Territory: {hover.territoryId}</div>}
+      {hover?.type === 'edge' && (
+        <div>Edge: {hover.territoryA} ↔ {hover.territoryB}</div>
+      )}
+      {hover && (
+        <div>Hex: ({hover.hexCoord.x}, {hover.hexCoord.z}) Tile: ({centerTile!.x}, {centerTile!.z})</div>
+      )}
       {selectedTerritoryId && <div>Selected: {selectedTerritoryId}</div>}
     </div>
   );

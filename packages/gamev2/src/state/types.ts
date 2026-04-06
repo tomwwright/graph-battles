@@ -1,6 +1,12 @@
 import { Game, GameMap, ID, Resolution, Values } from '@battles/models';
+import type { HexCoord } from '../rendering/HexCoordinates';
 
 export type VisibilityMode = 'all' | 'current-player';
+
+export type HoverInfo =
+  | { type: 'territory'; territoryId: ID; hexCoord: HexCoord }
+  | { type: 'edge'; territoryA: ID; territoryB: ID; hexCoord: HexCoord }
+  | null;
 
 export type StoreState = {
   // Game state
@@ -15,7 +21,7 @@ export type StoreState = {
   // Selection
   selectedUnitIds: ID[];
   selectedTerritoryId: ID | null;
-  hoveredTerritoryId: ID | null;
+  hover: HoverInfo;
 
   // Resolution replay
   currentResolution: Resolution | null;
