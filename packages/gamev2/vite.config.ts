@@ -6,4 +6,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@battles/models'],
   },
+  build: {
+    commonjsOptions: {
+      include: [/models/, /node_modules/],
+    },
+  },
 });
