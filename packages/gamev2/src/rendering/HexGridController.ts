@@ -63,7 +63,7 @@ export class HexGridController {
    */
   setTerritoryMap(
     territories: { id: ID; coord: HexCoord }[],
-    edges: { territoryA: ID; territoryB: ID; grassCoord: HexCoord }[]
+    edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[]
   ): void {
     this.territoryLookup.clear();
     this.territoryCoords.clear();
@@ -75,8 +75,10 @@ export class HexGridController {
     }
 
     for (const e of edges) {
-      const key = coordKey(e.grassCoord);
-      this.edgeLookup.set(key, { territoryA: e.territoryA, territoryB: e.territoryB });
+      for (const gc of e.grassCoords) {
+        const key = coordKey(gc);
+        this.edgeLookup.set(key, { territoryA: e.territoryA, territoryB: e.territoryB });
+      }
     }
   }
 

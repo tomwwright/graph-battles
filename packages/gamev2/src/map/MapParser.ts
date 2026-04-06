@@ -4,7 +4,7 @@ import { HexCoord, coordKey } from '../rendering/HexCoordinates';
 export type ParsedMap = {
   territories: { id: ID; coord: HexCoord }[];
   grassCells: HexCoord[];
-  edges: { territoryA: ID; territoryB: ID; grassCoord: HexCoord }[];
+  edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[];
 };
 
 /**
@@ -59,31 +59,56 @@ export function parseMap(mapString: string): ParsedMap {
     }
   }
 
-  // Derive edges: for each grass cell, find adjacent territory cells.
-  // Hex adjacency in odd-q offset: depends on column parity.
+  // Derive edges by flood-filling connected grass regions.
+  // Each connected grass component that touches 2+ territories creates edges
+  // between every pair of those territories.
+  const grassSet = new Set(grassCells.map(coordKey));
+  const visited = new Set<string>();
   const edges: ParsedMap['edges'] = [];
   const edgeSet = new Set<string>();
 
   for (const grass of grassCells) {
-    const adjacentTerritoryIds: ID[] = [];
+    const startKey = coordKey(grass);
+    if (visited.has(startKey)) continue;
 
-    for (const neighbour of hexNeighbours(grass)) {
-      const key = coordKey(neighbour);
-      const tId = territoryAt.get(key);
-      if (tId) {
-        adjacentTerritoryIds.push(tId);
+    // Flood-fill this connected grass component
+    const component: HexCoord[] = [];
+    const adjacentTerritoryIds = new Set<ID>();
+    const queue: HexCoord[] = [grass];
+    visited.add(startKey);
+
+    while (queue.length > 0) {
+      const current = queue.pop()!;
+      component.push(current);
+
+      for (const neighbour of hexNeighbours(current)) {
+        const key = coordKey(neighbour);
+
+        // Check if neighbour is a territory
+        const tId = territoryAt.get(key);
+        if (tId) {
+          adjacentTerritoryIds.add(tId);
+          continue;
+        }
+
+        // Expand into unvisited grass
+        if (grassSet.has(key) && !visited.has(key)) {
+          visited.add(key);
+          queue.push(neighbour);
+        }
       }
     }
 
-    // Every pair of adjacent territories gets an edge via this grass cell
-    for (let i = 0; i < adjacentTerritoryIds.length; i++) {
-      for (let j = i + 1; j < adjacentTerritoryIds.length; j++) {
-        const a = adjacentTerritoryIds[i];
-        const b = adjacentTerritoryIds[j];
+    // Every pair of adjacent territories gets an edge via this grass component
+    const tIds = [...adjacentTerritoryIds];
+    for (let i = 0; i < tIds.length; i++) {
+      for (let j = i + 1; j < tIds.length; j++) {
+        const a = tIds[i];
+        const b = tIds[j];
         const edgeKey = a < b ? `${a}-${b}` : `${b}-${a}`;
         if (!edgeSet.has(edgeKey)) {
           edgeSet.add(edgeKey);
-          edges.push({ territoryA: a, territoryB: b, grassCoord: grass });
+          edges.push({ territoryA: a, territoryB: b, grassCoords: component });
         }
       }
     }
