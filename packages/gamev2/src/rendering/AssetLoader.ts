@@ -7,6 +7,7 @@ const TILE_TYPE_FILES: Partial<Record<TileType, string>> = {
   forest: '/grass-forest.glb',
   sheep: '/building-sheep.glb',
   farm: '/building-farm.glb',
+  castle: '/building-castle.glb',
   village: '/building-village.glb',
   rocks: '/water-rocks.glb',
 };
@@ -18,7 +19,7 @@ const TILE_TYPE_FILES: Partial<Record<TileType, string>> = {
 export class AssetLoader {
   private templates = new Map<TileType, AbstractMesh>();
 
-  constructor(private readonly scene: Scene) {}
+  constructor(private readonly scene: Scene) { }
 
   async loadAll(): Promise<void> {
     for (const [tileType, filename] of Object.entries(TILE_TYPE_FILES)) {
