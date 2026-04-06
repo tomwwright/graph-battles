@@ -93,30 +93,18 @@ export function parseMap(mapString: string): ParsedMap {
 }
 
 /**
- * Returns the 6 hex neighbours of a coord in odd-q offset convention.
- * Odd columns are shifted down by half a row.
+ * Returns the 6 hex neighbours using axial directions.
+ * Hex coordinates are axial (mapped to tile offset coords via stride vectors
+ * in HexCoordinates.ts), so no parity logic is needed here.
  */
 function hexNeighbours(coord: HexCoord): HexCoord[] {
   const { x, z } = coord;
-  const isOddCol = x % 2 === 1;
-
-  if (isOddCol) {
-    return [
-      { x: x - 1, z },
-      { x: x - 1, z: z + 1 },
-      { x, z: z - 1 },
-      { x, z: z + 1 },
-      { x: x + 1, z },
-      { x: x + 1, z: z + 1 },
-    ];
-  } else {
-    return [
-      { x: x - 1, z: z - 1 },
-      { x: x - 1, z },
-      { x, z: z - 1 },
-      { x, z: z + 1 },
-      { x: x + 1, z: z - 1 },
-      { x: x + 1, z },
-    ];
-  }
+  return [
+    { x: x + 1, z },
+    { x: x - 1, z },
+    { x, z: z + 1 },
+    { x, z: z - 1 },
+    { x: x + 1, z: z - 1 },
+    { x: x - 1, z: z + 1 },
+  ];
 }
