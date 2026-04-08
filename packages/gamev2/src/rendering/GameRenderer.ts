@@ -1,10 +1,6 @@
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Scene } from '@babylonjs/core/scene';
-import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { ID, Values } from '@battles/models';
 import { HexCoord, hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
 import { SceneRenderer } from './SceneRenderer';
@@ -12,6 +8,7 @@ import { CameraController } from './CameraController';
 import { HexGridController } from './HexGridController';
 import { AssetLoader } from './AssetLoader';
 import { MapRenderer } from './MapRenderer';
+import { UnitRenderer } from './UnitRenderer';
 import { ParsedMap } from '../map/MapParser';
 import type { HoverInfo } from '../state/types';
 
@@ -23,28 +20,24 @@ type HoverCallback = (hover: HoverInfo) => void;
  * Delegates to internal renderer classes.
  */
 export class GameRenderer {
-  private readonly scene: Scene;
   private readonly sceneRenderer: SceneRenderer;
   private readonly cameraController: CameraController;
   readonly grid: HexGridController;
   private readonly assetLoader: AssetLoader;
   private readonly mapRenderer: MapRenderer;
+  private readonly unitRenderer: UnitRenderer;
 
   private parsedMap: ParsedMap | null = null;
   // territory ID → hex coord, for camera focus
   private territoryCoordMap = new Map<ID, HexCoord>();
 
-  // Unit meshes (placeholder cylinders)
-  private unitMeshes = new Map<ID, AbstractMesh>();
-  private unitTerritoryMap = new Map<ID, ID>(); // unitId → territoryId
-
   constructor(scene: Scene, camera: ArcRotateCamera) {
-    this.scene = scene;
     this.sceneRenderer = new SceneRenderer(scene, camera);
     this.cameraController = new CameraController(camera);
     this.grid = new HexGridController(scene);
     this.assetLoader = new AssetLoader(scene);
     this.mapRenderer = new MapRenderer(scene, this.grid, this.assetLoader);
+    this.unitRenderer = new UnitRenderer(scene, this.grid, this.territoryCoordMap);
   }
 
   // --- Lifecycle ---
@@ -60,6 +53,8 @@ export class GameRenderer {
     for (const t of parsedMap.territories) {
       this.territoryCoordMap.set(t.id, t.coord);
     }
+
+    this.unitRenderer.setParsedMap(parsedMap);
 
     // Load GLB assets
     await this.assetLoader.loadAll();
@@ -96,11 +91,7 @@ export class GameRenderer {
   dispose(): void {
     this.mapRenderer.dispose();
     this.grid.dispose();
-    for (const mesh of this.unitMeshes.values()) {
-      mesh.dispose();
-    }
-    this.unitMeshes.clear();
-    this.unitTerritoryMap.clear();
+    this.unitRenderer.dispose();
   }
 
   // --- Input callbacks ---
@@ -147,6 +138,27 @@ export class GameRenderer {
     }
   }
 
+  /**
+   * Highlight grass cells of the edge connecting two territories.
+   * Used to visualise movement paths when units are selected.
+   */
+  highlightConnectingGrass(territoryA: ID, territoryB: ID, color: Color3, alpha: number = 0.15): void {
+    if (!this.parsedMap) return;
+    const edge = this.parsedMap.edges.find(
+      (e) =>
+        (e.territoryA === territoryA && e.territoryB === territoryB) ||
+        (e.territoryA === territoryB && e.territoryB === territoryA)
+    );
+    if (!edge) return;
+
+    for (const grassCoord of edge.grassCoords) {
+      const tiles = hexToTileCoords(grassCoord);
+      for (const tile of tiles) {
+        this.grid.setTileOverlay(tile, color, alpha);
+      }
+    }
+  }
+
   clearOverlays(): void {
     this.grid.clearAllOverlays();
   }
@@ -165,88 +177,36 @@ export class GameRenderer {
     }
   }
 
-  // --- Unit rendering (placeholder) ---
+  // --- Unit rendering (delegates to UnitRenderer) ---
 
   addUnit(unitId: ID, territoryId: ID, colour: Values.Colour): void {
-    if (this.unitMeshes.has(unitId)) return;
-
-    const mesh = MeshBuilder.CreateCylinder(
-      `unit-${unitId}`,
-      { height: 1.2, diameter: 0.6, tessellation: 12 },
-      this.scene
-    );
-
-    const mat = new StandardMaterial(`unit-mat-${unitId}`, this.scene);
-    const r = ((colour >> 16) & 0xff) / 255;
-    const g = ((colour >> 8) & 0xff) / 255;
-    const b = (colour & 0xff) / 255;
-    mat.diffuseColor = new Color3(r, g, b);
-    mat.specularColor = new Color3(0.3, 0.3, 0.3);
-    mesh.material = mat;
-
-    this.unitMeshes.set(unitId, mesh);
-    this.unitTerritoryMap.set(unitId, territoryId);
-
-    this.positionUnit(unitId, territoryId);
-    this.sceneRenderer.registerMeshes([mesh]);
+    const mesh = this.unitRenderer.addUnit(unitId, territoryId, colour);
+    if (mesh) {
+      this.sceneRenderer.registerMeshes([mesh]);
+    }
   }
 
   removeUnit(unitId: ID): void {
-    const mesh = this.unitMeshes.get(unitId);
-    if (mesh) {
-      mesh.dispose();
-      this.unitMeshes.delete(unitId);
-      this.unitTerritoryMap.delete(unitId);
-    }
+    this.unitRenderer.removeUnit(unitId);
   }
 
   setUnitPosition(unitId: ID, territoryId: ID): void {
-    this.unitTerritoryMap.set(unitId, territoryId);
-    this.positionUnit(unitId, territoryId);
+    this.unitRenderer.setUnitPosition(unitId, territoryId);
   }
 
   async animateUnitMove(unitId: ID, fromTerritoryId: ID, toTerritoryId: ID, signal?: AbortSignal): Promise<void> {
-    // Simple snap for now — Phase 4 will add lerp animation through grass hex
-    this.setUnitPosition(unitId, toTerritoryId);
+    await this.unitRenderer.animateUnitMove(unitId, fromTerritoryId, toTerritoryId, signal);
   }
 
   setUnitStatus(unitId: ID, statuses: number[]): void {
-    // TODO: Phase 4 — status indicators
+    this.unitRenderer.setUnitStatus(unitId, statuses);
   }
 
   setUnitDestination(unitId: ID, destinationId: ID | null): void {
-    // TODO: Phase 4 — planned move lines
+    this.unitRenderer.setUnitDestination(unitId, destinationId);
   }
 
-  /** Reposition all units on a given territory in a grid layout */
-  private positionUnit(unitId: ID, territoryId: ID): void {
-    const coord = this.territoryCoordMap.get(territoryId);
-    if (!coord) return;
-
-    // Get all units on this territory
-    const unitsOnTerritory: ID[] = [];
-    for (const [uid, tid] of this.unitTerritoryMap) {
-      if (tid === territoryId) unitsOnTerritory.push(uid);
-    }
-
-    const centerTile = hexCenterTile(coord);
-    const basePos = this.grid.getWorldPosition(centerTile);
-
-    const UNITS_PER_ROW = 3;
-    const SPACING = 0.7;
-
-    for (let i = 0; i < unitsOnTerritory.length; i++) {
-      const mesh = this.unitMeshes.get(unitsOnTerritory[i]);
-      if (!mesh) continue;
-
-      const row = Math.floor(i / UNITS_PER_ROW);
-      const col = i % UNITS_PER_ROW;
-      const rowCount = Math.min(unitsOnTerritory.length - row * UNITS_PER_ROW, UNITS_PER_ROW);
-
-      const offsetX = (col - (rowCount - 1) / 2) * SPACING;
-      const offsetZ = (row - (Math.ceil(unitsOnTerritory.length / UNITS_PER_ROW) - 1) / 2) * SPACING;
-
-      mesh.position = new Vector3(basePos.x + offsetX, 1.2, basePos.z + offsetZ);
-    }
+  clearAllUnitDestinations(): void {
+    this.unitRenderer.clearAllDestinations();
   }
 }

@@ -1,0 +1,416 @@
+import {
+  Animation,
+  Color3,
+  EasingFunction,
+  LinesMesh,
+  Mesh,
+  MeshBuilder,
+  Scene,
+  SineEase,
+  StandardMaterial,
+  Vector3,
+} from '@babylonjs/core';
+import { ID, Values } from '@battles/models';
+import { HexCoord, hexCenterTile } from './HexCoordinates';
+import { HexGridController } from './HexGridController';
+import type { ParsedMap } from '../map/MapParser';
+
+const UNIT_HEIGHT = 1.2;
+const UNIT_DIAMETER = 0.6;
+const UNIT_BASE_Y = UNIT_HEIGHT / 2 + 1;
+
+const UNITS_PER_ROW = 3;
+const UNIT_SPACING = 0.7;
+
+const ARRANGE_FRAME_RATE = 30;
+const ARRANGE_FRAMES = 8;
+const MOVE_FRAME_RATE = 30;
+const MOVE_FRAMES_PER_SEGMENT = 12;
+
+type UnitState = {
+  mesh: Mesh;
+  territoryId: ID;
+  statusMeshes: Mesh[];
+  destinationLine: LinesMesh | null;
+  destinationId: ID | null;
+};
+
+/**
+ * Renders units as colored cylinders. Handles:
+ * - Player colour tinting
+ * - Status indicators (defend, starve)
+ * - Smooth lerp animation through grass hex centers during moves
+ * - Grid arrangement when multiple units share a territory, with smooth tween on rearrange
+ * - Planned move lines (two segments through connecting grass hex)
+ */
+export class UnitRenderer {
+  private units = new Map<ID, UnitState>();
+  private animatingUnits = new Set<ID>();
+  private parsedMap: ParsedMap | null = null;
+
+  constructor(
+    private readonly scene: Scene,
+    private readonly grid: HexGridController,
+    private readonly territoryCoordMap: Map<ID, HexCoord>
+  ) {}
+
+  setParsedMap(parsedMap: ParsedMap): void {
+    this.parsedMap = parsedMap;
+  }
+
+  // --- Unit lifecycle ---
+
+  addUnit(unitId: ID, territoryId: ID, colour: Values.Colour): Mesh | null {
+    if (this.units.has(unitId)) return this.units.get(unitId)!.mesh;
+
+    const mesh = MeshBuilder.CreateCylinder(
+      `unit-${unitId}`,
+      { height: UNIT_HEIGHT, diameter: UNIT_DIAMETER, tessellation: 12 },
+      this.scene
+    );
+
+    const mat = new StandardMaterial(`unit-mat-${unitId}`, this.scene);
+    mat.diffuseColor = this.colourToColor3(colour);
+    mat.specularColor = new Color3(0.3, 0.3, 0.3);
+    mesh.material = mat;
+
+    this.units.set(unitId, {
+      mesh,
+      territoryId,
+      statusMeshes: [],
+      destinationLine: null,
+      destinationId: null,
+    });
+
+    this.arrangeTerritory(territoryId, false);
+    return mesh;
+  }
+
+  removeUnit(unitId: ID): void {
+    const state = this.units.get(unitId);
+    if (!state) return;
+
+    state.mesh.dispose();
+    for (const sm of state.statusMeshes) sm.dispose();
+    if (state.destinationLine) state.destinationLine.dispose();
+
+    const territoryId = state.territoryId;
+    this.units.delete(unitId);
+    this.animatingUnits.delete(unitId);
+
+    this.arrangeTerritory(territoryId, true);
+  }
+
+  /** Snap unit to a territory without animation. */
+  setUnitPosition(unitId: ID, territoryId: ID): void {
+    const state = this.units.get(unitId);
+    if (!state) return;
+
+    const oldTerritoryId = state.territoryId;
+    state.territoryId = territoryId;
+
+    if (oldTerritoryId !== territoryId) {
+      this.arrangeTerritory(oldTerritoryId, true);
+    }
+    this.arrangeTerritory(territoryId, false);
+  }
+
+  /** Lerp unit through the grass hex(es) connecting two territories. */
+  async animateUnitMove(
+    unitId: ID,
+    fromTerritoryId: ID,
+    toTerritoryId: ID,
+    signal?: AbortSignal
+  ): Promise<void> {
+    const state = this.units.get(unitId);
+    if (!state) return;
+
+    // Reassign immediately so other units rearrange while this one is in flight
+    state.territoryId = toTerritoryId;
+    this.animatingUnits.add(unitId);
+    this.arrangeTerritory(fromTerritoryId, true);
+    this.arrangeTerritory(toTerritoryId, true);
+
+    try {
+      const startPos = state.mesh.position.clone();
+      const endPos = this.targetUnitPosition(unitId, toTerritoryId);
+      const grassPositions = this.getConnectingGrassPositions(fromTerritoryId, toTerritoryId);
+
+      // Build a path: start → grass center(s) → end
+      const path: Vector3[] = [startPos, ...grassPositions, endPos];
+
+      for (let i = 0; i < path.length - 1; i++) {
+        if (signal?.aborted) break;
+        await this.lerpMesh(state.mesh, path[i], path[i + 1], MOVE_FRAMES_PER_SEGMENT);
+      }
+
+      if (signal?.aborted) {
+        // Snap to final position on abort
+        state.mesh.position = endPos;
+      }
+    } finally {
+      this.animatingUnits.delete(unitId);
+      // Final reposition in case grid layout changed during animation
+      this.arrangeTerritory(toTerritoryId, false);
+    }
+  }
+
+  // --- Status indicators ---
+
+  setUnitStatus(unitId: ID, statuses: number[]): void {
+    const state = this.units.get(unitId);
+    if (!state) return;
+
+    // Dispose old status meshes
+    for (const sm of state.statusMeshes) sm.dispose();
+    state.statusMeshes = [];
+
+    let stackY = UNIT_HEIGHT / 2 + 0.2;
+    for (const status of statuses) {
+      const indicator = this.createStatusIndicator(unitId, status);
+      if (!indicator) continue;
+      indicator.parent = state.mesh;
+      indicator.position = new Vector3(0, stackY, 0);
+      state.statusMeshes.push(indicator);
+      stackY += 0.25;
+    }
+  }
+
+  // --- Planned move lines ---
+
+  setUnitDestination(unitId: ID, destinationId: ID | null): void {
+    const state = this.units.get(unitId);
+    if (!state) return;
+
+    if (state.destinationId === destinationId) return;
+    state.destinationId = destinationId;
+
+    if (state.destinationLine) {
+      state.destinationLine.dispose();
+      state.destinationLine = null;
+    }
+
+    if (!destinationId) return;
+
+    const fromPos = this.targetUnitPosition(unitId, state.territoryId);
+    const toPos = this.territoryCenterPosition(destinationId);
+    if (!toPos) return;
+
+    const grassPositions = this.getConnectingGrassPositions(state.territoryId, destinationId);
+
+    const linePoints: Vector3[] = [
+      this.lift(fromPos, 0.1),
+      ...grassPositions.map((p) => this.lift(p, 0.1)),
+      this.lift(toPos, 0.1),
+    ];
+
+    const line = MeshBuilder.CreateLines(
+      `move-line-${unitId}`,
+      { points: linePoints, updatable: false },
+      this.scene
+    );
+    line.color = new Color3(1.0, 1.0, 0.3);
+    line.isPickable = false;
+    state.destinationLine = line;
+  }
+
+  clearAllDestinations(): void {
+    for (const [unitId] of this.units) {
+      this.setUnitDestination(unitId, null);
+    }
+  }
+
+  // --- Lookup helpers ---
+
+  hasUnit(unitId: ID): boolean {
+    return this.units.has(unitId);
+  }
+
+  getMeshes(): Mesh[] {
+    return Array.from(this.units.values()).map((u) => u.mesh);
+  }
+
+  dispose(): void {
+    for (const [unitId] of this.units) {
+      this.removeUnit(unitId);
+    }
+    this.units.clear();
+    this.animatingUnits.clear();
+  }
+
+  // --- Internals ---
+
+  /**
+   * Arranges all units on a territory in a grid layout.
+   * Skips units currently animating (their position is being lerped).
+   * @param tween if true, smoothly tween non-animating units to their new positions
+   */
+  private arrangeTerritory(territoryId: ID, tween: boolean): void {
+    const unitsHere: ID[] = [];
+    for (const [uid, state] of this.units) {
+      if (state.territoryId === territoryId) unitsHere.push(uid);
+    }
+
+    const basePos = this.territoryCenterPosition(territoryId);
+    if (!basePos) return;
+
+    const total = unitsHere.length;
+    const totalRows = Math.ceil(total / UNITS_PER_ROW);
+
+    for (let i = 0; i < unitsHere.length; i++) {
+      const uid = unitsHere[i];
+      if (this.animatingUnits.has(uid)) continue;
+
+      const state = this.units.get(uid);
+      if (!state) continue;
+
+      const row = Math.floor(i / UNITS_PER_ROW);
+      const col = i % UNITS_PER_ROW;
+      const rowCount = Math.min(total - row * UNITS_PER_ROW, UNITS_PER_ROW);
+      const offsetX = (col - (rowCount - 1) / 2) * UNIT_SPACING;
+      const offsetZ = (row - (totalRows - 1) / 2) * UNIT_SPACING;
+
+      const target = new Vector3(basePos.x + offsetX, UNIT_BASE_Y, basePos.z + offsetZ);
+
+      if (tween && !state.mesh.position.equalsWithEpsilon(target, 0.001)) {
+        this.tweenMeshTo(state.mesh, target, ARRANGE_FRAMES);
+      } else {
+        state.mesh.position = target;
+      }
+    }
+  }
+
+  /** Compute the grid position a unit will occupy on its territory (without moving the mesh). */
+  private targetUnitPosition(unitId: ID, territoryId: ID): Vector3 {
+    const unitsHere: ID[] = [];
+    for (const [uid, state] of this.units) {
+      if (state.territoryId === territoryId) unitsHere.push(uid);
+    }
+
+    const idx = unitsHere.indexOf(unitId);
+    const basePos = this.territoryCenterPosition(territoryId);
+    if (!basePos || idx < 0) {
+      return basePos ?? new Vector3(0, UNIT_BASE_Y, 0);
+    }
+
+    const total = unitsHere.length;
+    const totalRows = Math.ceil(total / UNITS_PER_ROW);
+    const row = Math.floor(idx / UNITS_PER_ROW);
+    const col = idx % UNITS_PER_ROW;
+    const rowCount = Math.min(total - row * UNITS_PER_ROW, UNITS_PER_ROW);
+    const offsetX = (col - (rowCount - 1) / 2) * UNIT_SPACING;
+    const offsetZ = (row - (totalRows - 1) / 2) * UNIT_SPACING;
+
+    return new Vector3(basePos.x + offsetX, UNIT_BASE_Y, basePos.z + offsetZ);
+  }
+
+  private territoryCenterPosition(territoryId: ID): Vector3 | null {
+    const coord = this.territoryCoordMap.get(territoryId);
+    if (!coord) return null;
+    const centerTile = hexCenterTile(coord);
+    const pos = this.grid.getWorldPosition(centerTile);
+    return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
+  }
+
+  /** Get world positions of grass cells connecting two territories (for movement path). */
+  private getConnectingGrassPositions(fromId: ID, toId: ID): Vector3[] {
+    if (!this.parsedMap) return [];
+
+    const edge = this.parsedMap.edges.find(
+      (e) =>
+        (e.territoryA === fromId && e.territoryB === toId) ||
+        (e.territoryA === toId && e.territoryB === fromId)
+    );
+    if (!edge) return [];
+
+    // For multi-grass-cell chains, order them roughly along the path from→to
+    const fromCoord = this.territoryCoordMap.get(fromId);
+    const toCoord = this.territoryCoordMap.get(toId);
+    if (!fromCoord || !toCoord) return [];
+
+    const sorted = [...edge.grassCoords].sort((a, b) => {
+      const distA = this.hexDistance(a, fromCoord);
+      const distB = this.hexDistance(b, fromCoord);
+      return distA - distB;
+    });
+
+    return sorted.map((coord) => {
+      const centerTile = hexCenterTile(coord);
+      const pos = this.grid.getWorldPosition(centerTile);
+      return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
+    });
+  }
+
+  private hexDistance(a: HexCoord, b: HexCoord): number {
+    // Axial distance
+    const dx = a.x - b.x;
+    const dz = a.z - b.z;
+    return (Math.abs(dx) + Math.abs(dz) + Math.abs(dx + dz)) / 2;
+  }
+
+  private async lerpMesh(mesh: Mesh, from: Vector3, to: Vector3, frames: number): Promise<void> {
+    const animX = new Animation('moveX', 'position.x', MOVE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
+    const animY = new Animation('moveY', 'position.y', MOVE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
+    const animZ = new Animation('moveZ', 'position.z', MOVE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
+
+    const easing = new SineEase();
+    easing.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+    animX.setEasingFunction(easing);
+    animY.setEasingFunction(easing);
+    animZ.setEasingFunction(easing);
+
+    animX.setKeys([{ frame: 0, value: from.x }, { frame: frames, value: to.x }]);
+    animY.setKeys([{ frame: 0, value: from.y }, { frame: frames, value: to.y }]);
+    animZ.setKeys([{ frame: 0, value: from.z }, { frame: frames, value: to.z }]);
+
+    return new Promise<void>((resolve) => {
+      this.scene.beginDirectAnimation(mesh, [animX, animY, animZ], 0, frames, false, 1, () => resolve());
+    });
+  }
+
+  private tweenMeshTo(mesh: Mesh, target: Vector3, frames: number): void {
+    const from = mesh.position.clone();
+    const animX = new Animation('arrX', 'position.x', ARRANGE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
+    const animZ = new Animation('arrZ', 'position.z', ARRANGE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
+
+    const easing = new SineEase();
+    easing.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+    animX.setEasingFunction(easing);
+    animZ.setEasingFunction(easing);
+
+    animX.setKeys([{ frame: 0, value: from.x }, { frame: frames, value: target.x }]);
+    animZ.setKeys([{ frame: 0, value: from.z }, { frame: frames, value: target.z }]);
+
+    this.scene.beginDirectAnimation(mesh, [animX, animZ], 0, frames, false);
+  }
+
+  private createStatusIndicator(unitId: ID, status: number): Mesh | null {
+    // Values.Status: DEFEND=0, STARVE=1
+    const isDefend = status === Values.Status.DEFEND;
+    const isStarve = status === Values.Status.STARVE;
+    if (!isDefend && !isStarve) return null;
+
+    const mesh = MeshBuilder.CreateBox(
+      `unit-status-${unitId}-${status}`,
+      { size: 0.2 },
+      this.scene
+    );
+    const mat = new StandardMaterial(`unit-status-mat-${unitId}-${status}`, this.scene);
+    mat.diffuseColor = isDefend ? new Color3(0.7, 0.85, 1.0) : new Color3(1.0, 0.4, 0.2);
+    mat.emissiveColor = isDefend ? new Color3(0.2, 0.3, 0.5) : new Color3(0.4, 0.1, 0.0);
+    mesh.material = mat;
+    mesh.isPickable = false;
+    return mesh;
+  }
+
+  private lift(p: Vector3, dy: number): Vector3 {
+    return new Vector3(p.x, p.y + dy, p.z);
+  }
+
+  private colourToColor3(colour: Values.Colour): Color3 {
+    const r = ((colour >> 16) & 0xff) / 255;
+    const g = ((colour >> 8) & 0xff) / 255;
+    const b = (colour & 0xff) / 255;
+    return new Color3(r, g, b);
+  }
+}

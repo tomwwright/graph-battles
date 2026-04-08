@@ -167,6 +167,7 @@ export class GameOrchestrator implements UserActionDispatch {
     try {
       map.applyAction({ type: 'move-units', unitIds, destinationId: null as any });
       this.store.setState({ map, selectedUnitIds: [] });
+      this.syncUnitDestinations();
     } catch (e) {
       console.warn('[GameOrchestrator] Cancel move failed:', e);
     }
@@ -212,6 +213,7 @@ export class GameOrchestrator implements UserActionDispatch {
       this.store.setState({ map, selectedUnitIds: [], selectedTerritoryId: null });
       this.renderer.clearOverlays();
       this.syncTerritoryOverlays();
+      this.syncUnitDestinations();
     } catch (e) {
       console.warn('[GameOrchestrator] Move failed:', e);
     }
@@ -340,12 +342,16 @@ export class GameOrchestrator implements UserActionDispatch {
     // Re-apply base overlays first
     this.syncTerritoryOverlays();
 
-    // Highlight valid destinations if units are selected
+    // Highlight valid destinations and connecting grass if units are selected
     if (selectedUnitIds.length > 0) {
       const destinations = this.getValidDestinations(selectedUnitIds);
       const highlightColor = new Color3(0.2, 1.0, 0.3);
+      const grassHighlightColor = new Color3(0.6, 1.0, 0.4);
+
       for (const destId of destinations) {
         this.renderer.updateTerritoryOverlay(destId, highlightColor, 0.15);
+        // Highlight the connecting grass between selected territory and each valid destination
+        this.renderer.highlightConnectingGrass(selectedTerritoryId, destId, grassHighlightColor, 0.18);
       }
     }
 
@@ -355,7 +361,8 @@ export class GameOrchestrator implements UserActionDispatch {
 
   /**
    * Sync unit meshes with current map state.
-   * Adds new units, removes dead ones, repositions moved ones.
+   * Adds new units, removes dead ones, repositions moved ones,
+   * updates status indicators and planned move lines.
    */
   private syncUnits(): void {
     const { map } = this.store.getState();
@@ -381,6 +388,23 @@ export class GameOrchestrator implements UserActionDispatch {
         this.renderer.addUnit(unit.data.id, territory.data.id, colour);
         this.renderer.setUnitPosition(unit.data.id, territory.data.id);
       }
+
+      // Sync status indicators
+      this.renderer.setUnitStatus(unit.data.id, unit.data.statuses);
+    }
+
+    // Sync planned move lines
+    this.syncUnitDestinations();
+  }
+
+  /**
+   * Sync planned move lines for all units.
+   * Each unit with a pending move action gets a line to its destination.
+   */
+  private syncUnitDestinations(): void {
+    const { map } = this.store.getState();
+    for (const unit of map.units) {
+      this.renderer.setUnitDestination(unit.data.id, unit.destinationId);
     }
   }
 

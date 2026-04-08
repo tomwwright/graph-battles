@@ -407,32 +407,46 @@ Port hex-game's orchestration pattern and wire it to `@battles/models`.
 
 **Deliverable**: Game state flows from models through store to React and renderer.
 
-### Phase 4: Unit Rendering and Interaction
+### Phase 4a: Unit Rendering and Move Visualisation
 
-14. **Port UnitRenderer** from `hex-game/src/rendering/UnitRenderer.ts`
-    - Unit mesh creation at territory positions
+Replace the Phase 3 placeholder unit meshes with the full unit rendering pipeline, and add visual feedback for planned moves and connecting grass hexes.
+
+**Already in place from Phase 3 (placeholder):** colored-cylinder unit meshes, basic grid arrangement on shared territories, snap-to-territory on move, `addUnit`/`removeUnit`/`setUnitPosition`/`animateUnitMove` on `GameRenderer`, valid destination overlay highlights driven by `syncSelectionOverlays` in `GameOrchestrator`.
+
+14. **Port UnitRenderer** from `hex-game/src/rendering/UnitRenderer.ts` — replace the inline placeholder logic on `GameRenderer` with a dedicated `UnitRenderer` class
+    - Cylinder-based unit meshes (continue with the Phase 3 placeholder geometry; GLB models are deferred to Phase 7 asset creation)
     - Player colour tinting
     - Status indicators (defend shield, starve icon)
-    - **Movement animation**: lerp unit position along the path. Movement between territories goes through the connecting grass hex in two segments: territory center → grass center → destination territory center
-    - **Unit arrangement when coexisting**: when multiple units share a territory, arrange them in a grid layout centered on the territory position (port from `@battles/game` `UnitView.onUpdatePosition()` at `packages/game/src/game/phaser/unit.ts:161-206`):
+    - **Movement animation**: lerp unit position along the path. Movement between territories goes through the connecting grass hex in two segments: territory center → grass center → destination territory center. Currently `animateUnitMove` snaps; replace with awaitable lerp that respects the `AbortSignal` passed by `ResolutionRunner`.
+    - **Unit arrangement when coexisting**: port from `@battles/game` `UnitView.onUpdatePosition()` at `packages/game/src/game/phaser/unit.ts:161-206`:
       - Grid of up to `UNITS_PER_ROW = 3` columns
       - `UNITS_SPACING = 0.2` gap multiplier between units
       - Grid centered on territory center position
       - Animate units smoothly to new grid positions when arrangement changes (units arrive/depart)
 
-15. **Implement unit interaction**
-    - Click to select/multi-select units (port logic from `UiStore.onClickUnit`)
-    - Show valid destination territories as hex overlay highlights
-    - **Also highlight the connecting grass hex** between the selected unit's territory and each valid destination, so the path is visually clear
-    - Click destination to queue move via `applyMoveUnits()`
-    - **Planned move lines**: render as two line segments routed through the connecting grass hex center (territory → grass center → destination), not a single straight line
+15a. **Move visualisation**
+    - **Planned move lines**: render as two line segments routed through the connecting grass hex center (territory → grass center → destination), not a single straight line. Driven by each unit's pending move action; updates on selection and on action submission.
+    - **Highlight connecting grass hex**: when valid destinations are highlighted for selected units, also highlight the grass hex(es) along the connecting edge so the path is visually clear. Extends the existing `syncSelectionOverlays` overlay logic.
 
-16. **Implement territory interaction**
-    - Click territory to select and show details
-    - Show available territory actions for current player
-    - Queue territory action via `applyTerritoryAction()`
+**Deliverable**: Units render with proper meshes and player colours, animate smoothly through grass hexes during moves, and planned moves are visible as routed lines with their grass paths highlighted.
 
-**Deliverable**: Units render, can be selected, and moved. Territory actions can be queued.
+### Phase 4b: Unit and Territory Interactions
+
+Wire up the remaining direct-interaction surfaces. Most of the orchestration logic for these flows already exists from Phase 3 (`handleTerritoryClick`, `onTerritoryAction`, `onCancelMove`); this phase adds the missing input handling and UI affordances.
+
+**Already in place from Phase 3:** territory click → select territory + auto-select owned units, click adjacent territory to move selected units, valid destination calculation, `onTerritoryAction`/`onCancelMove` dispatch methods.
+
+15b. **Direct unit interaction**
+    - Click directly on a unit mesh to select/multi-select individual units (port logic from `UiStore.onClickUnit`). Currently selection happens at the territory level — clicking a territory selects *all* of the current player's units on it. Adding mesh-level click handling allows finer-grained control.
+    - Cancel move affordance: surface `onCancelMove` via UI for selected units that have a pending move
+
+16. **Territory action surfacing**
+    - Click territory to select and show details (already done — selection state exists)
+    - Show available territory actions for the current player on the selected territory (cost display, disabled state when unaffordable)
+    - Wire the action buttons to `onTerritoryAction` (dispatch already implemented)
+    - Note: the actual side panels are built in Phase 5; this item ensures the data and dispatch surface is complete and validated end-to-end via a minimal inline UI if Phase 5 hasn't started yet.
+
+**Deliverable**: Individual units can be selected by clicking their meshes, planned moves can be cancelled, and territory actions can be queued from the UI.
 
 ### Phase 5: React UI Panels
 

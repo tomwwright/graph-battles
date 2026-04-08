@@ -188,14 +188,32 @@ export class ResolutionRunner {
         if (preState.type !== 'move' || !preState.locationId) break;
         const unit = map.unit(resolution.unitId);
         if (!unit) break;
+
         const newLocationId = unit.data.locationId;
-        if (newLocationId && newLocationId !== preState.locationId) {
-          // Find the territory IDs for animation (move is territory→edge or edge→territory)
-          const fromTerritory = this.resolveToTerritoryId(map, preState.locationId);
-          const toTerritory = this.resolveToTerritoryId(map, newLocationId);
-          if (fromTerritory && toTerritory && fromTerritory !== toTerritory) {
-            await this.renderer.animateUnitMove(resolution.unitId, fromTerritory, toTerritory, signal);
+        // Only animate when the unit lands on a territory (final landing).
+        // The first step (territory→edge) is silent; the second step
+        // (edge→territory) is when we lerp visually.
+        const newTerritory = map.territory(newLocationId);
+        if (!newTerritory) break;
+
+        // Determine source territory:
+        // - If pre-state was a territory, use it directly (single-step move).
+        // - If pre-state was an edge, use the OTHER endpoint of the edge.
+        let fromTerritoryId: ID | null = null;
+        if (map.territory(preState.locationId)) {
+          fromTerritoryId = preState.locationId;
+        } else {
+          const edge = map.edge(preState.locationId);
+          if (edge) {
+            fromTerritoryId =
+              edge.data.territoryAId === newLocationId
+                ? edge.data.territoryBId
+                : edge.data.territoryAId;
           }
+        }
+
+        if (fromTerritoryId && fromTerritoryId !== newLocationId) {
+          await this.renderer.animateUnitMove(resolution.unitId, fromTerritoryId, newLocationId, signal);
         }
         break;
       }
