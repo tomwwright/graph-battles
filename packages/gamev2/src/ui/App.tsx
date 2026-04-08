@@ -22,6 +22,8 @@ export function App() {
   const hover = useGameStore((s) => s.hover);
   const currentResolution = useGameStore((s) => s.currentResolution);
   const map = useGameStore((s) => s.map);
+  // Subscribe to mapRevision so derivations re-run when the map mutates in place.
+  useGameStore((s) => s.mapRevision);
 
   const centerTile = hover ? hexCenterTile(hover.hexCoord) : null;
 

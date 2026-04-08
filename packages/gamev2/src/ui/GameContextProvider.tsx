@@ -38,6 +38,7 @@ export function GameContextProvider({ provider, parsedMap, children }: GameConte
     const store = new GameStore({
       game: null!,
       map: null!,
+      mapRevision: 0,
       currentPlayerId: '',
       turn: 0,
       turnPhase: 'planning',

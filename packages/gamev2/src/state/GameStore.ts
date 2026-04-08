@@ -23,7 +23,14 @@ export class GameStore {
   setState(updater: Partial<StoreState> | ((prev: StoreState) => Partial<StoreState>)): void {
     const partial = typeof updater === 'function' ? updater(this.state) : updater;
     console.log('STATE', partial);
-    this.state = { ...this.state, ...partial };
+    // GameMap is mutated in place, so the reference may be unchanged.
+    // Auto-bump mapRevision whenever `map` is in the partial so map-derived
+    // selectors via useSyncExternalStore re-run.
+    const next: Partial<StoreState> =
+      'map' in partial
+        ? { ...partial, mapRevision: (this.state.mapRevision ?? 0) + 1 }
+        : partial;
+    this.state = { ...this.state, ...next };
     this.notify();
   }
 

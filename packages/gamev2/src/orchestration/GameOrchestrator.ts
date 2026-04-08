@@ -45,6 +45,7 @@ export class GameOrchestrator implements UserActionDispatch {
     this.store.setState({
       game,
       map,
+      mapRevision: 0,
       currentPlayerId: map.playerIds[0],
       turn: game.turn,
       turnPhase: 'planning',
@@ -157,6 +158,20 @@ export class GameOrchestrator implements UserActionDispatch {
       this.store.setState({ map });
     } catch (e) {
       console.warn('[GameOrchestrator] Territory action failed:', e);
+    }
+  }
+
+  onCancelTerritoryAction(territoryId: ID): void {
+    const { map, turnPhase } = this.store.getState();
+    if (turnPhase !== 'planning') return;
+
+    // Passing a null action refunds and removes the pending action
+    // (see packages/models/src/actions/territory.ts).
+    try {
+      map.applyAction({ type: 'territory', territoryId, action: null as any });
+      this.store.setState({ map });
+    } catch (e) {
+      console.warn('[GameOrchestrator] Cancel territory action failed:', e);
     }
   }
 
