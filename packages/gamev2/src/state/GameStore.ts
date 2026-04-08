@@ -22,6 +22,7 @@ export class GameStore {
 
   setState(updater: Partial<StoreState> | ((prev: StoreState) => Partial<StoreState>)): void {
     const partial = typeof updater === 'function' ? updater(this.state) : updater;
+    console.log('STATE', partial);
     this.state = { ...this.state, ...partial };
     this.notify();
   }

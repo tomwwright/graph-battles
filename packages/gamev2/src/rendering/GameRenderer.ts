@@ -1,6 +1,10 @@
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Scene } from '@babylonjs/core/scene';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { ID, Values } from '@battles/models';
 import { HexCoord, hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
 import { SceneRenderer } from './SceneRenderer';
@@ -19,6 +23,7 @@ type HoverCallback = (hover: HoverInfo) => void;
  * Delegates to internal renderer classes.
  */
 export class GameRenderer {
+  private readonly scene: Scene;
   private readonly sceneRenderer: SceneRenderer;
   private readonly cameraController: CameraController;
   readonly grid: HexGridController;
@@ -29,7 +34,12 @@ export class GameRenderer {
   // territory ID → hex coord, for camera focus
   private territoryCoordMap = new Map<ID, HexCoord>();
 
+  // Unit meshes (placeholder cylinders)
+  private unitMeshes = new Map<ID, AbstractMesh>();
+  private unitTerritoryMap = new Map<ID, ID>(); // unitId → territoryId
+
   constructor(scene: Scene, camera: ArcRotateCamera) {
+    this.scene = scene;
     this.sceneRenderer = new SceneRenderer(scene, camera);
     this.cameraController = new CameraController(camera);
     this.grid = new HexGridController(scene);
@@ -86,6 +96,11 @@ export class GameRenderer {
   dispose(): void {
     this.mapRenderer.dispose();
     this.grid.dispose();
+    for (const mesh of this.unitMeshes.values()) {
+      mesh.dispose();
+    }
+    this.unitMeshes.clear();
+    this.unitTerritoryMap.clear();
   }
 
   // --- Input callbacks ---
@@ -150,29 +165,88 @@ export class GameRenderer {
     }
   }
 
-  // --- Unit rendering (stubs for Phase 4) ---
+  // --- Unit rendering (placeholder) ---
 
-  addUnit(unitId: ID, territoryId: ID, playerId: ID): void {
-    // TODO: Phase 4 — UnitRenderer
+  addUnit(unitId: ID, territoryId: ID, colour: Values.Colour): void {
+    if (this.unitMeshes.has(unitId)) return;
+
+    const mesh = MeshBuilder.CreateCylinder(
+      `unit-${unitId}`,
+      { height: 1.2, diameter: 0.6, tessellation: 12 },
+      this.scene
+    );
+
+    const mat = new StandardMaterial(`unit-mat-${unitId}`, this.scene);
+    const r = ((colour >> 16) & 0xff) / 255;
+    const g = ((colour >> 8) & 0xff) / 255;
+    const b = (colour & 0xff) / 255;
+    mat.diffuseColor = new Color3(r, g, b);
+    mat.specularColor = new Color3(0.3, 0.3, 0.3);
+    mesh.material = mat;
+
+    this.unitMeshes.set(unitId, mesh);
+    this.unitTerritoryMap.set(unitId, territoryId);
+
+    this.positionUnit(unitId, territoryId);
+    this.sceneRenderer.registerMeshes([mesh]);
   }
 
   removeUnit(unitId: ID): void {
-    // TODO: Phase 4 — UnitRenderer
-  }
-
-  async animateUnitMove(unitId: ID, fromTerritoryId: ID, toTerritoryId: ID, signal?: AbortSignal): Promise<void> {
-    // TODO: Phase 4 — UnitRenderer
+    const mesh = this.unitMeshes.get(unitId);
+    if (mesh) {
+      mesh.dispose();
+      this.unitMeshes.delete(unitId);
+      this.unitTerritoryMap.delete(unitId);
+    }
   }
 
   setUnitPosition(unitId: ID, territoryId: ID): void {
-    // TODO: Phase 4 — UnitRenderer
+    this.unitTerritoryMap.set(unitId, territoryId);
+    this.positionUnit(unitId, territoryId);
+  }
+
+  async animateUnitMove(unitId: ID, fromTerritoryId: ID, toTerritoryId: ID, signal?: AbortSignal): Promise<void> {
+    // Simple snap for now — Phase 4 will add lerp animation through grass hex
+    this.setUnitPosition(unitId, toTerritoryId);
   }
 
   setUnitStatus(unitId: ID, statuses: number[]): void {
-    // TODO: Phase 4 — UnitRenderer
+    // TODO: Phase 4 — status indicators
   }
 
   setUnitDestination(unitId: ID, destinationId: ID | null): void {
-    // TODO: Phase 4 — UnitRenderer
+    // TODO: Phase 4 — planned move lines
+  }
+
+  /** Reposition all units on a given territory in a grid layout */
+  private positionUnit(unitId: ID, territoryId: ID): void {
+    const coord = this.territoryCoordMap.get(territoryId);
+    if (!coord) return;
+
+    // Get all units on this territory
+    const unitsOnTerritory: ID[] = [];
+    for (const [uid, tid] of this.unitTerritoryMap) {
+      if (tid === territoryId) unitsOnTerritory.push(uid);
+    }
+
+    const centerTile = hexCenterTile(coord);
+    const basePos = this.grid.getWorldPosition(centerTile);
+
+    const UNITS_PER_ROW = 3;
+    const SPACING = 0.7;
+
+    for (let i = 0; i < unitsOnTerritory.length; i++) {
+      const mesh = this.unitMeshes.get(unitsOnTerritory[i]);
+      if (!mesh) continue;
+
+      const row = Math.floor(i / UNITS_PER_ROW);
+      const col = i % UNITS_PER_ROW;
+      const rowCount = Math.min(unitsOnTerritory.length - row * UNITS_PER_ROW, UNITS_PER_ROW);
+
+      const offsetX = (col - (rowCount - 1) / 2) * SPACING;
+      const offsetZ = (row - (Math.ceil(unitsOnTerritory.length / UNITS_PER_ROW) - 1) / 2) * SPACING;
+
+      mesh.position = new Vector3(basePos.x + offsetX, 1.2, basePos.z + offsetZ);
+    }
   }
 }
