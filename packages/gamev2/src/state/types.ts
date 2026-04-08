@@ -12,6 +12,13 @@ export type StoreState = {
   // Game state
   game: Game;
   map: GameMap;
+  /**
+   * Revision counter that bumps whenever `map` is set in `setState`.
+   * `GameMap` is mutated in place, so its reference doesn't change — components
+   * that derive from map data subscribe to this counter via `useGameStore` to
+   * force a re-render after each mutation.
+   */
+  mapRevision: number;
   currentPlayerId: ID;
   turn: number;
 

@@ -1,7 +1,9 @@
 import {
+  ActionManager,
   Animation,
   Color3,
   EasingFunction,
+  ExecuteCodeAction,
   LinesMesh,
   Mesh,
   MeshBuilder,
@@ -35,6 +37,8 @@ type UnitState = {
   destinationId: ID | null;
 };
 
+type UnitClickCallback = (unitId: ID) => void;
+
 /**
  * Renders units as colored cylinders. Handles:
  * - Player colour tinting
@@ -47,6 +51,7 @@ export class UnitRenderer {
   private units = new Map<ID, UnitState>();
   private animatingUnits = new Set<ID>();
   private parsedMap: ParsedMap | null = null;
+  private clickCallback: UnitClickCallback | null = null;
 
   constructor(
     private readonly scene: Scene,
@@ -56,6 +61,10 @@ export class UnitRenderer {
 
   setParsedMap(parsedMap: ParsedMap): void {
     this.parsedMap = parsedMap;
+  }
+
+  onUnitClick(callback: UnitClickCallback): void {
+    this.clickCallback = callback;
   }
 
   // --- Unit lifecycle ---
@@ -73,6 +82,14 @@ export class UnitRenderer {
     mat.diffuseColor = this.colourToColor3(colour);
     mat.specularColor = new Color3(0.3, 0.3, 0.3);
     mesh.material = mat;
+
+    mesh.isPickable = true;
+    mesh.actionManager = new ActionManager(this.scene);
+    mesh.actionManager.registerAction(
+      new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+        this.clickCallback?.(unitId);
+      })
+    );
 
     this.units.set(unitId, {
       mesh,

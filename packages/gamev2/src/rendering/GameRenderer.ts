@@ -13,6 +13,7 @@ import { ParsedMap } from '../map/MapParser';
 import type { HoverInfo } from '../state/types';
 
 type TerritoryClickCallback = (territoryId: ID) => void;
+type UnitClickCallback = (unitId: ID) => void;
 type HoverCallback = (hover: HoverInfo) => void;
 
 /**
@@ -98,6 +99,10 @@ export class GameRenderer {
 
   onTerritoryClick(callback: TerritoryClickCallback): void {
     this.grid.onTerritoryClick(callback);
+  }
+
+  onUnitClick(callback: UnitClickCallback): void {
+    this.unitRenderer.onUnitClick(callback);
   }
 
   onHover(callback: HoverCallback): void {

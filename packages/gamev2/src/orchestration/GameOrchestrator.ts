@@ -66,6 +66,7 @@ export class GameOrchestrator implements UserActionDispatch {
 
     // Register input callbacks
     this.renderer.onTerritoryClick((territoryId) => this.handleTerritoryClick(territoryId));
+    this.renderer.onUnitClick((unitId) => this.handleUnitClick(unitId));
     this.renderer.onHover((hover) => this.store.setState({ hover }));
 
     // Apply initial territory overlays and unit meshes
@@ -175,8 +176,60 @@ export class GameOrchestrator implements UserActionDispatch {
 
   // --- Input handlers (from renderer callbacks) ---
 
+  /**
+   * Direct click on a unit mesh. Mirrors the legacy `UiStore.onClickUnit` semantics:
+   * - Nothing/non-unit selected, or selection belongs to a different player → replace with [unitId]
+   * - Same player, unit not in selection → add (multi-select)
+   * - Same player, unit already in selection → remove (toggle off)
+   *
+   * Selection is exclusive: a unit selection clears any selected territory.
+   * The host territory is used internally as a render anchor for highlighting
+   * destinations / connecting grass (see syncSelectionOverlays), but is not
+   * stored as `selectedTerritoryId`.
+   *
+   * During non-planning phases, units may still be clicked for inspection.
+   */
+  private handleUnitClick(unitId: ID): void {
+    const { map, selectedUnitIds, turnPhase } = this.store.getState();
+    const unit = map.unit(unitId);
+    if (!unit) return;
+
+    if (turnPhase !== 'planning') {
+      // Inspection only — single-select
+      this.store.setState({
+        selectedUnitIds: [unitId],
+        selectedTerritoryId: null,
+      });
+      this.syncSelectionOverlays();
+      return;
+    }
+
+    let nextSelection: ID[];
+
+    if (selectedUnitIds.length === 0) {
+      nextSelection = [unitId];
+    } else {
+      const firstSelected = map.unit(selectedUnitIds[0]);
+      const sameOwner = firstSelected != null && firstSelected.data.playerId === unit.data.playerId;
+      if (!sameOwner) {
+        nextSelection = [unitId];
+      } else if (selectedUnitIds.includes(unitId)) {
+        nextSelection = selectedUnitIds.filter((id) => id !== unitId);
+      } else {
+        nextSelection = [...selectedUnitIds, unitId];
+      }
+    }
+
+    this.store.setState({
+      selectedUnitIds: nextSelection,
+      selectedTerritoryId: null,
+    });
+
+    this.syncSelectionOverlays();
+  }
+
   private handleTerritoryClick(territoryId: ID): void {
-    const { map, selectedUnitIds, turnPhase, currentPlayerId } = this.store.getState();
+    const { map, selectedUnitIds, turnPhase } = this.store.getState();
     if (turnPhase !== 'planning') {
       // During replay, just select for viewing
       this.store.setState({ selectedTerritoryId: territoryId, selectedUnitIds: [] });
@@ -192,17 +245,17 @@ export class GameOrchestrator implements UserActionDispatch {
       }
     }
 
-    // Select the territory (and any units on it owned by current player)
+    // Plain territory click: select the territory and clear any unit selection.
+    // Unit selection is driven by direct unit-mesh clicks (handleUnitClick).
     const territory = map.territory(territoryId);
     if (!territory) return;
 
-    const ownedUnits = territory.units.filter((u) => u.data.playerId === currentPlayerId);
     this.store.setState({
       selectedTerritoryId: territoryId,
-      selectedUnitIds: ownedUnits.map((u) => u.data.id),
+      selectedUnitIds: [],
     });
 
-    this.syncSelectionOverlays(territoryId);
+    this.syncSelectionOverlays();
   }
 
   private moveSelectedUnits(destinationId: ID): void {
@@ -336,27 +389,38 @@ export class GameOrchestrator implements UserActionDispatch {
     }
   }
 
-  private syncSelectionOverlays(selectedTerritoryId: ID): void {
-    const { selectedUnitIds } = this.store.getState();
+  /**
+   * Re-apply base territory overlays plus selection-specific highlights.
+   * Selection is exclusive: either units are selected (highlight destinations
+   * and connecting grass anchored on the unit's host territory) or a territory
+   * is selected (highlight that territory).
+   */
+  private syncSelectionOverlays(): void {
+    const { selectedUnitIds, selectedTerritoryId, map } = this.store.getState();
 
     // Re-apply base overlays first
     this.syncTerritoryOverlays();
 
-    // Highlight valid destinations and connecting grass if units are selected
     if (selectedUnitIds.length > 0) {
+      // Use the first selected unit's host territory as the anchor for grass highlights
+      const firstUnit = map.unit(selectedUnitIds[0]);
+      const host = firstUnit ? map.territory(firstUnit.data.locationId) : null;
+      if (!host) return;
+
       const destinations = this.getValidDestinations(selectedUnitIds);
       const highlightColor = new Color3(0.2, 1.0, 0.3);
       const grassHighlightColor = new Color3(0.6, 1.0, 0.4);
 
       for (const destId of destinations) {
         this.renderer.updateTerritoryOverlay(destId, highlightColor, 0.15);
-        // Highlight the connecting grass between selected territory and each valid destination
-        this.renderer.highlightConnectingGrass(selectedTerritoryId, destId, grassHighlightColor, 0.18);
+        this.renderer.highlightConnectingGrass(host.data.id, destId, grassHighlightColor, 0.18);
       }
+      return;
     }
 
-    // Highlight selected territory
-    this.renderer.updateTerritoryOverlay(selectedTerritoryId, new Color3(1.0, 1.0, 1.0), 0.2);
+    if (selectedTerritoryId != null) {
+      this.renderer.updateTerritoryOverlay(selectedTerritoryId, new Color3(1.0, 1.0, 1.0), 0.2);
+    }
   }
 
   /**

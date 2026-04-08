@@ -14,6 +14,12 @@ export function App() {
 
   const centerTile = hover ? hexCenterTile(hover.hexCoord) : null;
 
+  // Cancel-move surfacing: any selected unit with a pending destination
+  const selectedUnitsWithPendingMove = selectedUnitIds.filter((id) => {
+    const u = map.unit(id);
+    return u != null && u.destinationId != null;
+  });
+
   return (
     <div
       style={{
@@ -55,6 +61,11 @@ export function App() {
         {turnPhase === 'planning' && (
           <button onClick={() => dispatch.onReadyPlayer()}>
             Ready
+          </button>
+        )}
+        {turnPhase === 'planning' && selectedUnitsWithPendingMove.length > 0 && (
+          <button onClick={() => dispatch.onCancelMove(selectedUnitsWithPendingMove)}>
+            Cancel Move ({selectedUnitsWithPendingMove.length})
           </button>
         )}
         {turnPhase === 'replaying' && (
