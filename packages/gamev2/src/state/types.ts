@@ -42,5 +42,6 @@ export type UserActionDispatch = {
   onResolveNext(): void;
   onSetTurn(turn: number): void;
   onTerritoryAction(territoryId: ID, action: Values.TerritoryAction): void;
+  onCancelTerritoryAction(territoryId: ID): void;
   onCancelMove(unitIds: ID[]): void;
 };
