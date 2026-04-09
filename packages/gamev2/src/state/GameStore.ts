@@ -1,6 +1,7 @@
 import { StoreState } from './types';
 
 type Listener = () => void;
+type Unsubscribe = () => void;
 
 /**
  * Pub/sub state container for game and UI state.
@@ -34,9 +35,11 @@ export class GameStore {
     this.notify();
   }
 
-  subscribe(listener: Listener): () => void {
+  subscribe(listener: Listener): Unsubscribe {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   private notify(): void {

@@ -1,6 +1,24 @@
 import { Game, GameMap, ID, Resolution, Values } from '@battles/models';
 import type { HexCoord } from '../rendering/HexCoordinates';
 
+/**
+ * Generic subscribable source of T. Anything that can hand out a current
+ * snapshot and notify on change satisfies this — including `GameStore`,
+ * which structurally fits `Subscribable<StoreState>` and (via covariance
+ * of `getState`) any `Subscribable<U>` where `StoreState` is assignable
+ * to `U`.
+ */
+export type Subscribable<T> = {
+  getState(): T;
+  subscribe(listener: () => void): () => void;
+};
+
+/** Narrow slice of store state that map-driven syncers care about. */
+export type MapState = {
+  map: GameMap;
+  mapRevision: number;
+};
+
 export type VisibilityMode = 'all' | 'current-player';
 
 export type HoverInfo =

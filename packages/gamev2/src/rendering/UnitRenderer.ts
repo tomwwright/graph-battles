@@ -38,6 +38,7 @@ type UnitState = {
 };
 
 type UnitClickCallback = (unitId: ID) => void;
+type MeshRegistrationCallback = (mesh: Mesh) => void;
 
 /**
  * Renders units as colored cylinders. Handles:
@@ -52,12 +53,17 @@ export class UnitRenderer {
   private animatingUnits = new Set<ID>();
   private parsedMap: ParsedMap | null = null;
   private clickCallback: UnitClickCallback | null = null;
+  private meshRegistrationCallback: MeshRegistrationCallback | null = null;
 
   constructor(
     private readonly scene: Scene,
     private readonly grid: HexGridController,
     private readonly territoryCoordMap: Map<ID, HexCoord>
   ) {}
+
+  onMeshRegistration(callback: MeshRegistrationCallback): void {
+    this.meshRegistrationCallback = callback;
+  }
 
   setParsedMap(parsedMap: ParsedMap): void {
     this.parsedMap = parsedMap;
@@ -99,6 +105,7 @@ export class UnitRenderer {
       destinationId: null,
     });
 
+    this.meshRegistrationCallback?.(mesh);
     this.arrangeTerritory(territoryId, false);
     return mesh;
   }
@@ -241,6 +248,10 @@ export class UnitRenderer {
 
   hasUnit(unitId: ID): boolean {
     return this.units.has(unitId);
+  }
+
+  getUnitIds(): ID[] {
+    return Array.from(this.units.keys());
   }
 
   getMeshes(): Mesh[] {

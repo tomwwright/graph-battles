@@ -25,7 +25,6 @@ export class ResolutionRunner {
     generator: Generator<Resolution>,
     waitForAdvance: () => Promise<'next' | 'skip'>,
     signal: AbortSignal,
-    onPostStep?: () => void
   ): Promise<void> {
     let result = generator.next();
 
@@ -63,9 +62,8 @@ export class ResolutionRunner {
         while (!result.done) {
           result = generator.next();
         }
-        // Sync final state to store and renderer
+        // Bump map revision so syncers settle into final state
         this.syncPostResolution();
-        onPostStep?.();
         break;
       }
 
@@ -76,9 +74,8 @@ export class ResolutionRunner {
       await this.animateResolution(resolution, preState, signal);
       if (signal.aborted) return;
 
-      // Notify store of post-mutation state (shallow copy forces React re-render)
+      // Bump map revision so syncers reflect post-mutation state
       this.syncPostResolution();
-      onPostStep?.();
     }
 
     this.store.setState({ currentResolution: null });

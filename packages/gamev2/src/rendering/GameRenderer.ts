@@ -39,6 +39,7 @@ export class GameRenderer {
     this.assetLoader = new AssetLoader(scene);
     this.mapRenderer = new MapRenderer(scene, this.grid, this.assetLoader);
     this.unitRenderer = new UnitRenderer(scene, this.grid, this.territoryCoordMap);
+    this.unitRenderer.onMeshRegistration((mesh) => this.sceneRenderer.registerMeshes([mesh]));
   }
 
   // --- Lifecycle ---
@@ -182,36 +183,13 @@ export class GameRenderer {
     }
   }
 
-  // --- Unit rendering (delegates to UnitRenderer) ---
+  // --- Unit rendering ---
 
-  addUnit(unitId: ID, territoryId: ID, colour: Values.Colour): void {
-    const mesh = this.unitRenderer.addUnit(unitId, territoryId, colour);
-    if (mesh) {
-      this.sceneRenderer.registerMeshes([mesh]);
-    }
-  }
-
-  removeUnit(unitId: ID): void {
-    this.unitRenderer.removeUnit(unitId);
-  }
-
-  setUnitPosition(unitId: ID, territoryId: ID): void {
-    this.unitRenderer.setUnitPosition(unitId, territoryId);
+  getUnitRenderer(): UnitRenderer {
+    return this.unitRenderer;
   }
 
   async animateUnitMove(unitId: ID, fromTerritoryId: ID, toTerritoryId: ID, signal?: AbortSignal): Promise<void> {
     await this.unitRenderer.animateUnitMove(unitId, fromTerritoryId, toTerritoryId, signal);
-  }
-
-  setUnitStatus(unitId: ID, statuses: number[]): void {
-    this.unitRenderer.setUnitStatus(unitId, statuses);
-  }
-
-  setUnitDestination(unitId: ID, destinationId: ID | null): void {
-    this.unitRenderer.setUnitDestination(unitId, destinationId);
-  }
-
-  clearAllUnitDestinations(): void {
-    this.unitRenderer.clearAllDestinations();
   }
 }

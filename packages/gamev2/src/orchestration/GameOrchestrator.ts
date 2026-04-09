@@ -4,6 +4,7 @@ import { GameStore } from '../state/GameStore';
 import { UserActionDispatch } from '../state/types';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { ResolutionRunner } from './ResolutionRunner';
+import { UnitMeshSyncer } from './UnitMeshSyncer';
 import { GameProvider } from '../providers/GameProvider';
 import { ParsedMap } from '../map/MapParser';
 
@@ -18,6 +19,7 @@ export class GameOrchestrator implements UserActionDispatch {
   readonly store: GameStore;
   private renderer: GameRenderer;
   private resolutionRunner: ResolutionRunner;
+  private unitMeshSyncer: UnitMeshSyncer | null = null;
   private provider: GameProvider;
   private parsedMap: ParsedMap | null = null;
 
@@ -70,9 +72,17 @@ export class GameOrchestrator implements UserActionDispatch {
     this.renderer.onUnitClick((unitId) => this.handleUnitClick(unitId));
     this.renderer.onHover((hover) => this.store.setState({ hover }));
 
-    // Apply initial territory overlays and unit meshes
+    // Construct renderer-side syncers. These subscribe to the store and reflect
+    // map state into the renderer automatically — no manual sync calls needed.
+    this.unitMeshSyncer = new UnitMeshSyncer(this.store, this.renderer.getUnitRenderer());
+
+    // Apply initial territory overlays (overlay sync still manual for now;
+    // will be extracted into its own syncer alongside the SelectionController).
     this.syncTerritoryOverlays();
-    this.syncUnits();
+  }
+
+  dispose(): void {
+    this.unitMeshSyncer?.dispose();
   }
 
   // --- UserActionDispatch implementation ---
@@ -183,7 +193,6 @@ export class GameOrchestrator implements UserActionDispatch {
     try {
       map.applyAction({ type: 'move-units', unitIds, destinationId: null as any });
       this.store.setState({ map, selectedUnitIds: [] });
-      this.syncUnitDestinations();
     } catch (e) {
       console.warn('[GameOrchestrator] Cancel move failed:', e);
     }
@@ -281,7 +290,6 @@ export class GameOrchestrator implements UserActionDispatch {
       this.store.setState({ map, selectedUnitIds: [], selectedTerritoryId: null });
       this.renderer.clearOverlays();
       this.syncTerritoryOverlays();
-      this.syncUnitDestinations();
     } catch (e) {
       console.warn('[GameOrchestrator] Move failed:', e);
     }
@@ -339,7 +347,6 @@ export class GameOrchestrator implements UserActionDispatch {
       generator,
       () => this.waitForAdvance(),
       this.abortController.signal,
-      () => this.syncUnits()
     );
 
     if (this.abortController?.signal.aborted) return;
@@ -380,7 +387,6 @@ export class GameOrchestrator implements UserActionDispatch {
     });
 
     this.syncTerritoryOverlays();
-    this.syncUnits();
   }
 
   private waitForAdvance(): Promise<'next' | 'skip'> {
@@ -437,57 +443,6 @@ export class GameOrchestrator implements UserActionDispatch {
       this.renderer.updateTerritoryOverlay(selectedTerritoryId, new Color3(1.0, 1.0, 1.0), 0.2);
     }
   }
-
-  /**
-   * Sync unit meshes with current map state.
-   * Adds new units, removes dead ones, repositions moved ones,
-   * updates status indicators and planned move lines.
-   */
-  private syncUnits(): void {
-    const { map } = this.store.getState();
-    const currentUnitIds = new Set(map.unitIds);
-
-    // Remove units no longer in the map
-    for (const unitId of this.trackedUnitIds) {
-      if (!currentUnitIds.has(unitId)) {
-        this.renderer.removeUnit(unitId);
-      }
-    }
-
-    // Add/update units
-    this.trackedUnitIds.clear();
-    for (const unit of map.units) {
-      this.trackedUnitIds.add(unit.data.id);
-      const player = unit.player;
-      const colour = player?.data.colour ?? Values.Colour.WHITE;
-
-      // Only place units on territories (not edges)
-      const territory = map.territory(unit.data.locationId);
-      if (territory) {
-        this.renderer.addUnit(unit.data.id, territory.data.id, colour);
-        this.renderer.setUnitPosition(unit.data.id, territory.data.id);
-      }
-
-      // Sync status indicators
-      this.renderer.setUnitStatus(unit.data.id, unit.data.statuses);
-    }
-
-    // Sync planned move lines
-    this.syncUnitDestinations();
-  }
-
-  /**
-   * Sync planned move lines for all units.
-   * Each unit with a pending move action gets a line to its destination.
-   */
-  private syncUnitDestinations(): void {
-    const { map } = this.store.getState();
-    for (const unit of map.units) {
-      this.renderer.setUnitDestination(unit.data.id, unit.destinationId);
-    }
-  }
-
-  private trackedUnitIds = new Set<ID>();
 
   private playerColor(colour: Values.Colour): Color3 {
     const r = ((colour >> 16) & 0xff) / 255;
