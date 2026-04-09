@@ -82,4 +82,19 @@ export class Territory extends UnitContainer<TerritoryData> {
   removeProperty(property: TerritoryProperty) {
     this.data.properties = exclude(this.data.properties, property);
   }
+
+  isVisible(playerId: ID): boolean {
+    // players own territories are visible
+    if (this.data.playerId === playerId) {
+      return true;
+    }
+
+    // territory is visible if the player has any units on it
+    if (this.units.some(u => u.data.playerId === playerId)) {
+      return true;
+    }
+
+    // delegate to player on other visibility (e.g. adjacency)
+    return this.player.isLocationVisible(this.data.id);
+  }
 }

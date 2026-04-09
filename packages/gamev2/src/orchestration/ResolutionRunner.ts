@@ -1,7 +1,8 @@
 import { Color3 } from '@babylonjs/core';
-import { ID, Resolution, GameMap, Values, Utils } from '@battles/models';
+import { ID, Resolution, GameMap, Values } from '@battles/models';
 import { GameStore } from '../state/GameStore';
 import { GameRenderer } from '../rendering/GameRenderer';
+import { isLocationVisible, isUnitVisible } from './Utils';
 
 /**
  * Drives the resolveTurn() generator. Maps each Resolution type to the
@@ -63,7 +64,7 @@ export class ResolutionRunner {
           result = generator.next();
         }
         // Bump map revision so syncers settle into final state
-        this.syncPostResolution();
+        this.updateMapState();
         break;
       }
 
@@ -75,7 +76,7 @@ export class ResolutionRunner {
       if (signal.aborted) return;
 
       // Bump map revision so syncers reflect post-mutation state
-      this.syncPostResolution();
+      this.updateMapState();
     }
 
     this.store.setState({ currentResolution: null });
@@ -84,72 +85,22 @@ export class ResolutionRunner {
   // --- Visibility ---
 
   private isResolutionVisible(resolution: Resolution): boolean {
-    const { visibilityMode } = this.store.getState();
+    const { visibilityMode, map, currentPlayerId } = this.store.getState();
     if (visibilityMode === 'all') return true;
 
     switch (resolution.phase) {
       case 'move':
       case 'add-defend':
-        return this.isUnitVisible(resolution.unitId);
+        return isUnitVisible(map, currentPlayerId, resolution.unitId);
       case 'combat':
-        return this.isLocationVisible(resolution.locationId);
+        return isLocationVisible(map, currentPlayerId, resolution.locationId);
       case 'food':
       case 'territory-control':
       case 'territory-action':
-        return this.isLocationVisible(resolution.territoryId);
+        return isLocationVisible(map, currentPlayerId, resolution.territoryId);
       case 'gold':
         return true;
     }
-  }
-
-  private isLocationVisible(locationId: ID): boolean {
-    const visibleIds = this.getVisibleLocationIds();
-    return visibleIds.has(locationId);
-  }
-
-  private isUnitVisible(unitId: ID): boolean {
-    const { map } = this.store.getState();
-    const unit = map.unit(unitId);
-    if (!unit) return false;
-
-    const visibleIds = this.getVisibleLocationIds();
-    if (visibleIds.has(unit.data.locationId)) return true;
-
-    // Also visible if moving to/from a visible area
-    if (unit.destinationId && visibleIds.has(unit.destinationId)) return true;
-
-    return false;
-  }
-
-  private getVisibleLocationIds(): Set<ID> {
-    const { map, currentPlayerId } = this.store.getState();
-    const visible = new Set<ID>();
-
-    const player = map.player(currentPlayerId);
-    if (!player) return visible;
-
-    // Player's territories and territories where player has units
-    const playerTerritories = [
-      ...player.territories,
-      ...player.units
-        .map((u) => u.location)
-        .filter((loc) => loc?.data.type === 'territory'),
-    ];
-
-    for (const territory of playerTerritories) {
-      if (!territory) continue;
-      visible.add(territory.data.id);
-      // Adjacent territories are also visible
-      if ('edges' in territory) {
-        for (const edge of (territory as any).edges) {
-          visible.add(edge.data.id);
-          visible.add(edge.data.territoryAId);
-          visible.add(edge.data.territoryBId);
-        }
-      }
-    }
-
-    return visible;
   }
 
   // --- Pre/post state capture ---
@@ -227,7 +178,7 @@ export class ResolutionRunner {
 
   // --- Post-resolution sync ---
 
-  private syncPostResolution(): void {
+  private updateMapState(): void {
     const { map } = this.store.getState();
     // Shallow copy forces useSyncExternalStore to detect the change
     // even though map is mutated in place

@@ -1,7 +1,7 @@
 import { Color3 } from '@babylonjs/core';
 import { ID, GameMap, Values } from '@battles/models';
 import { Subscribable } from '../state/types';
-import { getValidDestinations } from './getValidDestinations';
+import { getValidDestinations } from './Utils';
 
 export type OverlayState = {
   map: GameMap;

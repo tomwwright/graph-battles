@@ -21,4 +21,9 @@ export class Edge extends UnitContainer<EdgeData> {
     else if (this.data.territoryBId === territory.data.id) return this.territoryA;
     else throw new Error(`Territory ${territory.data.id} not present on Edge ${this.data.id}`);
   }
+
+  isVisible(playerId: ID): boolean {
+    // visible if territory on either end is visible
+    return this.territoryA.isVisible(playerId) || this.territoryB.isVisible(playerId);
+  }
 }

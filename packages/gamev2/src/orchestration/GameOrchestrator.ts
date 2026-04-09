@@ -5,9 +5,9 @@ import { GameRenderer } from '../rendering/GameRenderer';
 import { ResolutionRunner } from './ResolutionRunner';
 import { UnitMeshSyncer } from './UnitMeshSyncer';
 import { OverlaySyncer } from './OverlaySyncer';
-import { getValidDestinations } from './getValidDestinations';
 import { GameProvider } from '../providers/GameProvider';
 import type { RenderMap } from '../map/MapParser';
+import { getValidDestinations } from './Utils';
 
 /**
  * Central coordinator. Owns GameStore, GameRenderer, ResolutionRunner, GameProvider.

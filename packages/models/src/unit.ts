@@ -45,4 +45,30 @@ export class Unit extends Model<UnitData> {
   removeStatus(status: Status) {
     this.data.statuses = exclude(this.data.statuses, status);
   }
+
+  isVisible(playerId: ID): boolean {
+    // players own units are visible
+    if (this.data.playerId === playerId) {
+      return true;
+    }
+
+    // units en route to a visible territory are visible
+    if (this.destination && this.destination.isVisible(playerId)) {
+      return true;
+    }
+
+    // otherwise visibility determined by location
+    return this.location.isVisible(playerId);
+  }
+
+  get possibleDestinations(): Territory[] {
+    const location = this.location;
+
+    // no possible destinations if not on a territory
+    if (location instanceof Edge) {
+      return [];
+    }
+
+    return location.edges.map(e => e.other(location));
+  }
 }

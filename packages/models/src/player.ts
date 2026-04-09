@@ -1,4 +1,4 @@
-import { HasID, Model, sum } from './utils';
+import { HasID, ID, Model, sum } from './utils';
 import { PendingActionType } from './map';
 import { Colour } from './values';
 
@@ -31,5 +31,34 @@ export class Player extends Model<PlayerData> {
       this.territories.length +
       sum(this.territories.map((territory) => territory.data.properties.length))
     );
+  }
+
+  visibleLocations(): Set<ID> {
+    const visible = new Set<ID>();
+
+    const playerTerritories = [
+      ...this.territories,
+      ...this.units
+        .map((u) => u.location)
+        .filter((loc) => loc?.data.type === 'territory'),
+    ];
+
+    for (const territory of playerTerritories) {
+      if (!territory) continue;
+      visible.add(territory.data.id);
+      if ('edges' in territory) {
+        for (const edge of territory.edges) {
+          visible.add(edge.data.id);
+          visible.add(edge.data.territoryAId);
+          visible.add(edge.data.territoryBId);
+        }
+      }
+    }
+
+    return visible;
+  }
+
+  isLocationVisible(locationId: ID): boolean {
+    return this.visibleLocations().has(locationId);
   }
 }
