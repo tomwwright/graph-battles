@@ -1,12 +1,13 @@
-import { Color3 } from '@babylonjs/core';
 import { ID, Values, GameMap, resolveTurn, Utils } from '@battles/models';
 import { GameStore } from '../state/GameStore';
 import { UserActionDispatch } from '../state/types';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { ResolutionRunner } from './ResolutionRunner';
 import { UnitMeshSyncer } from './UnitMeshSyncer';
+import { OverlaySyncer } from './OverlaySyncer';
+import { getValidDestinations } from './getValidDestinations';
 import { GameProvider } from '../providers/GameProvider';
-import { ParsedMap } from '../map/MapParser';
+import type { ParsedMap } from '../map/MapParser';
 
 /**
  * Central coordinator. Owns GameStore, GameRenderer, ResolutionRunner, GameProvider.
@@ -20,6 +21,7 @@ export class GameOrchestrator implements UserActionDispatch {
   private renderer: GameRenderer;
   private resolutionRunner: ResolutionRunner;
   private unitMeshSyncer: UnitMeshSyncer | null = null;
+  private overlaySyncer: OverlaySyncer | null = null;
   private provider: GameProvider;
   private parsedMap: ParsedMap | null = null;
 
@@ -75,14 +77,12 @@ export class GameOrchestrator implements UserActionDispatch {
     // Construct renderer-side syncers. These subscribe to the store and reflect
     // map state into the renderer automatically — no manual sync calls needed.
     this.unitMeshSyncer = new UnitMeshSyncer(this.store, this.renderer.getUnitRenderer());
-
-    // Apply initial territory overlays (overlay sync still manual for now;
-    // will be extracted into its own syncer alongside the SelectionController).
-    this.syncTerritoryOverlays();
+    this.overlaySyncer = new OverlaySyncer(this.store, this.renderer);
   }
 
   dispose(): void {
     this.unitMeshSyncer?.dispose();
+    this.overlaySyncer?.dispose();
   }
 
   // --- UserActionDispatch implementation ---
@@ -107,7 +107,6 @@ export class GameOrchestrator implements UserActionDispatch {
         selectedUnitIds: [],
         selectedTerritoryId: null,
       });
-      this.syncTerritoryOverlays();
     } else {
       // All players ready — resolve the turn
       this.onAllPlayersReady();
@@ -151,8 +150,6 @@ export class GameOrchestrator implements UserActionDispatch {
       selectedTerritoryId: null,
       currentResolution: null,
     });
-
-    this.syncTerritoryOverlays();
 
     if (isReplaying) {
       this.startResolution(map);
@@ -224,7 +221,6 @@ export class GameOrchestrator implements UserActionDispatch {
         selectedUnitIds: [unitId],
         selectedTerritoryId: null,
       });
-      this.syncSelectionOverlays();
       return;
     }
 
@@ -248,8 +244,6 @@ export class GameOrchestrator implements UserActionDispatch {
       selectedUnitIds: nextSelection,
       selectedTerritoryId: null,
     });
-
-    this.syncSelectionOverlays();
   }
 
   private handleTerritoryClick(territoryId: ID): void {
@@ -262,7 +256,7 @@ export class GameOrchestrator implements UserActionDispatch {
 
     if (selectedUnitIds.length > 0) {
       // Units are selected — try to move them to clicked territory
-      const validDestinations = this.getValidDestinations(selectedUnitIds);
+      const validDestinations = getValidDestinations(map, selectedUnitIds);
       if (validDestinations.includes(territoryId)) {
         this.moveSelectedUnits(territoryId);
         return;
@@ -278,8 +272,6 @@ export class GameOrchestrator implements UserActionDispatch {
       selectedTerritoryId: territoryId,
       selectedUnitIds: [],
     });
-
-    this.syncSelectionOverlays();
   }
 
   private moveSelectedUnits(destinationId: ID): void {
@@ -288,38 +280,9 @@ export class GameOrchestrator implements UserActionDispatch {
     try {
       map.applyAction({ type: 'move-units', unitIds: selectedUnitIds, destinationId });
       this.store.setState({ map, selectedUnitIds: [], selectedTerritoryId: null });
-      this.renderer.clearOverlays();
-      this.syncTerritoryOverlays();
     } catch (e) {
       console.warn('[GameOrchestrator] Move failed:', e);
     }
-  }
-
-  private getValidDestinations(unitIds: ID[]): ID[] {
-    const { map } = this.store.getState();
-    const units = unitIds.map((id) => map.unit(id)).filter((u) => u != null);
-    if (units.length === 0) return [];
-
-    // Each unit must be on a territory to move
-    const territories = units.map((u) => {
-      const loc = u.location;
-      return loc?.data.type === 'territory' ? loc : null;
-    });
-    if (territories.some((t) => t == null)) return [];
-
-    // Intersection of adjacent territory IDs across all selected units
-    const adjacentSets = territories.map((t) =>
-      (t as any).edges.map((edge: any) => edge.other(t).data.id) as ID[]
-    );
-
-    // Intersection
-    let result = adjacentSets[0] ?? [];
-    for (let i = 1; i < adjacentSets.length; i++) {
-      const set = new Set(adjacentSets[i]);
-      result = result.filter((id) => set.has(id));
-    }
-
-    return result;
   }
 
   // --- Resolution replay ---
@@ -386,7 +349,6 @@ export class GameOrchestrator implements UserActionDispatch {
       currentResolution: null,
     });
 
-    this.syncTerritoryOverlays();
   }
 
   private waitForAdvance(): Promise<'next' | 'skip'> {
@@ -395,59 +357,4 @@ export class GameOrchestrator implements UserActionDispatch {
     });
   }
 
-  // --- Overlay sync ---
-
-  private syncTerritoryOverlays(): void {
-    const { map } = this.store.getState();
-    this.renderer.clearOverlays();
-
-    for (const territory of map.territories) {
-      const player = territory.player;
-      if (player) {
-        const color = this.playerColor(player.data.colour);
-        this.renderer.updateTerritoryOverlay(territory.data.id, color);
-      }
-    }
-  }
-
-  /**
-   * Re-apply base territory overlays plus selection-specific highlights.
-   * Selection is exclusive: either units are selected (highlight destinations
-   * and connecting grass anchored on the unit's host territory) or a territory
-   * is selected (highlight that territory).
-   */
-  private syncSelectionOverlays(): void {
-    const { selectedUnitIds, selectedTerritoryId, map } = this.store.getState();
-
-    // Re-apply base overlays first
-    this.syncTerritoryOverlays();
-
-    if (selectedUnitIds.length > 0) {
-      // Use the first selected unit's host territory as the anchor for grass highlights
-      const firstUnit = map.unit(selectedUnitIds[0]);
-      const host = firstUnit ? map.territory(firstUnit.data.locationId) : null;
-      if (!host) return;
-
-      const destinations = this.getValidDestinations(selectedUnitIds);
-      const highlightColor = new Color3(0.2, 1.0, 0.3);
-      const grassHighlightColor = new Color3(0.6, 1.0, 0.4);
-
-      for (const destId of destinations) {
-        this.renderer.updateTerritoryOverlay(destId, highlightColor, 0.15);
-        this.renderer.highlightConnectingGrass(host.data.id, destId, grassHighlightColor, 0.18);
-      }
-      return;
-    }
-
-    if (selectedTerritoryId != null) {
-      this.renderer.updateTerritoryOverlay(selectedTerritoryId, new Color3(1.0, 1.0, 1.0), 0.2);
-    }
-  }
-
-  private playerColor(colour: Values.Colour): Color3 {
-    const r = ((colour >> 16) & 0xff) / 255;
-    const g = ((colour >> 8) & 0xff) / 255;
-    const b = (colour & 0xff) / 255;
-    return new Color3(r, g, b);
-  }
 }
