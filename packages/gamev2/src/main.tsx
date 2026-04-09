@@ -3,14 +3,14 @@ import { createRoot } from 'react-dom/client';
 import { BabylonJsProvider } from './ui/BabylonJsProvider';
 import { GameContextProvider } from './ui/GameContextProvider';
 import { App } from './ui/App';
-import { parseMap, ParsedMap } from './map/MapParser';
+import { parseMap, RenderMap } from './map/MapParser';
 import { createStubProvider } from './providers/StubGameProvider';
 import { GameProvider } from './providers/GameProvider';
 
 const MAP_URL = '/maps/small-2p.txt';
 
 type LoadedMap = {
-  parsedMap: ParsedMap;
+  renderMap: RenderMap;
   provider: GameProvider;
 };
 
@@ -27,9 +27,9 @@ function MapLoader({ children }: { children: (loaded: LoadedMap) => React.ReactN
     fetch(MAP_URL)
       .then((r) => r.text())
       .then((text) => {
-        const parsedMap = parseMap(text);
-        const provider = createStubProvider(parsedMap);
-        loadedRef.current = { parsedMap, provider };
+        const renderMap = parseMap(text);
+        const provider = createStubProvider(renderMap);
+        loadedRef.current = { renderMap, provider };
         setLoaded(loadedRef.current);
       });
   }, []);
@@ -41,9 +41,9 @@ function MapLoader({ children }: { children: (loaded: LoadedMap) => React.ReactN
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MapLoader>
-      {({ parsedMap, provider }) => (
+      {({ renderMap, provider }) => (
         <BabylonJsProvider>
-          <GameContextProvider provider={provider} parsedMap={parsedMap}>
+          <GameContextProvider provider={provider} renderMap={renderMap}>
             <App />
           </GameContextProvider>
         </BabylonJsProvider>

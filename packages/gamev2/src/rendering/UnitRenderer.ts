@@ -12,10 +12,10 @@ import {
   StandardMaterial,
   Vector3,
 } from '@babylonjs/core';
-import { ID, Values } from '@battles/models';
+import { ID, Values, GameMap } from '@battles/models';
 import { HexCoord, hexCenterTile } from './HexCoordinates';
 import { HexGridController } from './HexGridController';
-import type { ParsedMap } from '../map/MapParser';
+import type { RenderMap } from '../map/MapParser';
 
 const UNIT_HEIGHT = 1.2;
 const UNIT_DIAMETER = 0.6;
@@ -31,7 +31,7 @@ const MOVE_FRAMES_PER_SEGMENT = 12;
 
 type UnitState = {
   mesh: Mesh;
-  territoryId: ID;
+  locationId: ID;
   statusMeshes: Mesh[];
   destinationLine: LinesMesh | null;
   destinationId: ID | null;
@@ -44,14 +44,15 @@ type MeshRegistrationCallback = (mesh: Mesh) => void;
  * Renders units as colored cylinders. Handles:
  * - Player colour tinting
  * - Status indicators (defend, starve)
- * - Smooth lerp animation through grass hex centers during moves
- * - Grid arrangement when multiple units share a territory, with smooth tween on rearrange
- * - Planned move lines (two segments through connecting grass hex)
+ * - Smooth lerp animation through edge waypoints during moves
+ * - Grid arrangement when multiple units share a location, with smooth tween on rearrange
+ * - Planned move lines through connecting waypoints
  */
 export class UnitRenderer {
   private units = new Map<ID, UnitState>();
   private animatingUnits = new Set<ID>();
-  private parsedMap: ParsedMap | null = null;
+  private map: RenderMap | null = null;
+  private edgeTerritoryMap = new Map<ID, { territoryA: ID; territoryB: ID }>();
   private clickCallback: UnitClickCallback | null = null;
   private meshRegistrationCallback: MeshRegistrationCallback | null = null;
 
@@ -59,14 +60,21 @@ export class UnitRenderer {
     private readonly scene: Scene,
     private readonly grid: HexGridController,
     private readonly territoryCoordMap: Map<ID, HexCoord>
-  ) {}
+  ) { }
 
   onMeshRegistration(callback: MeshRegistrationCallback): void {
     this.meshRegistrationCallback = callback;
   }
 
-  setParsedMap(parsedMap: ParsedMap): void {
-    this.parsedMap = parsedMap;
+  initialise(map: RenderMap, gameMap: GameMap): void {
+    this.map = map;
+    this.edgeTerritoryMap.clear();
+    for (const edge of gameMap.edges) {
+      this.edgeTerritoryMap.set(edge.data.id, {
+        territoryA: edge.data.territoryAId,
+        territoryB: edge.data.territoryBId,
+      });
+    }
   }
 
   onUnitClick(callback: UnitClickCallback): void {
@@ -75,7 +83,7 @@ export class UnitRenderer {
 
   // --- Unit lifecycle ---
 
-  addUnit(unitId: ID, territoryId: ID, colour: Values.Colour): Mesh | null {
+  addUnit(unitId: ID, locationId: ID, colour: Values.Colour): Mesh | null {
     if (this.units.has(unitId)) return this.units.get(unitId)!.mesh;
 
     const mesh = MeshBuilder.CreateCylinder(
@@ -99,14 +107,14 @@ export class UnitRenderer {
 
     this.units.set(unitId, {
       mesh,
-      territoryId,
+      locationId,
       statusMeshes: [],
       destinationLine: null,
       destinationId: null,
     });
 
     this.meshRegistrationCallback?.(mesh);
-    this.arrangeTerritory(territoryId, false);
+    this.arrangeLocation(locationId, false);
     return mesh;
   }
 
@@ -118,50 +126,50 @@ export class UnitRenderer {
     for (const sm of state.statusMeshes) sm.dispose();
     if (state.destinationLine) state.destinationLine.dispose();
 
-    const territoryId = state.territoryId;
+    const locationId = state.locationId;
     this.units.delete(unitId);
     this.animatingUnits.delete(unitId);
 
-    this.arrangeTerritory(territoryId, true);
+    this.arrangeLocation(locationId, true);
   }
 
-  /** Snap unit to a territory without animation. */
-  setUnitPosition(unitId: ID, territoryId: ID): void {
+  /** Snap unit to a location (territory or edge) without animation. */
+  setUnitPosition(unitId: ID, locationId: ID): void {
     const state = this.units.get(unitId);
     if (!state) return;
 
-    const oldTerritoryId = state.territoryId;
-    state.territoryId = territoryId;
+    const oldLocationId = state.locationId;
+    state.locationId = locationId;
 
-    if (oldTerritoryId !== territoryId) {
-      this.arrangeTerritory(oldTerritoryId, true);
+    if (oldLocationId !== locationId) {
+      this.arrangeLocation(oldLocationId, true);
     }
-    this.arrangeTerritory(territoryId, false);
+    this.arrangeLocation(locationId, false);
   }
 
-  /** Lerp unit through the grass hex(es) connecting two territories. */
+  /** Lerp unit between any two locations (territory or edge). */
   async animateUnitMove(
     unitId: ID,
-    fromTerritoryId: ID,
-    toTerritoryId: ID,
+    fromLocationId: ID,
+    toLocationId: ID,
     signal?: AbortSignal
   ): Promise<void> {
     const state = this.units.get(unitId);
     if (!state) return;
 
     // Reassign immediately so other units rearrange while this one is in flight
-    state.territoryId = toTerritoryId;
+    state.locationId = toLocationId;
     this.animatingUnits.add(unitId);
-    this.arrangeTerritory(fromTerritoryId, true);
-    this.arrangeTerritory(toTerritoryId, true);
+    this.arrangeLocation(fromLocationId, true);
+    this.arrangeLocation(toLocationId, true);
 
     try {
       const startPos = state.mesh.position.clone();
-      const endPos = this.targetUnitPosition(unitId, toTerritoryId);
-      const grassPositions = this.getConnectingGrassPositions(fromTerritoryId, toTerritoryId);
+      const endPos = this.targetUnitPosition(unitId, toLocationId);
+      const waypoints = this.getMovementWaypoints(fromLocationId, toLocationId);
 
-      // Build a path: start → grass center(s) → end
-      const path: Vector3[] = [startPos, ...grassPositions, endPos];
+      // Build a path: start → waypoint(s) → end
+      const path: Vector3[] = [startPos, ...waypoints, endPos];
 
       for (let i = 0; i < path.length - 1; i++) {
         if (signal?.aborted) break;
@@ -175,7 +183,7 @@ export class UnitRenderer {
     } finally {
       this.animatingUnits.delete(unitId);
       // Final reposition in case grid layout changed during animation
-      this.arrangeTerritory(toTerritoryId, false);
+      this.arrangeLocation(toLocationId, false);
     }
   }
 
@@ -216,15 +224,15 @@ export class UnitRenderer {
 
     if (!destinationId) return;
 
-    const fromPos = this.targetUnitPosition(unitId, state.territoryId);
+    const fromPos = this.targetUnitPosition(unitId, state.locationId);
     const toPos = this.territoryCenterPosition(destinationId);
     if (!toPos) return;
 
-    const grassPositions = this.getConnectingGrassPositions(state.territoryId, destinationId);
+    const waypoints = this.getConnectingWaypoints(state.locationId, destinationId);
 
     const linePoints: Vector3[] = [
       this.lift(fromPos, 0.1),
-      ...grassPositions.map((p) => this.lift(p, 0.1)),
+      ...waypoints.map((p) => this.lift(p, 0.1)),
       this.lift(toPos, 0.1),
     ];
 
@@ -269,17 +277,17 @@ export class UnitRenderer {
   // --- Internals ---
 
   /**
-   * Arranges all units on a territory in a grid layout.
+   * Arranges all units on a location (territory or edge) in a grid layout.
    * Skips units currently animating (their position is being lerped).
    * @param tween if true, smoothly tween non-animating units to their new positions
    */
-  private arrangeTerritory(territoryId: ID, tween: boolean): void {
+  private arrangeLocation(locationId: ID, tween: boolean): void {
     const unitsHere: ID[] = [];
     for (const [uid, state] of this.units) {
-      if (state.territoryId === territoryId) unitsHere.push(uid);
+      if (state.locationId === locationId) unitsHere.push(uid);
     }
 
-    const basePos = this.territoryCenterPosition(territoryId);
+    const basePos = this.locationCenterPosition(locationId);
     if (!basePos) return;
 
     const total = unitsHere.length;
@@ -308,15 +316,15 @@ export class UnitRenderer {
     }
   }
 
-  /** Compute the grid position a unit will occupy on its territory (without moving the mesh). */
-  private targetUnitPosition(unitId: ID, territoryId: ID): Vector3 {
+  /** Compute the grid position a unit will occupy on its location (without moving the mesh). */
+  private targetUnitPosition(unitId: ID, locationId: ID): Vector3 {
     const unitsHere: ID[] = [];
     for (const [uid, state] of this.units) {
-      if (state.territoryId === territoryId) unitsHere.push(uid);
+      if (state.locationId === locationId) unitsHere.push(uid);
     }
 
     const idx = unitsHere.indexOf(unitId);
-    const basePos = this.territoryCenterPosition(territoryId);
+    const basePos = this.locationCenterPosition(locationId);
     if (!basePos || idx < 0) {
       return basePos ?? new Vector3(0, UNIT_BASE_Y, 0);
     }
@@ -332,6 +340,11 @@ export class UnitRenderer {
     return new Vector3(basePos.x + offsetX, UNIT_BASE_Y, basePos.z + offsetZ);
   }
 
+  /** Get the center position for any location (territory or edge). */
+  private locationCenterPosition(locationId: ID): Vector3 | null {
+    return this.territoryCenterPosition(locationId) ?? this.edgeCenterPosition(locationId);
+  }
+
   private territoryCenterPosition(territoryId: ID): Vector3 | null {
     const coord = this.territoryCoordMap.get(territoryId);
     if (!coord) return null;
@@ -340,33 +353,119 @@ export class UnitRenderer {
     return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
   }
 
-  /** Get world positions of grass cells connecting two territories (for movement path). */
-  private getConnectingGrassPositions(fromId: ID, toId: ID): Vector3[] {
-    if (!this.parsedMap) return [];
+  /**
+   * Compute the center position of an edge.
+   * Odd tile chain: center of the middle tile.
+   * Even tile chain: midpoint between the two middle tile centers.
+   */
+  private edgeCenterPosition(edgeId: ID): Vector3 | null {
+    const pair = this.edgeTerritoryMap.get(edgeId);
+    if (!pair) return null;
 
-    const edge = this.parsedMap.edges.find(
-      (e) =>
-        (e.territoryA === fromId && e.territoryB === toId) ||
-        (e.territoryA === toId && e.territoryB === fromId)
+    const edge = this.findEdge(pair.territoryA, pair.territoryB);
+    if (!edge || edge.grassCoords.length === 0) return null;
+
+    const coordA = this.territoryCoordMap.get(pair.territoryA);
+    if (!coordA) return null;
+
+    const sorted = [...edge.grassCoords].sort(
+      (a, b) => this.hexDistance(a, coordA) - this.hexDistance(b, coordA)
     );
+
+    const n = sorted.length;
+    const mid = Math.floor(n / 2);
+
+    if (n % 2 !== 0) {
+      // Odd: center of middle tile
+      const centerTile = hexCenterTile(sorted[mid]);
+      const pos = this.grid.getWorldPosition(centerTile);
+      return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
+    } else {
+      // Even: midpoint between the two middle tile centers
+      const tileA = hexCenterTile(sorted[mid - 1]);
+      const tileB = hexCenterTile(sorted[mid]);
+      const posA = this.grid.getWorldPosition(tileA);
+      const posB = this.grid.getWorldPosition(tileB);
+      return new Vector3((posA.x + posB.x) / 2, UNIT_BASE_Y, (posA.z + posB.z) / 2);
+    }
+  }
+
+  /**
+   * Get waypoints for movement between two locations.
+   * For territory↔edge moves, returns the half of the edge's tile chain
+   * between the territory and the edge center. For territory↔territory
+   * (fallback), returns the full chain of waypoints.
+   */
+  private getMovementWaypoints(fromLocationId: ID, toLocationId: ID): Vector3[] {
+    const fromIsEdge = this.edgeTerritoryMap.has(fromLocationId);
+    const toIsEdge = this.edgeTerritoryMap.has(toLocationId);
+
+    if (!fromIsEdge && !toIsEdge) {
+      // territory → territory fallback: full waypoint chain
+      return this.getConnectingWaypoints(fromLocationId, toLocationId);
+    }
+
+    const edgeId = fromIsEdge ? fromLocationId : toLocationId;
+    const territoryId = fromIsEdge ? toLocationId : fromLocationId;
+
+    const pair = this.edgeTerritoryMap.get(edgeId)!;
+    const edge = this.findEdge(pair.territoryA, pair.territoryB);
     if (!edge) return [];
 
-    // For multi-grass-cell chains, order them roughly along the path from→to
-    const fromCoord = this.territoryCoordMap.get(fromId);
-    const toCoord = this.territoryCoordMap.get(toId);
-    if (!fromCoord || !toCoord) return [];
+    const territoryCoord = this.territoryCoordMap.get(territoryId);
+    if (!territoryCoord) return [];
 
-    const sorted = [...edge.grassCoords].sort((a, b) => {
-      const distA = this.hexDistance(a, fromCoord);
-      const distB = this.hexDistance(b, fromCoord);
-      return distA - distB;
+    // Sort by distance from the territory
+    const sorted = [...edge.grassCoords].sort(
+      (a, b) => this.hexDistance(a, territoryCoord) - this.hexDistance(b, territoryCoord)
+    );
+
+    const mid = Math.floor(sorted.length / 2);
+
+    // Take the tiles between territory and edge center
+    const halfChain = sorted.slice(0, mid);
+
+    const positions = halfChain.map((coord) => {
+      const centerTile = hexCenterTile(coord);
+      const pos = this.grid.getWorldPosition(centerTile);
+      return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
     });
+
+    if (fromIsEdge) {
+      // edge → territory: reverse so waypoints go from edge center toward territory
+      positions.reverse();
+    }
+
+    return positions;
+  }
+
+  /** Get world positions of waypoints connecting two territories (for destination lines). */
+  private getConnectingWaypoints(fromId: ID, toId: ID): Vector3[] {
+    if (!this.map) return [];
+
+    const edge = this.findEdge(fromId, toId);
+    if (!edge) return [];
+
+    const fromCoord = this.territoryCoordMap.get(fromId);
+    if (!fromCoord) return [];
+
+    const sorted = [...edge.grassCoords].sort(
+      (a, b) => this.hexDistance(a, fromCoord) - this.hexDistance(b, fromCoord)
+    );
 
     return sorted.map((coord) => {
       const centerTile = hexCenterTile(coord);
       const pos = this.grid.getWorldPosition(centerTile);
       return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
     });
+  }
+
+  private findEdge(territoryA: ID, territoryB: ID) {
+    return this.map?.edges.find(
+      (e) =>
+        (e.territoryA === territoryA && e.territoryB === territoryB) ||
+        (e.territoryA === territoryB && e.territoryB === territoryA)
+    ) ?? null;
   }
 
   private hexDistance(a: HexCoord, b: HexCoord): number {

@@ -13,7 +13,7 @@ export type OverlayState = {
 export type OverlayTarget = {
   clearOverlays(): void;
   updateTerritoryOverlay(territoryId: ID, color: Color3, alpha?: number): void;
-  highlightConnectingGrass(territoryA: ID, territoryB: ID, color: Color3, alpha?: number): void;
+  highlightWaypoints(territoryA: ID, territoryB: ID, color: Color3, alpha?: number): void;
 };
 
 /**
@@ -83,7 +83,7 @@ export class OverlaySyncer {
 
       for (const destId of destinations) {
         this.target.updateTerritoryOverlay(destId, highlightColor, 0.15);
-        this.target.highlightConnectingGrass(host.data.id, destId, grassHighlightColor, 0.18);
+        this.target.highlightWaypoints(host.data.id, destId, grassHighlightColor, 0.18);
       }
       return;
     }

@@ -54,12 +54,8 @@ export class UnitMeshSyncer {
       const player = unit.player;
       const colour = player?.data.colour ?? Values.Colour.WHITE;
 
-      // Only place units on territories (not edges)
-      const territory = map.territory(unit.data.locationId);
-      if (territory) {
-        this.renderer.addUnit(unit.data.id, territory.data.id, colour);
-        this.renderer.setUnitPosition(unit.data.id, territory.data.id);
-      }
+      this.renderer.addUnit(unit.data.id, unit.data.locationId, colour);
+      this.renderer.setUnitPosition(unit.data.id, unit.data.locationId);
 
       this.renderer.setUnitStatus(unit.data.id, unit.data.statuses);
       this.renderer.setUnitDestination(unit.data.id, unit.destinationId);

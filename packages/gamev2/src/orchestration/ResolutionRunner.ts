@@ -187,30 +187,8 @@ export class ResolutionRunner {
         if (!unit) break;
 
         const newLocationId = unit.data.locationId;
-        // Only animate when the unit lands on a territory (final landing).
-        // The first step (territory→edge) is silent; the second step
-        // (edge→territory) is when we lerp visually.
-        const newTerritory = map.territory(newLocationId);
-        if (!newTerritory) break;
-
-        // Determine source territory:
-        // - If pre-state was a territory, use it directly (single-step move).
-        // - If pre-state was an edge, use the OTHER endpoint of the edge.
-        let fromTerritoryId: ID | null = null;
-        if (map.territory(preState.locationId)) {
-          fromTerritoryId = preState.locationId;
-        } else {
-          const edge = map.edge(preState.locationId);
-          if (edge) {
-            fromTerritoryId =
-              edge.data.territoryAId === newLocationId
-                ? edge.data.territoryBId
-                : edge.data.territoryAId;
-          }
-        }
-
-        if (fromTerritoryId && fromTerritoryId !== newLocationId) {
-          await this.renderer.animateUnitMove(resolution.unitId, fromTerritoryId, newLocationId, signal);
+        if (preState.locationId !== newLocationId) {
+          await this.renderer.animateUnitMove(resolution.unitId, preState.locationId, newLocationId, signal);
         }
         break;
       }

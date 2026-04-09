@@ -1,13 +1,13 @@
 import { Game, Values } from '@battles/models';
 import type { GameData, GameMapData } from '@battles/models';
 import type { GameProvider } from './GameProvider';
-import type { ParsedMap } from '../map/MapParser';
+import type { RenderMap } from '../map/MapParser';
 
 /**
- * Creates a stub GameData from a ParsedMap.
+ * Creates a stub GameData from a RenderMap.
  * Assigns players to alternating territories and places one unit on the first territory.
  */
-function createStubGameData(parsedMap: ParsedMap): GameData {
+function createStubGameData(renderMap: RenderMap): GameData {
   const dataMap: Record<string, any> = {};
 
   // Two players
@@ -30,12 +30,12 @@ function createStubGameData(parsedMap: ParsedMap): GameData {
   let edgeNextId = 1;
   const edgeIds: Record<string, string[]> = {};
 
-  for (const t of parsedMap.territories) {
+  for (const t of renderMap.territories) {
     edgeIds[t.id] = [];
   }
 
   // Create edges
-  for (const e of parsedMap.edges) {
+  for (const e of renderMap.edges) {
     const edgeId = `e${edgeNextId++}`;
     edgeIds[e.territoryA]?.push(edgeId);
     edgeIds[e.territoryB]?.push(edgeId);
@@ -48,8 +48,8 @@ function createStubGameData(parsedMap: ParsedMap): GameData {
   }
 
   // Create territories
-  for (let i = 0; i < parsedMap.territories.length; i++) {
-    const t = parsedMap.territories[i];
+  for (let i = 0; i < renderMap.territories.length; i++) {
+    const t = renderMap.territories[i];
     const playerId = i % 2 === 0 ? 'p1' : 'p2';
     dataMap[t.id] = {
       id: t.id,
@@ -62,12 +62,12 @@ function createStubGameData(parsedMap: ParsedMap): GameData {
   }
 
   // One unit on the first territory
-  if (parsedMap.territories.length > 0) {
+  if (renderMap.territories.length > 0) {
     dataMap['u1'] = {
       id: 'u1',
       type: 'unit',
       playerId: 'p1',
-      locationId: parsedMap.territories[0].id,
+      locationId: renderMap.territories[0].id,
       statuses: [],
     };
   }
@@ -92,8 +92,8 @@ function createStubGameData(parsedMap: ParsedMap): GameData {
   };
 }
 
-export function createStubProvider(parsedMap: ParsedMap): GameProvider {
-  const gameData = createStubGameData(parsedMap);
+export function createStubProvider(renderMap: RenderMap): GameProvider {
+  const gameData = createStubGameData(renderMap);
 
   return {
     async get() {

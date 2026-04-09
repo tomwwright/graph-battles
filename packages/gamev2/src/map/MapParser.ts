@@ -1,14 +1,14 @@
 import { ID } from '@battles/models';
 import { HexCoord, coordKey } from '../rendering/HexCoordinates';
 
-export type ParsedMap = {
+export type RenderMap = {
   territories: { id: ID; coord: HexCoord }[];
   grassCells: HexCoord[];
   edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[];
 };
 
 /**
- * Parses a text grid map into a ParsedMap.
+ * Parses a text grid map into a RenderMap representing the rendering view of the map.
  *
  * Format:
  * - `T` = territory
@@ -18,7 +18,7 @@ export type ParsedMap = {
  * Edges are derived from adjacency: two territories share an edge if they
  * are both adjacent to the same grass cell.
  */
-export function parseMap(mapString: string): ParsedMap {
+export function parseMap(mapString: string): RenderMap {
   const lines = mapString
     .trim()
     .split('\n')
@@ -37,7 +37,7 @@ export function parseMap(mapString: string): ParsedMap {
   }
 
   // Extract territories and grass cells
-  const territories: ParsedMap['territories'] = [];
+  const territories: RenderMap['territories'] = [];
   const grassCells: HexCoord[] = [];
   let nextTerritoryId = 1;
 
@@ -64,7 +64,7 @@ export function parseMap(mapString: string): ParsedMap {
   // between every pair of those territories.
   const grassSet = new Set(grassCells.map(coordKey));
   const visited = new Set<string>();
-  const edges: ParsedMap['edges'] = [];
+  const edges: RenderMap['edges'] = [];
   const edgeSet = new Set<string>();
 
   for (const grass of grassCells) {

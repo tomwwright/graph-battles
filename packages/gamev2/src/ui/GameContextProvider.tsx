@@ -5,7 +5,7 @@ import { UserActionDispatch } from '../state/types';
 import { GameOrchestrator } from '../orchestration/GameOrchestrator';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { GameProvider } from '../providers/GameProvider';
-import { ParsedMap } from '../map/MapParser';
+import { RenderMap } from '../map/MapParser';
 import { useBabylonJs } from './BabylonJsProvider';
 
 export const GameStoreContext = createContext<GameStore | null>(null);
@@ -13,7 +13,7 @@ export const UserActionDispatchContext = createContext<UserActionDispatch | null
 
 type GameContextProviderProps = {
   provider: GameProvider;
-  parsedMap: ParsedMap;
+  renderMap: RenderMap;
   children: ReactNode;
 };
 
@@ -22,7 +22,7 @@ type GameContextProviderProps = {
  * then provides GameStoreContext and UserActionDispatchContext to children.
  * Uses a ref to ensure only one orchestrator is created even under StrictMode double-mount.
  */
-export function GameContextProvider({ provider, parsedMap, children }: GameContextProviderProps) {
+export function GameContextProvider({ provider, renderMap, children }: GameContextProviderProps) {
   const { scene, camera } = useBabylonJs();
   const orchestratorRef = useRef<GameOrchestrator | null>(null);
   const [orchestrator, setOrchestrator] = useState<GameOrchestrator | null>(null);
@@ -52,12 +52,12 @@ export function GameContextProvider({ provider, parsedMap, children }: GameConte
     const orch = new GameOrchestrator(store, renderer, provider);
     orchestratorRef.current = orch;
 
-    orch.initialise(parsedMap).then(() => {
+    orch.initialise(renderMap).then(() => {
       setOrchestrator(orch);
     });
 
     // Don't dispose on cleanup — StrictMode remounts effects in dev
-  }, [scene, camera, provider, parsedMap]);
+  }, [scene, camera, provider, renderMap]);
 
   if (!orchestrator) {
     return null;

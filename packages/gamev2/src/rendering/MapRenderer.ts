@@ -1,10 +1,9 @@
 import { AbstractMesh, Scene, TransformNode, Vector3 } from '@babylonjs/core';
-import { ID } from '@battles/models';
+import { ID, Values, GameMap } from '@battles/models';
 import { HexCoord, hexToTileCoords } from './HexCoordinates';
 import { TerritoryComposition, TileType } from './TerritoryComposition';
 import { AssetLoader } from './AssetLoader';
 import { HexGridController } from './HexGridController';
-import { Values } from '@battles/models';
 
 type PlacedTile = {
   mesh: AbstractMesh;
@@ -33,8 +32,9 @@ export class MapRenderer {
    * Render the full map. Returns all placed meshes for shadow/mirror registration.
    */
   loadMap(
-    territories: { id: ID; coord: HexCoord; properties: Values.TerritoryProperty[] }[],
-    grassCells: HexCoord[]
+    territories: { id: ID; coord: HexCoord }[],
+    grassCells: HexCoord[],
+    gameMap: GameMap
   ): AbstractMesh[] {
     this.dispose();
 
@@ -51,7 +51,8 @@ export class MapRenderer {
 
     // Place territory cells
     for (const territory of territories) {
-      const tiles = TerritoryComposition.compose(territory.properties);
+      const properties = gameMap.territory(territory.id)?.data.properties ?? [];
+      const tiles = TerritoryComposition.compose(properties);
       const tileCoords = hexToTileCoords(territory.coord);
       const placed = this.placeTiles(tiles, tileCoords, `territory-${territory.id}`);
       this.territoryTiles.set(territory.id, placed);

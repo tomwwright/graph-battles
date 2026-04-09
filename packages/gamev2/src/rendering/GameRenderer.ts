@@ -1,7 +1,7 @@
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Scene } from '@babylonjs/core/scene';
-import { ID, Values } from '@battles/models';
+import { ID, Values, GameMap } from '@battles/models';
 import { HexCoord, hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
 import { SceneRenderer } from './SceneRenderer';
 import { CameraController } from './CameraController';
@@ -9,7 +9,7 @@ import { HexGridController } from './HexGridController';
 import { AssetLoader } from './AssetLoader';
 import { MapRenderer } from './MapRenderer';
 import { UnitRenderer } from './UnitRenderer';
-import { ParsedMap } from '../map/MapParser';
+import { RenderMap } from '../map/MapParser';
 import type { HoverInfo } from '../state/types';
 
 type TerritoryClickCallback = (territoryId: ID) => void;
@@ -23,12 +23,12 @@ type HoverCallback = (hover: HoverInfo) => void;
 export class GameRenderer {
   private readonly sceneRenderer: SceneRenderer;
   private readonly cameraController: CameraController;
-  readonly grid: HexGridController;
+  private readonly grid: HexGridController;
   private readonly assetLoader: AssetLoader;
   private readonly mapRenderer: MapRenderer;
   private readonly unitRenderer: UnitRenderer;
 
-  private parsedMap: ParsedMap | null = null;
+  private map: RenderMap | null = null;
   // territory ID → hex coord, for camera focus
   private territoryCoordMap = new Map<ID, HexCoord>();
 
@@ -44,38 +44,31 @@ export class GameRenderer {
 
   // --- Lifecycle ---
 
-  async initialise(
-    parsedMap: ParsedMap,
-    territoryProperties: Map<ID, Values.TerritoryProperty[]>
-  ): Promise<void> {
-    this.parsedMap = parsedMap;
+  async initialise(renderMap: RenderMap, gameMap: GameMap): Promise<void> {
+    this.map = renderMap;
 
     // Build territory coord lookup
     this.territoryCoordMap.clear();
-    for (const t of parsedMap.territories) {
+    for (const t of renderMap.territories) {
       this.territoryCoordMap.set(t.id, t.coord);
     }
 
-    this.unitRenderer.setParsedMap(parsedMap);
+    this.unitRenderer.initialise(renderMap, gameMap);
 
     // Load GLB assets
     await this.assetLoader.loadAll();
 
     // Size the tile grid
-    const rows = Math.max(...parsedMap.territories.map((t) => t.coord.x), ...parsedMap.grassCells.map((g) => g.x)) + 1;
-    const cols = Math.max(...parsedMap.territories.map((t) => t.coord.z), ...parsedMap.grassCells.map((g) => g.z)) + 1;
+    const rows = Math.max(...renderMap.territories.map((t) => t.coord.x), ...renderMap.grassCells.map((g) => g.x)) + 1;
+    const cols = Math.max(...renderMap.territories.map((t) => t.coord.z), ...renderMap.grassCells.map((g) => g.z)) + 1;
     const gridSize = tileGridSize(rows, cols);
     this.grid.setSize(gridSize);
 
     // Register territory and edge map for click/hover resolution
-    this.grid.setTerritoryMap(parsedMap.territories, parsedMap.edges);
+    this.grid.setTerritoryMap(renderMap.territories, renderMap.edges);
 
     // Place tile meshes
-    const territories = parsedMap.territories.map((t) => ({
-      ...t,
-      properties: territoryProperties.get(t.id) ?? [],
-    }));
-    const meshes = this.mapRenderer.loadMap(territories, parsedMap.grassCells);
+    const meshes = this.mapRenderer.loadMap(renderMap.territories, renderMap.grassCells, gameMap);
 
     // Register meshes for shadows and reflections
     this.sceneRenderer.registerMeshes(meshes);
@@ -120,14 +113,6 @@ export class GameRenderer {
     await this.cameraController.focusOn(worldPos);
   }
 
-  centerOnMap(): void {
-    this.cameraController.centerOnMap(this.grid.maxX, this.grid.maxZ);
-  }
-
-  rotate(direction: 'left' | 'right'): void {
-    this.cameraController.rotate(direction);
-  }
-
   // --- Map rendering ---
 
   updateTerritoryOverlay(territoryId: ID, color: Color3 | null, alpha: number = 0.12): void {
@@ -148,9 +133,9 @@ export class GameRenderer {
    * Highlight grass cells of the edge connecting two territories.
    * Used to visualise movement paths when units are selected.
    */
-  highlightConnectingGrass(territoryA: ID, territoryB: ID, color: Color3, alpha: number = 0.15): void {
-    if (!this.parsedMap) return;
-    const edge = this.parsedMap.edges.find(
+  highlightWaypoints(territoryA: ID, territoryB: ID, color: Color3, alpha: number = 0.15): void {
+    if (!this.map) return;
+    const edge = this.map.edges.find(
       (e) =>
         (e.territoryA === territoryA && e.territoryB === territoryB) ||
         (e.territoryA === territoryB && e.territoryB === territoryA)
@@ -189,7 +174,7 @@ export class GameRenderer {
     return this.unitRenderer;
   }
 
-  async animateUnitMove(unitId: ID, fromTerritoryId: ID, toTerritoryId: ID, signal?: AbortSignal): Promise<void> {
-    await this.unitRenderer.animateUnitMove(unitId, fromTerritoryId, toTerritoryId, signal);
+  async animateUnitMove(unitId: ID, fromLocationId: ID, toLocationId: ID, signal?: AbortSignal): Promise<void> {
+    await this.unitRenderer.animateUnitMove(unitId, fromLocationId, toLocationId, signal);
   }
 }

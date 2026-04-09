@@ -7,7 +7,7 @@ import { UnitMeshSyncer } from './UnitMeshSyncer';
 import { OverlaySyncer } from './OverlaySyncer';
 import { getValidDestinations } from './getValidDestinations';
 import { GameProvider } from '../providers/GameProvider';
-import type { ParsedMap } from '../map/MapParser';
+import type { RenderMap } from '../map/MapParser';
 
 /**
  * Central coordinator. Owns GameStore, GameRenderer, ResolutionRunner, GameProvider.
@@ -23,7 +23,7 @@ export class GameOrchestrator implements UserActionDispatch {
   private unitMeshSyncer: UnitMeshSyncer | null = null;
   private overlaySyncer: OverlaySyncer | null = null;
   private provider: GameProvider;
-  private parsedMap: ParsedMap | null = null;
+  private renderMap: RenderMap | null = null;
 
   // Resolution control
   private advanceResolve: ((value: 'next' | 'skip') => void) | null = null;
@@ -40,8 +40,8 @@ export class GameOrchestrator implements UserActionDispatch {
    * Initialise the orchestrator: load game from provider, set up renderer,
    * register input callbacks.
    */
-  async initialise(parsedMap: ParsedMap): Promise<void> {
-    this.parsedMap = parsedMap;
+  async initialise(renderMap: RenderMap): Promise<void> {
+    this.renderMap = renderMap;
 
     const game = await this.provider.get();
     const map = new GameMap(game.latestMap);
@@ -60,14 +60,7 @@ export class GameOrchestrator implements UserActionDispatch {
       visibilityMode: 'all',
     });
 
-    // Build territory properties map for renderer
-    const territoryProperties = new Map<ID, Values.TerritoryProperty[]>();
-    for (const t of parsedMap.territories) {
-      const territory = map.territory(t.id);
-      territoryProperties.set(t.id, territory?.data.properties ?? []);
-    }
-
-    await this.renderer.initialise(parsedMap, territoryProperties);
+    await this.renderer.initialise(renderMap, map);
 
     // Register input callbacks
     this.renderer.onTerritoryClick((territoryId) => this.handleTerritoryClick(territoryId));
