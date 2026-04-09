@@ -3,7 +3,7 @@ import { useGameStore } from '../state/useGameStore';
 import { useUserActionDispatch } from '../state/useUserActionDispatch';
 import { hexCenterTile } from '../rendering/HexCoordinates';
 
-const TERRITORY_ACTION_LABELS: Record<number, string> = {
+const TERRITORY_ACTION_LABELS: Record<string, string> = {
   [Values.TerritoryAction.CREATE_UNIT]: 'Create Unit',
   [Values.TerritoryAction.BUILD_SETTLEMENT]: 'Build Settlement',
   [Values.TerritoryAction.BUILD_FARM]: 'Build Farm',

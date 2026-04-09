@@ -33,7 +33,7 @@ export const StatusDefinitions: { [key: number]: StatusDefinition } = {
   [Values.Status.STARVE]: { status: Values.Status.STARVE, assetString: 'status-starve', text: 'Starving' },
 };
 
-export const TerritoryActionTexts: { [key: number]: string } = {
+export const TerritoryActionTexts: { [key: string]: string } = {
   [Values.TerritoryAction.CREATE_UNIT]: 'Create Unit',
   [Values.TerritoryAction.BUILD_SETTLEMENT]: 'Build Settlement',
   [Values.TerritoryAction.BUILD_FARM]: 'Build Farm',
