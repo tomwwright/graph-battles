@@ -2,6 +2,7 @@
   "references": [
     { "path": "packages/api" },
     { "path": "packages/game" },
+    { "path": "packages/gamev2" },
     { "path": "packages/models" },
     { "path": "packages/ops" },
   ],

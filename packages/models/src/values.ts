@@ -31,12 +31,12 @@ export enum Status {
 }
 
 export enum TerritoryAction {
-  CREATE_UNIT,
-  BUILD_SETTLEMENT,
-  BUILD_FARM,
-  BUILD_CITY,
-  BUILD_FORT,
-  BUILD_CASTLE,
+  CREATE_UNIT = "CREATE_UNIT",
+  BUILD_SETTLEMENT = "BUILD_SETTLEMENT",
+  BUILD_FARM = "BUILD_FARM",
+  BUILD_CITY = "BUILD_CITY",
+  BUILD_FORT = "BUILD_FORT",
+  BUILD_CASTLE = "BUILD_CASTLE",
 }
 
 export enum TerritoryProperty {
@@ -106,7 +106,7 @@ export const TerritoryTypeCheckOrder: TerritoryType[] = [
 ];
 
 export function propsToActions(props: TerritoryProperty[]): TerritoryAction[] {
-  let actions = [];
+  const actions: TerritoryAction[] = [];
   if (props.length == 0) {
     actions.push(TerritoryAction.BUILD_SETTLEMENT);
   } else {
@@ -141,7 +141,7 @@ export type TerritoryActionDefinition = {
   cost: { food: number; gold: number };
 };
 
-export const TerritoryActionDefinitions: { [key: number]: TerritoryActionDefinition } = {
+export const TerritoryActionDefinitions: { [key: string]: TerritoryActionDefinition } = {
   [TerritoryAction.CREATE_UNIT]: {
     action: TerritoryAction.CREATE_UNIT,
     cost: { food: 3, gold: 0 },
