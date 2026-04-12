@@ -1,12 +1,13 @@
-import * as cdk from "@aws-cdk/core";
-import * as apigateway from "@aws-cdk/aws-apigatewayv2";
-import * as apigatewayIntegrations from "@aws-cdk/aws-apigatewayv2-integrations";
-import * as dynamodb from "@aws-cdk/aws-dynamodb";
-import * as lambda from "@aws-cdk/aws-lambda";
+import * as cdk from "aws-cdk-lib";
+import * as apigateway from "aws-cdk-lib/aws-apigatewayv2";
+import * as apigatewayIntegrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import { Construct } from "constructs";
 import * as path from "path";
 
 export class ApiStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const table = new dynamodb.Table(this, "Table", {

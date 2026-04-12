@@ -1,16 +1,18 @@
-import * as cdk from "@aws-cdk/core";
-import * as acm from "@aws-cdk/aws-certificatemanager";
-import * as cloudfront from "@aws-cdk/aws-cloudfront";
-import * as route53 from "@aws-cdk/aws-route53";
-import * as route53targets from "@aws-cdk/aws-route53-targets";
-import * as s3 from "@aws-cdk/aws-s3";
-import * as s3deployment from "@aws-cdk/aws-s3-deployment";
+import * as cdk from "aws-cdk-lib";
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
+import * as route53 from "aws-cdk-lib/aws-route53";
+import * as route53targets from "aws-cdk-lib/aws-route53-targets";
+import * as s3 from "aws-cdk-lib/aws-s3";
+import * as s3deployment from "aws-cdk-lib/aws-s3-deployment";
+import { Construct } from "constructs";
 
 const DEPLOYMENT_ARTIFACT_GAME = "../game/package.zip";
 const DEPLOYMENT_ARTIFACT_GAME_V2 = "../gamev2/package.zip";
 
 export class AppStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const domain = "tomwwright.com";
@@ -18,34 +20,22 @@ export class AppStack extends cdk.Stack {
 
     const bucket = new s3.Bucket(this, "Bucket");
 
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, "OIA", {
-      comment: "Setup read access from CloudFront to the bucket",
-    });
-    bucket.grantRead(originAccessIdentity);
-
     const zone = route53.HostedZone.fromLookup(this, "LookupHostedZone", {
       domainName: domain,
     });
 
-    const certificate = new acm.DnsValidatedCertificate(this, "Certificate", {
+    const certificate = new acm.Certificate(this, "Certificate", {
       domainName: hostname,
-      hostedZone: zone,
+      validation: acm.CertificateValidation.fromDns(zone),
     });
 
-    const distribution = new cloudfront.CloudFrontWebDistribution(this, "Distribution", {
+    const distribution = new cloudfront.Distribution(this, "Distribution", {
       defaultRootObject: "lobby.html",
-      originConfigs: [
-        {
-          s3OriginSource: {
-            s3BucketSource: bucket,
-            originAccessIdentity: originAccessIdentity,
-          },
-          behaviors: [{ isDefaultBehavior: true }],
-        },
-      ],
-      viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
-        aliases: [hostname],
-      }),
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
+      },
+      domainNames: [hostname],
+      certificate,
     });
 
     new route53.ARecord(this, "AliasRecord", {

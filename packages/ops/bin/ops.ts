@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register";
-import * as cdk from "@aws-cdk/core";
+import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
 
 import { ApiStack } from "../lib/api-stack";
 import { AppStack } from "../lib/app-stack";
@@ -15,7 +16,7 @@ const env = {
 const app = new cdk.App();
 
 export class ApplicationStage extends cdk.Stage {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StageProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StageProps) {
     super(scope, id, props);
 
     new ApiStack(this, "Api", {

@@ -1,10 +1,12 @@
-import * as cdk from "@aws-cdk/core";
-import * as iam from "@aws-cdk/aws-iam";
-import * as pipelines from "@aws-cdk/pipelines";
-import * as ssm from "@aws-cdk/aws-ssm";
+import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as pipelines from "aws-cdk-lib/pipelines";
+import * as ssm from "aws-cdk-lib/aws-ssm";
+import { Construct } from "constructs";
+
 export class PipelineStack extends cdk.Stack {
   public readonly pipeline: pipelines.CodePipeline;
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const connectionArnParameter = ssm.StringParameter.fromStringParameterName(
