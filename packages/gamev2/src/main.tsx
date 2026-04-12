@@ -1,51 +1,18 @@
-import { StrictMode, useEffect, useRef, useState } from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BabylonJsProvider } from './ui/BabylonJsProvider';
 import { GameContextProvider } from './ui/GameContextProvider';
 import { CursorProvider } from './ui/CursorProvider';
 import { App } from './ui/App';
-import { parseMap, RenderMap } from './map/MapParser';
-import { createStubProvider } from './providers/StubGameProvider';
-import { GameProvider } from './providers/GameProvider';
-
-const MAP_URL = '/maps/small-2p.txt';
-
-type LoadedMap = {
-  renderMap: RenderMap;
-  provider: GameProvider;
-};
-
-function MapLoader({ children }: { children: (loaded: LoadedMap) => React.ReactNode }) {
-  const loadedRef = useRef<LoadedMap | null>(null);
-  const [loaded, setLoaded] = useState<LoadedMap | null>(null);
-
-  useEffect(() => {
-    if (loadedRef.current) {
-      setLoaded(loadedRef.current);
-      return;
-    }
-
-    fetch(MAP_URL)
-      .then((r) => r.text())
-      .then((text) => {
-        const renderMap = parseMap(text);
-        const provider = createStubProvider(renderMap);
-        loadedRef.current = { renderMap, provider };
-        setLoaded(loadedRef.current);
-      });
-  }, []);
-
-  if (!loaded) return null;
-  return <>{children(loaded)}</>;
-}
+import { MapLoader } from './ui/MapLoader';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MapLoader>
-      {({ renderMap, provider }) => (
+      {({ assetLoader, renderMap, provider }) => (
         <CursorProvider>
           <BabylonJsProvider>
-            <GameContextProvider provider={provider} renderMap={renderMap}>
+            <GameContextProvider assetLoader={assetLoader} provider={provider} renderMap={renderMap}>
               <App />
             </GameContextProvider>
           </BabylonJsProvider>

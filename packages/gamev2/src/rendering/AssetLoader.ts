@@ -1,4 +1,4 @@
-import { AbstractMesh, Scene, SceneLoader, Vector3 } from '@babylonjs/core';
+import { AbstractMesh, SceneLoader, Tools, Vector3 } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import { TileType } from './TerritoryComposition';
 
@@ -19,13 +19,17 @@ const TILE_TYPE_FILES: Partial<Record<TileType, string>> = {
 export class AssetLoader {
   private templates = new Map<TileType, AbstractMesh>();
 
-  constructor(private readonly scene: Scene) { }
+  constructor(private readonly baseUrl: string) { }
+
+  async load(filename: string): Promise<string> {
+    return Tools.LoadFileAsync(this.baseUrl + filename, false)
+  }
 
   async loadAll(): Promise<void> {
     for (const [tileType, filename] of Object.entries(TILE_TYPE_FILES)) {
       if (this.templates.has(tileType as TileType)) continue;
 
-      const imported = await SceneLoader.ImportMeshAsync('', filename, undefined, undefined, undefined, '.glb');
+      const imported = await SceneLoader.ImportMeshAsync('', this.baseUrl + filename, undefined, undefined, undefined, '.glb');
       const mesh = imported.meshes.find((m) => m.name === '__root__');
       if (!mesh) throw new Error(`No __root__ in ${filename}`);
 

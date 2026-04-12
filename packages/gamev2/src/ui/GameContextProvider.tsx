@@ -7,6 +7,7 @@ import { GameRenderer } from '../rendering/GameRenderer';
 import { GameProvider } from '../providers/GameProvider';
 import { RenderMap } from '../map/MapParser';
 import { useBabylonJs } from './BabylonJsProvider';
+import { AssetLoader } from '../rendering';
 
 export const GameStoreContext = createContext<GameStore | null>(null);
 export const UserActionDispatchContext = createContext<UserActionDispatch | null>(null);
@@ -14,6 +15,7 @@ export const UserActionDispatchContext = createContext<UserActionDispatch | null
 type GameContextProviderProps = {
   provider: GameProvider;
   renderMap: RenderMap;
+  assetLoader: AssetLoader;
   children: ReactNode;
 };
 
@@ -22,7 +24,7 @@ type GameContextProviderProps = {
  * then provides GameStoreContext and UserActionDispatchContext to children.
  * Uses a ref to ensure only one orchestrator is created even under StrictMode double-mount.
  */
-export function GameContextProvider({ provider, renderMap, children }: GameContextProviderProps) {
+export function GameContextProvider({ provider, renderMap, assetLoader, children }: GameContextProviderProps) {
   const { scene, camera } = useBabylonJs();
   const orchestratorRef = useRef<GameOrchestrator | null>(null);
   const [orchestrator, setOrchestrator] = useState<GameOrchestrator | null>(null);
@@ -33,7 +35,7 @@ export function GameContextProvider({ provider, renderMap, children }: GameConte
       return;
     }
 
-    const renderer = new GameRenderer(scene, camera as ArcRotateCamera);
+    const renderer = new GameRenderer(scene, camera as ArcRotateCamera, assetLoader);
 
     const store = new GameStore({
       game: null!,
