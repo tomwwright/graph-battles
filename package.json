@@ -10,7 +10,12 @@
   "scripts": {
     "build": "tsc --build --verbose"
   },
-  "workspaces": [
-    "packages/*"
-  ]
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "@battles/game/**"
+    ]
+  }
 }

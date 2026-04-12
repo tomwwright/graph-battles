@@ -18,9 +18,9 @@ module.exports = {
     modules: ['node_modules', path.resolve(__dirname, 'build/es5')],
 
     alias: {
-      pixi: path.join(__dirname, '../../node_modules/phaser-ce/build/custom/pixi.js'),
-      'phaser-ce': path.join(__dirname, '../../node_modules/phaser-ce/build/custom/phaser-split.js'),
-      p2: path.join(__dirname, '../../node_modules/phaser-ce/build/custom/p2.js'),
+      pixi: path.join(__dirname, 'node_modules/phaser-ce/build/custom/pixi.js'),
+      'phaser-ce': path.join(__dirname, 'node_modules/phaser-ce/build/custom/phaser-split.js'),
+      p2: path.join(__dirname, 'node_modules/phaser-ce/build/custom/p2.js'),
     },
   },
 
