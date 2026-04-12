@@ -4,11 +4,13 @@ import { Engine } from '@babylonjs/core/Engines/engine';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Scene } from '@babylonjs/core/scene';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { InspectorToken, ShowInspector } from "@babylonjs/inspector";
 
 type BabylonJsContextValue = {
   engine: Engine;
   scene: Scene;
   camera: ArcRotateCamera;
+  inspectorToggle: SceneInspectorToggle
 };
 
 const BabylonJsContext = createContext<BabylonJsContextValue | null>(null);
@@ -39,7 +41,33 @@ function initialiseBabylonJs(canvas: HTMLCanvasElement): BabylonJsContextValue {
 
   window.addEventListener('resize', () => engine.resize());
 
-  return { engine, scene, camera };
+
+  const inspectorToggle = new SceneInspectorToggle(scene);
+  window.addEventListener("keydown", (ev) => {
+    // Shift+Ctrl+Alt+I
+    if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
+      inspectorToggle.toggle();
+    }
+  });
+
+  return { engine, scene, camera, inspectorToggle };
+}
+
+class SceneInspectorToggle {
+  private inspectorToken?: InspectorToken;
+
+  constructor(private readonly scene: Scene) { }
+
+  toggle() {
+    if (this.inspectorToken !== undefined) {
+      console.info("Hiding BabylonJS inspector...")
+      this.inspectorToken.dispose();
+      this.inspectorToken = undefined;
+    } else {
+      console.info("Showing BabylonJS inspector...")
+      this.inspectorToken = ShowInspector(this.scene);
+    }
+  }
 }
 
 /**
@@ -67,7 +95,7 @@ export function BabylonJsProvider({ children }: BabylonJsProviderProps) {
     <>
       <canvas
         ref={canvasRef}
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        style={{ width: '100%', height: '100%', position: 'absolute' }}
       />
       {context && (
         <BabylonJsContext.Provider value={context}>

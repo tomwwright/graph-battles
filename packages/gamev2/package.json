@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rm -rf node_modules dist"
   },
   "dependencies": {
     "@babylonjs/core": "^9.0.0",
@@ -16,6 +17,15 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@babylonjs/addons": "^9.2.0",
+    "@babylonjs/gui": "^9.2.0",
+    "@babylonjs/gui-editor": "^9.2.0",
+    "@babylonjs/inspector": "^9.2.0",
+    "@babylonjs/materials": "^9.2.0",
+    "@babylonjs/serializers": "^9.2.0",
+    "@fluentui-contrib/react-virtualizer": "^1.0.0",
+    "@fluentui/react-components": "^9.73.7",
+    "@fluentui/react-icons": "^2.0.323",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",

@@ -41,7 +41,7 @@ export type StoreState = {
   turn: number;
 
   // UI phase
-  turnPhase: 'planning' | 'ready' | 'replaying' | 'victory';
+  turnPhase: 'planning' | 'ready' | 'replaying' | 'victory' | 'next-player';
 
   // Selection
   selectedUnitIds: ID[];
@@ -62,4 +62,5 @@ export type UserActionDispatch = {
   onTerritoryAction(territoryId: ID, action: Values.TerritoryAction): void;
   onCancelTerritoryAction(territoryId: ID): void;
   onCancelMove(unitIds: ID[]): void;
+  onConfirmNextPlayer(): void;
 };
