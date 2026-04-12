@@ -3,6 +3,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as pipelines from "aws-cdk-lib/pipelines";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
+import { ComputeType } from "aws-cdk-lib/aws-codebuild";
 
 export class PipelineStack extends cdk.Stack {
   public readonly pipeline: pipelines.CodePipeline;
@@ -49,6 +50,9 @@ export class PipelineStack extends cdk.Stack {
         primaryOutputDirectory: "packages/ops/cdk.out",
       }),
       synthCodeBuildDefaults: {
+        buildEnvironment: {
+          computeType: ComputeType.MEDIUM,
+        },
         rolePolicy: rolePolicyStatements,
       },
     });
