@@ -1,0 +1,95 @@
+.panel {
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  padding: 8px;
+  color: white;
+  font-family: monospace;
+  font-size: 13px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.heading {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.small {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.colourSwatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 6px 0;
+}
+
+.button {
+  pointer-events: auto;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.buttonPrimary {
+  composes: button;
+  background-color: rgba(0, 128, 0, 0.6);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background-color: rgba(0, 128, 0, 0.8);
+}
+
+.buttonDanger {
+  composes: button;
+  background-color: rgba(180, 60, 60, 0.6);
+}
+
+.buttonDanger:hover:not(:disabled) {
+  background-color: rgba(180, 60, 60, 0.8);
+}
+
+.buttonActive {
+  composes: button;
+  background-color: rgba(80, 120, 200, 0.6);
+  font-weight: bold;
+}

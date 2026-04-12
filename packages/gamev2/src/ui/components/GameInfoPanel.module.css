@@ -1,0 +1,98 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.turnRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.turnButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+
+.turnButton {
+  border: none;
+  background: rgba(80, 120, 200, 0.5);
+  color: white;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: inherit;
+  pointer-events: auto;
+  min-width: 28px;
+}
+
+.turnButton:hover:not(:disabled) {
+  background: rgba(80, 120, 200, 0.75);
+}
+
+.turnButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.turnButtonLatest {
+  composes: turnButton;
+  background: rgba(0, 128, 0, 0.6);
+}
+
+.turnButtonLatest:hover:not(:disabled) {
+  background: rgba(0, 128, 0, 0.8);
+}
+
+.phaseBadge {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.phasePlanning {
+  composes: phaseBadge;
+  background: rgba(0, 128, 0, 0.5);
+}
+
+.phaseReplaying {
+  composes: phaseBadge;
+  background: rgba(200, 150, 0, 0.5);
+}
+
+.phaseNextPlayer {
+  composes: phaseBadge;
+  background: rgba(80, 120, 200, 0.5);
+}
+
+.phaseVictory {
+  composes: phaseBadge;
+  background: rgba(255, 215, 0, 0.5);
+  color: #ffd700;
+}
+
+.playerRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.playerRowActive {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.activeBadge {
+  font-size: 10px;
+  background: rgba(0, 128, 0, 0.5);
+  padding: 1px 4px;
+  border-radius: 2px;
+}

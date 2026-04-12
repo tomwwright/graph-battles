@@ -67,7 +67,7 @@ export function BabylonJsProvider({ children }: BabylonJsProviderProps) {
     <>
       <canvas
         ref={canvasRef}
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        style={{ width: '100%', height: '100%', position: 'absolute' }}
       />
       {context && (
         <BabylonJsContext.Provider value={context}>

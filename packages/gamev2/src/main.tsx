@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BabylonJsProvider } from './ui/BabylonJsProvider';
 import { GameContextProvider } from './ui/GameContextProvider';
+import { CursorProvider } from './ui/CursorProvider';
 import { App } from './ui/App';
 import { parseMap, RenderMap } from './map/MapParser';
 import { createStubProvider } from './providers/StubGameProvider';
@@ -42,11 +43,13 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MapLoader>
       {({ renderMap, provider }) => (
-        <BabylonJsProvider>
-          <GameContextProvider provider={provider} renderMap={renderMap}>
-            <App />
-          </GameContextProvider>
-        </BabylonJsProvider>
+        <CursorProvider>
+          <BabylonJsProvider>
+            <GameContextProvider provider={provider} renderMap={renderMap}>
+              <App />
+            </GameContextProvider>
+          </BabylonJsProvider>
+        </CursorProvider>
       )}
     </MapLoader>
   </StrictMode>

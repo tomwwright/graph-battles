@@ -52,7 +52,7 @@ export class GameOrchestrator implements UserActionDispatch {
       mapRevision: 0,
       currentPlayerId: map.playerIds[0],
       turn: game.turn,
-      turnPhase: 'planning',
+      turnPhase: 'next-player',
       selectedUnitIds: [],
       selectedTerritoryId: null,
       hover: null,
@@ -93,9 +93,10 @@ export class GameOrchestrator implements UserActionDispatch {
     const currentIdx = playerIds.indexOf(currentPlayerId);
 
     if (currentIdx < playerIds.length - 1) {
-      // Next player's turn to plan
+      // Show "next player" popup instead of immediately switching
       const nextPlayerId = playerIds[currentIdx + 1];
       this.store.setState({
+        turnPhase: 'next-player',
         currentPlayerId: nextPlayerId,
         selectedUnitIds: [],
         selectedTerritoryId: null,
@@ -173,6 +174,12 @@ export class GameOrchestrator implements UserActionDispatch {
     } catch (e) {
       console.warn('[GameOrchestrator] Cancel territory action failed:', e);
     }
+  }
+
+  onConfirmNextPlayer(): void {
+    const { turnPhase } = this.store.getState();
+    if (turnPhase !== 'next-player') return;
+    this.store.setState({ turnPhase: 'planning' });
   }
 
   onCancelMove(unitIds: ID[]): void {
@@ -329,13 +336,13 @@ export class GameOrchestrator implements UserActionDispatch {
       return;
     }
 
-    // Advance to next turn — first player starts planning
+    // Advance to next turn — first player gets "next player" popup
     const nextMap = new GameMap(game.latestMap);
     this.store.setState({
       game,
       map: nextMap,
       turn: game.turn,
-      turnPhase: 'planning',
+      turnPhase: 'next-player',
       currentPlayerId: nextMap.playerIds[0],
       selectedUnitIds: [],
       selectedTerritoryId: null,
