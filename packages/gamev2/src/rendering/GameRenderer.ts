@@ -32,11 +32,11 @@ export class GameRenderer {
   // territory ID → hex coord, for camera focus
   private territoryCoordMap = new Map<ID, HexCoord>();
 
-  constructor(scene: Scene, camera: ArcRotateCamera) {
+  constructor(scene: Scene, camera: ArcRotateCamera, assetLoader: AssetLoader) {
     this.sceneRenderer = new SceneRenderer(scene, camera);
     this.cameraController = new CameraController(camera);
     this.grid = new HexGridController(scene);
-    this.assetLoader = new AssetLoader(scene);
+    this.assetLoader = assetLoader;
     this.mapRenderer = new MapRenderer(scene, this.grid, this.assetLoader);
     this.unitRenderer = new UnitRenderer(scene, this.grid, this.territoryCoordMap);
     this.unitRenderer.onMeshRegistration((mesh) => this.sceneRenderer.registerMeshes([mesh]));
