@@ -1,4 +1,4 @@
-FROM node:14-alpine as build
+FROM node:24-alpine as build
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN yarn workspace @battles/api build
 
 # AWS Lambda container image
 
-FROM public.ecr.aws/lambda/nodejs:14
+FROM public.ecr.aws/lambda/nodejs:24
 
 COPY --from=build /app/packages/api/dist ${LAMBDA_TASK_ROOT}/packages/api/dist
 COPY --from=build /app/packages/api/package.json ${LAMBDA_TASK_ROOT}/packages/api/package.json
