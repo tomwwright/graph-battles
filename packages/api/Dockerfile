@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/nodejs:14
+FROM public.ecr.aws/lambda/nodejs:24
 
 RUN npm install -g yarn
 COPY package.json yarn.lock ${LAMBDA_TASK_ROOT}
