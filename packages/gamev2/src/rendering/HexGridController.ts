@@ -1,5 +1,6 @@
 import {
   ActionManager,
+  BoundingBox,
   Color3,
   ExecuteCodeAction,
   Mesh,
@@ -9,7 +10,7 @@ import {
   Vector3,
 } from '@babylonjs/core';
 import { ID } from '@battles/models';
-import { HexCoord, OffsetCoord, hexToTileCoords, tileToHex, coordKey } from './HexCoordinates';
+import { HexCoord, OffsetCoord, hexToTileCoords, tileToHex, coordKey, hexCenterTile } from './HexCoordinates';
 import type { HoverInfo } from '../state/types';
 
 type TileOverlay = { color: Color3; alpha: number };
@@ -48,7 +49,7 @@ export class HexGridController {
   // Maps from grass hex coord key → edge info (connected territories)
   private edgeLookup = new Map<string, { territoryA: ID; territoryB: ID }>();
 
-  constructor(private readonly scene: Scene) {}
+  constructor(private readonly scene: Scene) { }
 
   onTerritoryClick(callback: TerritoryClickCallback): void {
     this.clickCallback = callback;
@@ -90,6 +91,41 @@ export class HexGridController {
     if (size > 0) {
       this.createGrid();
     }
+  }
+
+  getBounds(): BoundingBox {
+
+    var min = new Vector3(1000, 1000, 1000);
+    var max = new Vector3(-1000, -1000, -1000);
+
+    for (const coords of this.territoryCoords.values()) {
+      const tile = hexCenterTile(coords);
+      const position = this.getWorldPosition(tile);
+      console.log(coords, 'to', position);
+      if (position.x < min.x) {
+        min.x = position.x;
+      }
+      if (position.y < min.y) {
+        min.y = position.y;
+      }
+      if (position.z < min.z) {
+        min.z = position.z;
+      }
+      if (position.x > max.x) {
+        max.x = position.x;
+      }
+      if (position.y > max.y) {
+        max.y = position.y;
+      }
+      if (position.z > max.z) {
+        max.z = position.z;
+      }
+    }
+
+    return new BoundingBox(
+      min,
+      max
+    )
   }
 
   getWorldPosition(coord: OffsetCoord): Vector3 {

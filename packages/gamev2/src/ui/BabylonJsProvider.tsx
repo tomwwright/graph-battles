@@ -32,7 +32,7 @@ function initialiseBabylonJs(canvas: HTMLCanvasElement): BabylonJsContextValue {
   const scene = new Scene(engine);
   scene.actionManager = new ActionManager(scene);
 
-  const camera = new ArcRotateCamera('camera', Math.PI / 2, Math.PI / 2, 2, new Vector3(0, 0.75, 0), scene);
+  const camera = new ArcRotateCamera('camera', 0, 0, 0, Vector3.Zero(), scene);
   camera.attachControl(canvas, true);
 
   engine.runRenderLoop(() => {

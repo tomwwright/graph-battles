@@ -18,7 +18,7 @@ export class CameraController {
 
   constructor(private readonly camera: ArcRotateCamera) {
     const maxCameraDistance = 25;
-    const cameraAngleDegrees = (Math.PI / 180) * 45;
+    const cameraAngleDegrees = (Math.PI / 180) * 40;
 
     this.maxX = 10;
     this.maxZ = 10;
@@ -52,8 +52,8 @@ export class CameraController {
     this.maxZ = maxZ;
   }
 
-  centerOnMap(maxX: number, maxZ: number): void {
-    this.camera.target = new Vector3(maxX * 0.66, this.camera.target.y, maxZ / 2);
+  centerCamera(): void {
+    this.camera.target = new Vector3(this.maxX * 0.66, this.camera.target.y, this.maxZ / 2);
     this.camera.alpha = 0;
   }
 

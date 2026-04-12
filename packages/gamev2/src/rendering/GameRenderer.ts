@@ -78,9 +78,14 @@ export class GameRenderer {
       (Math.max(this.grid.maxX, this.grid.maxZ) + this.cameraController.maxVisibleSurroundingDistance) * 2;
     this.sceneRenderer.resize(sceneSize, this.grid.maxX / 2, this.grid.maxZ / 2);
 
-    // Set camera bounds and center
-    this.cameraController.setBounds(this.grid.maxX, this.grid.maxZ);
-    this.cameraController.centerOnMap(this.grid.maxX, this.grid.maxZ);
+    // Set camera bounds and center based on territory bounds
+    const bounds = this.grid.getBounds();
+
+    console.log('Bounds', bounds);
+    console.log('Grid', this.grid.maxX, this.grid.maxZ);
+
+    this.cameraController.setBounds(bounds.maximum.x, bounds.maximum.z);
+    this.cameraController.centerCamera();
   }
 
   dispose(): void {
