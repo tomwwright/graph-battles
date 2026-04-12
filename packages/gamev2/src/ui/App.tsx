@@ -5,6 +5,7 @@ import { ResolutionPanel } from './components/ResolutionPanel';
 import { NextPlayerPopup } from './components/NextPlayerPopup';
 import { VictoryPopup } from './components/VictoryPopup';
 import { Tooltip } from './components/Tooltip';
+import { FpsCounter } from './components/FpsCounter';
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
         </Sidebar>
       </SidebarContainer>
       <Footer>
+        <FpsCounter />
       </Footer>
       <NextPlayerPopup />
       <VictoryPopup />
