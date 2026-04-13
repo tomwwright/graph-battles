@@ -26,4 +26,4 @@ COPY --from=build /app/packages/models/package.json ${LAMBDA_TASK_ROOT}/packages
 COPY --from=build /app/node_modules ${LAMBDA_TASK_ROOT}/node_modules
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "packages/api/dist/tsc/main.handler" ]  
+CMD [ "packages/api/dist/tsc/main.handler" ]
