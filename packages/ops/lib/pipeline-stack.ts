@@ -3,7 +3,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as pipelines from "aws-cdk-lib/pipelines";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
-import { ComputeType, LinuxArmBuildImage } from "aws-cdk-lib/aws-codebuild";
+import { BuildSpec, ComputeType, LinuxArmBuildImage } from "aws-cdk-lib/aws-codebuild";
 
 export class PipelineStack extends cdk.Stack {
   public readonly pipeline: pipelines.CodePipeline;
@@ -56,6 +56,15 @@ export class PipelineStack extends cdk.Stack {
           buildImage: LinuxArmBuildImage.AMAZON_LINUX_2023_STANDARD_3_0,
           computeType: ComputeType.LARGE,
         },
+        partialBuildSpec: BuildSpec.fromObject({
+          phases: {
+            install: {
+              "runtime-versions": {
+                "nodejs": "24.x"
+              }
+            }
+          }
+        }),
         rolePolicy: rolePolicyStatements,
       },
     });
