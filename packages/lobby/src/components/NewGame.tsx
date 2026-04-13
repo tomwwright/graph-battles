@@ -4,10 +4,10 @@ import { NewPlayer } from './NewPlayer';
 import { PlayerIdentity } from './PlayerIdentity';
 import { PlayerNameCta } from './PlayerNameCta';
 import { useSavedGames } from '../hooks/useSavedGames';
-import { usePlayerName } from '../hooks/usePlayerName';
 import * as api from '../services/api';
 import type { ClientVersion, GameMode, VersionedViewData } from '../types';
 import styles from './NewGame.module.css';
+import { useLobbySettings } from '../providers/LobbySettingsProvider';
 
 type NewGameProps = {
   gameType: GameMode;
@@ -42,7 +42,7 @@ function randId(length: number): string {
 
 export function NewGame({ gameType, clientVersion }: NewGameProps) {
   const { save } = useSavedGames();
-  const [playerName, setPlayerName] = usePlayerName();
+  const { playerName, setPlayerName } = useLobbySettings();
 
   // Other players (index 1+). Player 0 is always the identity player.
   const [otherPlayers, setOtherPlayers] = useState<NewPlayerData[]>([

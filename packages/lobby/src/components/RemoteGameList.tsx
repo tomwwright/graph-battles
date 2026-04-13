@@ -1,8 +1,8 @@
 import { RemoteGameCard } from './RemoteGameCard';
 import { useRemoteGames } from '../hooks/useRemoteGames';
-import { usePlayerName } from '../hooks/usePlayerName';
 import type { ClientVersion } from '../types';
 import { getGameUrl } from '../util';
+import { useLobbySettings } from '../providers/LobbySettingsProvider';
 
 type RemoteGameListProps = {
   clientVersion: ClientVersion;
@@ -10,7 +10,7 @@ type RemoteGameListProps = {
 
 export function RemoteGameList({ clientVersion }: RemoteGameListProps) {
   const { games, loading, error } = useRemoteGames();
-  const [playerName] = usePlayerName();
+  const { playerName } = useLobbySettings();
 
   const gamesWithUser = games.filter((game) =>
     game.leaderboard.some((leader) => leader.name === playerName)

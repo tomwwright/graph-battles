@@ -3,15 +3,11 @@ import { SavedGameList } from './components/SavedGameList';
 import { RemoteGameList } from './components/RemoteGameList';
 import { ToggleSwitch } from './components/ToggleSwitch';
 import { SettingsPanel } from './components/SettingsPanel';
-import { useGameMode } from './hooks/useGameMode';
-import { usePlayerName } from './hooks/usePlayerName';
-import { useClientVersion } from './hooks/useClientVersion';
 import styles from './App.module.css';
+import { useLobbySettings } from './providers/LobbySettingsProvider';
 
 export function App() {
-  const [gameMode, setGameMode] = useGameMode();
-  const [playerName] = usePlayerName();
-  const [clientVersion, setClientVersion] = useClientVersion();
+  const { clientVersion, gameMode, playerName, setClientVersion, setGameMode } = useLobbySettings();
 
   return (
     <div className={styles.wrapper}>
