@@ -1,0 +1,33 @@
+.container {
+  display: flex;
+  gap: 24px;
+}
+
+.players {
+  flex: 1;
+}
+
+.settings {
+  flex: 1;
+}
+
+.sliderGroup {
+  margin-bottom: 15px;
+}
+
+.sliderGroup label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.sliderGroup input[type='range'] {
+  width: 100%;
+}
+
+.createRow {
+  margin-top: 24px;
+}
+
+.validationError {
+  margin-left: 10px;
+}

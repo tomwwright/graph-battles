@@ -1,0 +1,27 @@
+.displayName {
+  margin: 0 5px;
+  font-weight: 600;
+  font-size: inherit;
+  line-height: 32px;
+}
+
+.placeholderName {
+  margin: 0 5px;
+  font-weight: 200;
+  font-size: inherit;
+  line-height: 32px;
+  color: #888;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+  color: #999;
+}
+
+.editButton:hover {
+  color: #333;
+}

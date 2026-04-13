@@ -45,6 +45,8 @@ export class PipelineStack extends cdk.Stack {
           "yarn workspace @battles/game package",
           "yarn workspace @battles/gamev2 build",
           "yarn workspace @battles/gamev2 package",
+          "yarn workspace @battles/lobby build",
+          "yarn workspace @battles/lobby package",
           "yarn workspace @battles/ops cdk synth",
         ],
         primaryOutputDirectory: "packages/ops/cdk.out",

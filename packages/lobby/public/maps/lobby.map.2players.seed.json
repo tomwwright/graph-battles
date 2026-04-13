@@ -1,0 +1,96 @@
+[
+  {
+    "type": "player",
+    "id": "#PR"
+  },
+  {
+    "type": "player",
+    "id": "#PB"
+  },
+  {
+    "type": "territory",
+    "id": "#T1",
+    "playerId": "#PR",
+    "numUnits": 3,
+    "properties": [
+      0,
+      3
+    ]
+  },
+  {
+    "type": "territory",
+    "id": "#T2"
+  },
+  {
+    "type": "territory",
+    "id": "#T3"
+  },
+  {
+    "type": "territory",
+    "id": "#T4"
+  },
+  {
+    "type": "territory",
+    "id": "#T5"
+  },
+  {
+    "type": "territory",
+    "id": "#T6",
+    "playerId": "#PB",
+    "numUnits": 3,
+    "properties": [
+      0,
+      3
+    ]
+  },
+  {
+    "type": "territory",
+    "id": "#T7",
+    "numUnits": 1,
+    "properties": [
+      0,
+      2,
+      3
+    ]
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T1",
+    "territoryBId": "#T2"
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T1",
+    "territoryBId": "#T4"
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T2",
+    "territoryBId": "#T3"
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T2",
+    "territoryBId": "#T5"
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T3",
+    "territoryBId": "#T6"
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T4",
+    "territoryBId": "#T5"
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T5",
+    "territoryBId": "#T6"
+  },
+  {
+    "type": "edge",
+    "territoryAId": "#T5",
+    "territoryBId": "#T7"
+  }
+]
