@@ -2,6 +2,7 @@ import { SavedGameCard } from './SavedGameCard';
 import { useSavedGames } from '../hooks/useSavedGames';
 import type { ClientVersion } from '../types';
 import { getGameUrl } from '../util';
+import { useLobbySettings } from '../providers/LobbySettingsProvider';
 
 type SavedGameListProps = {
   clientVersion: ClientVersion;
@@ -9,10 +10,19 @@ type SavedGameListProps = {
 
 export function SavedGameList({ clientVersion }: SavedGameListProps) {
   const { games, deleteGame } = useSavedGames();
+  const { playerName } = useLobbySettings();
+
+  const gamesWithUser = games.filter((game) =>
+    game.gameData.users.some((user) => user.name === playerName)
+  );
+
+  if (gamesWithUser.length === 0) {
+    return <p>No games found.</p>;
+  }
 
   return (
     <div>
-      {games.map((game) => (
+      {gamesWithUser.map((game) => (
         <SavedGameCard
           key={game.gameData.id}
           game={game}
