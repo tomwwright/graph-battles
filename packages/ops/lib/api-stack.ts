@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigatewayv2";
 import * as apigatewayIntegrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as assets from "aws-cdk-lib/aws-ecr-assets";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import * as path from "path";
@@ -23,8 +24,10 @@ export class ApiStack extends cdk.Stack {
     });
 
     const lambdaFunction = new lambda.DockerImageFunction(this, "Function", {
+      architecture: lambda.Architecture.ARM_64,
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, "../../.."), {
         exclude: ["packages/ops"],
+        platform: assets.Platform.LINUX_ARM64,
       }),
       environment: {
         DYNAMODB_TABLE_NAME: table.tableName,
