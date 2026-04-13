@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { GameData, GameMap, GameMapData, Utils, Values } from '@battles/models';
 import { NewPlayer } from './NewPlayer';
+import { PlayerIdentity } from './PlayerIdentity';
+import { PlayerNameCta } from './PlayerNameCta';
 import { useSavedGames } from '../hooks/useSavedGames';
+import { usePlayerName } from '../hooks/usePlayerName';
 import * as api from '../services/api';
-import type { ViewData } from '../types';
+import type { ClientVersion, GameMode, VersionedViewData } from '../types';
 import styles from './NewGame.module.css';
 
 type NewGameProps = {
-  gameType?: 'local' | 'remote';
+  gameType: GameMode;
+  clientVersion: ClientVersion;
 };
 
 type NewPlayerData = {
@@ -24,9 +28,8 @@ const ColourPalette = [
   Values.Colour.YELLOW,
 ].map((colourNumber) => '#' + Utils.toHexColour(colourNumber));
 
-function getUnusedColours(players: NewPlayerData[]): string[] {
-  const playerColours = players.map((p) => p.colour);
-  return ColourPalette.filter((colour) => !Utils.contains(playerColours, colour));
+function getUnusedColours(usedColours: string[]): string[] {
+  return ColourPalette.filter((colour) => !Utils.contains(usedColours, colour));
 }
 
 function randId(length: number): string {
@@ -37,32 +40,38 @@ function randId(length: number): string {
   return id;
 }
 
-export function NewGame({ gameType }: NewGameProps) {
+export function NewGame({ gameType, clientVersion }: NewGameProps) {
   const { save } = useSavedGames();
-  const [players, setPlayers] = useState<NewPlayerData[]>([
-    { name: '', colour: ColourPalette[0] },
+  const [playerName, setPlayerName] = usePlayerName();
+
+  // Other players (index 1+). Player 0 is always the identity player.
+  const [otherPlayers, setOtherPlayers] = useState<NewPlayerData[]>([
     { name: '', colour: ColourPalette[1] },
   ]);
   const [turns, setTurns] = useState(10);
   const [victoryPoints, setVictoryPoints] = useState(25);
   const [isCreating, setIsCreating] = useState(false);
 
+  const allColours = [ColourPalette[0], ...otherPlayers.map((p) => p.colour)];
+  const unusedColours = getUnusedColours(allColours);
+
   function addPlayer() {
-    setPlayers([...players, { name: '', colour: getUnusedColours(players)[0] }]);
+    setOtherPlayers([...otherPlayers, { name: '', colour: unusedColours[0] }]);
   }
 
   function deletePlayer(i: number) {
-    setPlayers(players.filter((_, idx) => idx !== i));
+    setOtherPlayers(otherPlayers.filter((_, idx) => idx !== i));
   }
 
-  function updateName(i: number, name: string) {
-    const updated = [...players];
+  function updateOtherName(i: number, name: string) {
+    const updated = [...otherPlayers];
     updated[i] = { ...updated[i], name };
-    setPlayers(updated);
+    setOtherPlayers(updated);
   }
 
   function validate(): string | null {
-    if (!players.every((p) => p.name.length > 0)) return 'Enter names for all players';
+    if (!playerName) return 'Set your player name to get started';
+    if (!otherPlayers.every((p) => p.name.length > 0)) return 'Enter names for all players';
     return null;
   }
 
@@ -70,25 +79,41 @@ export function NewGame({ gameType }: NewGameProps) {
     setIsCreating(true);
 
     try {
+      const totalPlayers = 1 + otherPlayers.length;
+
+      const viewFile =
+        clientVersion === 'v2'
+          ? `/lobby/maps/lobby.view.${totalPlayers}players.txt`
+          : `/lobby/maps/lobby.view.${totalPlayers}players.json`;
+
       const [mapResponse, viewResponse] = await Promise.all([
-        fetch(`/lobby/maps/lobby.map.${players.length}players.json`, { headers: { 'Cache-Control': 'no-cache' } }),
-        fetch(`/lobby/maps/lobby.view.${players.length}players.json`, { headers: { 'Cache-Control': 'no-cache' } }),
+        fetch(`/lobby/maps/lobby.map.${totalPlayers}players.json`, { headers: { 'Cache-Control': 'no-cache' } }),
+        fetch(viewFile, { headers: { 'Cache-Control': 'no-cache' } }),
       ]);
 
       const mapData: GameMapData = await mapResponse.json();
       const map = new GameMap(mapData);
-      const viewData: ViewData = await viewResponse.json();
+
+      const viewData: VersionedViewData =
+        clientVersion === 'v2'
+          ? { version: 'v2', data: await viewResponse.text() }
+          : { version: 'v1', data: await viewResponse.json() };
+
+      const allPlayers: NewPlayerData[] = [
+        { name: playerName, colour: ColourPalette[0] },
+        ...otherPlayers,
+      ];
 
       const mapPlayers = map.players.map((player) => player.data);
       for (let i = 0; i < mapPlayers.length; i++) {
-        mapPlayers[i].colour = Number.parseInt(players[i].colour.substring(1), 16);
+        mapPlayers[i].colour = Number.parseInt(allPlayers[i].colour.substring(1), 16);
       }
 
       const isLocal = gameType === 'local';
 
       const gameData: GameData = {
         id: randId(6),
-        users: players.map((player, i) => ({
+        users: allPlayers.map((player, i) => ({
           id: isLocal ? '#USER' + i : player.name,
           type: 'user' as const,
           name: player.name,
@@ -106,10 +131,7 @@ export function NewGame({ gameType }: NewGameProps) {
         window.location.reload();
       }
 
-      setPlayers([
-        { name: '', colour: players[0].colour },
-        { name: '', colour: players[1].colour },
-      ]);
+      setOtherPlayers([{ name: '', colour: otherPlayers[0].colour }]);
       setTurns(10);
       setVictoryPoints(25);
     } finally {
@@ -120,52 +142,60 @@ export function NewGame({ gameType }: NewGameProps) {
   const validationError = validate();
 
   return (
-    <div className={styles.container}>
-      <div className={styles.players}>
-        {players.map((player, i) => (
-          <NewPlayer
-            key={i}
-            colour={player.colour}
-            name={player.name}
-            colours={getUnusedColours(players)}
-            onDelete={i > 1 ? () => deletePlayer(i) : null}
-            onUpdateName={(name) => updateName(i, name)}
+    <div>
+      {!playerName && <PlayerNameCta />}
+      <div className={styles.container}>
+        <div className={styles.players}>
+          <PlayerIdentity
+            name={playerName}
+            colour={ColourPalette[0]}
+            onNameChange={setPlayerName}
           />
-        ))}
-        {players.length < 4 && <button onClick={addPlayer}>+</button>}
-      </div>
-      <div className={styles.settings}>
-        <div className={styles.sliderGroup}>
-          <label>
-            Turn Limit: <i>{turns} turns</i>
-          </label>
-          <input
-            type="range"
-            value={turns}
-            min={6}
-            max={20}
-            step={2}
-            onChange={(e) => setTurns(Number(e.target.value))}
-          />
+          {otherPlayers.map((player, i) => (
+            <NewPlayer
+              key={i}
+              colour={player.colour}
+              name={player.name}
+              colours={unusedColours}
+              onDelete={otherPlayers.length > 1 ? () => deletePlayer(i) : null}
+              onUpdateName={(name) => updateOtherName(i, name)}
+            />
+          ))}
+          {1 + otherPlayers.length < 4 && <button onClick={addPlayer}>+</button>}
         </div>
-        <div className={styles.sliderGroup}>
-          <label>
-            Victory Points: <i>{victoryPoints} points</i>
-          </label>
-          <input
-            type="range"
-            value={victoryPoints}
-            min={20}
-            max={50}
-            step={5}
-            onChange={(e) => setVictoryPoints(Number(e.target.value))}
-          />
-        </div>
-        <div className={styles.createRow}>
-          <button disabled={validationError != null || isCreating} onClick={createGame}>
-            Create Game
-          </button>
-          {validationError && <i className={styles.validationError}>{validationError}</i>}
+        <div className={styles.settings}>
+          <div className={styles.sliderGroup}>
+            <label>
+              Turn Limit: <i>{turns} turns</i>
+            </label>
+            <input
+              type="range"
+              value={turns}
+              min={6}
+              max={20}
+              step={2}
+              onChange={(e) => setTurns(Number(e.target.value))}
+            />
+          </div>
+          <div className={styles.sliderGroup}>
+            <label>
+              Victory Points: <i>{victoryPoints} points</i>
+            </label>
+            <input
+              type="range"
+              value={victoryPoints}
+              min={20}
+              max={50}
+              step={5}
+              onChange={(e) => setVictoryPoints(Number(e.target.value))}
+            />
+          </div>
+          <div className={styles.createRow}>
+            <button disabled={validationError != null || isCreating} onClick={createGame}>
+              Create Game
+            </button>
+            {validationError && <i className={styles.validationError}>{validationError}</i>}
+          </div>
         </div>
       </div>
     </div>

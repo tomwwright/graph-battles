@@ -1,5 +1,5 @@
 import { GameData } from '@battles/models';
-import { ViewData } from '../types';
+import { VersionedViewData } from '../types';
 
 export type GameSummary = {
   gameId: string;
@@ -17,7 +17,7 @@ export type GameSummary = {
 
 const BATTLES_API_HOSTNAME = 'https://dctg63fuac.execute-api.ap-southeast-2.amazonaws.com';
 
-export async function createGame(gameData: GameData, viewData: ViewData): Promise<void> {
+export async function createGame(gameData: GameData, viewData: VersionedViewData): Promise<void> {
   const gameResponse = await fetch(`${BATTLES_API_HOSTNAME}/game`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

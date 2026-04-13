@@ -1,12 +1,12 @@
 import { GameData, Utils } from '@battles/models';
-import { ViewData } from '../types';
+import { StoredViewData } from '../types';
 
 const KEY_PREFIX = 'graph-battles-';
 const KEY_GAME_LIST = KEY_PREFIX + 'gamelist';
 
 export type SavedGame = {
   gameData: GameData;
-  viewData: ViewData;
+  viewData: StoredViewData;
   lastUpdated: number;
 };
 

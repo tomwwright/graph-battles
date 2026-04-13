@@ -6,11 +6,11 @@ import styles from './GameCard.module.css';
 
 type SavedGameCardProps = {
   game: SavedGame;
-  linkUrl: string;
+  onOpen: () => void;
   onDelete: () => void;
 };
 
-export function SavedGameCard({ game, linkUrl, onDelete }: SavedGameCardProps) {
+export function SavedGameCard({ game, onOpen, onDelete }: SavedGameCardProps) {
   const latestMap = new GameMap(game.gameData.maps[game.gameData.maps.length - 1]);
   const leaders = latestMap.winningPlayers(0, false);
 
@@ -40,7 +40,7 @@ export function SavedGameCard({ game, linkUrl, onDelete }: SavedGameCardProps) {
         </p>
       </div>
       <div className={styles.actions}>
-        <button onClick={() => window.open(linkUrl + game.gameData.id, '_blank')}>Open</button>
+        <button onClick={onOpen}>Open</button>
         <button onClick={onDelete}>Delete</button>
       </div>
     </div>

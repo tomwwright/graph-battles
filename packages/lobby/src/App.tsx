@@ -1,61 +1,52 @@
-import { useState } from 'react';
 import { NewGame } from './components/NewGame';
 import { SavedGameList } from './components/SavedGameList';
 import { RemoteGameList } from './components/RemoteGameList';
+import { ToggleSwitch } from './components/ToggleSwitch';
+import { SettingsPanel } from './components/SettingsPanel';
+import { useGameMode } from './hooks/useGameMode';
+import { usePlayerName } from './hooks/usePlayerName';
+import { useClientVersion } from './hooks/useClientVersion';
 import styles from './App.module.css';
 
-type AppProps = {
-  userId?: string;
-  gameType?: 'local' | 'remote';
-};
+export function App() {
+  const [gameMode, setGameMode] = useGameMode();
+  const [playerName] = usePlayerName();
+  const [clientVersion, setClientVersion] = useClientVersion();
 
-function EnterPlayerId() {
-  const [playerId, setPlayerId] = useState('');
-
-  function onSubmit() {
-    const url = `?gameType=remote&userId=${playerId}`;
-    window.open(url, '_self');
-  }
-
-  return (
-    <div>
-      <p>Enter player name:</p>
-      <input
-        className={styles.playerIdInput}
-        placeholder="Player Name"
-        onChange={(e) => setPlayerId(e.target.value)}
-      />
-      <button onClick={onSubmit}>Save</button>
-    </div>
-  );
-}
-
-export function App({ userId, gameType }: AppProps) {
   return (
     <div className={styles.wrapper}>
       <img className={styles.banner} src="/lobby/territory-portrait.jpg" alt="Territory" />
       <div className={styles.content}>
         <h2>New Game</h2>
-        <NewGame gameType={gameType} />
+        <NewGame gameType={gameMode} clientVersion={clientVersion} />
         <hr className={styles.divider} />
-        {gameType === 'local' ? (
+        <div className={styles.gameModeRow}>
+          <ToggleSwitch
+            leftLabel="Local"
+            rightLabel="Remote"
+            checked={gameMode === 'remote'}
+            onChange={(checked) => setGameMode(checked ? 'remote' : 'local')}
+          />
+        </div>
+        {playerName && (
+          <p className={styles.playingAs}>Playing as: {playerName}</p>
+        )}
+        {gameMode === 'local' ? (
           <div>
             <h2>Local Saved Games</h2>
-            <SavedGameList />
+            <SavedGameList clientVersion={clientVersion} />
           </div>
         ) : (
           <div>
             <h2>Remote Games</h2>
-            {userId === undefined ? (
-              <EnterPlayerId />
+            {!playerName ? (
+              <p className={styles.noNameHint}>Set your player name in the form above to view your games.</p>
             ) : (
-              <div>
-                <p>Playing as: {userId}</p>
-                <RemoteGameList userId={userId} />
-              </div>
+              <RemoteGameList clientVersion={clientVersion} />
             )}
           </div>
         )}
+        <SettingsPanel clientVersion={clientVersion} onClientVersionChange={setClientVersion} />
       </div>
     </div>
   );

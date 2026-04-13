@@ -20,9 +20,17 @@
   margin: 32px 24px;
 }
 
-.playerIdInput {
-  width: 200px;
-  height: 32px;
-  margin: 0 5px;
-  padding: 10px;
+.gameModeRow {
+  margin-bottom: 16px;
+}
+
+.playingAs {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #666;
+}
+
+.noNameHint {
+  color: #666;
+  font-style: italic;
 }

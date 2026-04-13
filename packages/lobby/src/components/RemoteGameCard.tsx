@@ -4,15 +4,10 @@ import styles from './GameCard.module.css';
 
 type RemoteGameCardProps = {
   game: GameSummary;
-  userId: string;
+  onOpen: () => void;
 };
 
-function openGameUrl(gameId: string, userId: string) {
-  const url = `/assets/html/index.html?gameId=${gameId}&userId=${userId}`;
-  window.open(url, '_blank');
-}
-
-export function RemoteGameCard({ game, userId }: RemoteGameCardProps) {
+export function RemoteGameCard({ game, onOpen }: RemoteGameCardProps) {
   const leaderboardText = game.leaderboard
     .map((leader) => `${leader.name} (${leader.victoryPoints})`)
     .join(', ');
@@ -37,7 +32,7 @@ export function RemoteGameCard({ game, userId }: RemoteGameCardProps) {
         </p>
       </div>
       <div className={styles.actions}>
-        <button onClick={() => openGameUrl(game.gameId, userId)}>Open</button>
+        <button onClick={onOpen}>Open</button>
       </div>
     </div>
   );

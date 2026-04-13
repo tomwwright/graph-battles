@@ -1,3 +1,16 @@
+import type { ClientVersion } from './types';
+
+export function getGameUrl(clientVersion: ClientVersion, gameId: string, userId?: string): string {
+  if (clientVersion === 'v2') {
+    const params = new URLSearchParams({ gameId });
+    if (userId) params.set('userId', userId);
+    return `/v2/?${params}`;
+  }
+  const params = new URLSearchParams({ gameId });
+  if (userId) params.set('userId', userId);
+  return `/assets/html/index.html?${params}`;
+}
+
 export function toTimeDescription(ms: number): string {
   const seconds = Math.floor(ms / 1000);
   if (seconds < 60) return 'moments';

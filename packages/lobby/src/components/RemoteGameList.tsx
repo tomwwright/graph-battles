@@ -1,15 +1,19 @@
 import { RemoteGameCard } from './RemoteGameCard';
 import { useRemoteGames } from '../hooks/useRemoteGames';
+import { usePlayerName } from '../hooks/usePlayerName';
+import type { ClientVersion } from '../types';
+import { getGameUrl } from '../util';
 
 type RemoteGameListProps = {
-  userId: string;
+  clientVersion: ClientVersion;
 };
 
-export function RemoteGameList({ userId }: RemoteGameListProps) {
+export function RemoteGameList({ clientVersion }: RemoteGameListProps) {
   const { games, loading, error } = useRemoteGames();
+  const [playerName] = usePlayerName();
 
   const gamesWithUser = games.filter((game) =>
-    game.leaderboard.some((leader) => leader.name === userId)
+    game.leaderboard.some((leader) => leader.name === playerName)
   );
 
   if (loading) return <p>Loading...</p>;
@@ -19,7 +23,13 @@ export function RemoteGameList({ userId }: RemoteGameListProps) {
   return (
     <div>
       {gamesWithUser.map((game) => (
-        <RemoteGameCard key={game.gameId} game={game} userId={userId} />
+        <RemoteGameCard
+          key={game.gameId}
+          game={game}
+          onOpen={() =>
+            window.open(getGameUrl(clientVersion, game.gameId, playerName), '_blank')
+          }
+        />
       ))}
     </div>
   );

@@ -1,7 +1,13 @@
 import { SavedGameCard } from './SavedGameCard';
 import { useSavedGames } from '../hooks/useSavedGames';
+import type { ClientVersion } from '../types';
+import { getGameUrl } from '../util';
 
-export function SavedGameList() {
+type SavedGameListProps = {
+  clientVersion: ClientVersion;
+};
+
+export function SavedGameList({ clientVersion }: SavedGameListProps) {
   const { games, deleteGame } = useSavedGames();
 
   return (
@@ -10,7 +16,7 @@ export function SavedGameList() {
         <SavedGameCard
           key={game.gameData.id}
           game={game}
-          linkUrl="/assets/html/index.html?gameId="
+          onOpen={() => window.open(getGameUrl(clientVersion, game.gameData.id), '_blank')}
           onDelete={() => deleteGame(game.gameData.id)}
         />
       ))}
