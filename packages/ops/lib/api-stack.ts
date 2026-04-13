@@ -37,13 +37,7 @@ export class ApiStack extends cdk.Stack {
     table.grantReadWriteData(lambdaFunction);
 
     const api = new apigateway.HttpApi(this, "Api", {
-      defaultIntegration: new apigatewayIntegrations.HttpLambdaIntegration("Integration", lambdaFunction),
-      corsPreflight: {
-        allowOrigins: [
-          "https://battles.tomwwright.com",
-          "http://localhost:5173" // vite dev server
-        ]
-      }
+      defaultIntegration: new apigatewayIntegrations.HttpLambdaIntegration("Integration", lambdaFunction)
     });
   }
 }
