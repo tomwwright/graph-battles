@@ -1018,6 +1018,11 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@codegenie/serverless-express@^5.0.0-beta.2":
+  version "5.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/@codegenie/serverless-express/-/serverless-express-5.0.0-beta.2.tgz#616f0168907f39f90a7b209d91490bedbcdf3e02"
+  integrity sha512-NL1BWu+VzOjMiul5hCwIXf720Y7UEvY/7S0KxIw54wAFrGmALlmLITNKynHvaTQALwj0zsyS3KFM+lLLz5+j9A==
+
 "@ctrl/tinycolor@^3.3.4":
   version "3.6.1"
   resolved "https://registry.yarnpkg.com/@ctrl/tinycolor/-/tinycolor-3.6.1.tgz#b6c75a56a1947cc916ea058772d666a2c8932f31"
@@ -3316,11 +3321,6 @@
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/@unrs/resolver-binding-win32-x64-msvc/-/resolver-binding-win32-x64-msvc-1.11.1.tgz#538b1e103bf8d9864e7b85cc96fa8d6fb6c40777"
   integrity sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==
-
-"@vendia/serverless-express@^4.4.0":
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/@vendia/serverless-express/-/serverless-express-4.4.0.tgz#21d7e4322c6280180afa502fe7d0cfff57fcc758"
-  integrity sha512-WwbInZUKl5Ww/2/uRGU+fpgJzUkilaqFHXafvQilpW2xGryG4pgGymcpLH+z8lDXS5Zg2570tRSOJlUnwbTg9g==
 
 "@vitejs/plugin-react@^4.0.0":
   version "4.7.0"
