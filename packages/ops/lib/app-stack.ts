@@ -8,6 +8,7 @@ import * as s3deployment from "@aws-cdk/aws-s3-deployment";
 
 const DEPLOYMENT_ARTIFACT_GAME = "../game/package.zip";
 const DEPLOYMENT_ARTIFACT_GAME_V2 = "../gamev2/package.zip";
+const DEPLOYMENT_ARTIFACT_LOBBY = "../lobby/package.zip";
 
 export class AppStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -63,13 +64,23 @@ export class AppStack extends cdk.Stack {
       sources: [s3deployment.Source.asset(DEPLOYMENT_ARTIFACT_GAME)],
       destinationBucket: bucket,
       distribution,
-      exclude: ["v2/*"]
+      exclude: [
+        "v2/*",
+        "lobby/*"
+      ]
     });
 
     new s3deployment.BucketDeployment(this, "DeployGameV2", {
       sources: [s3deployment.Source.asset(DEPLOYMENT_ARTIFACT_GAME_V2)],
       destinationBucket: bucket,
       destinationKeyPrefix: "v2/",
+      distribution,
+    })
+
+    new s3deployment.BucketDeployment(this, "DeployLobby", {
+      sources: [s3deployment.Source.asset(DEPLOYMENT_ARTIFACT_LOBBY)],
+      destinationBucket: bucket,
+      destinationKeyPrefix: "lobby/",
       distribution,
     })
   }
