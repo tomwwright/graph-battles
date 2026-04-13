@@ -46,6 +46,7 @@ export function App() {
             )}
           </div>
         )}
+        <hr className={styles.divider} />
         <SettingsPanel clientVersion={clientVersion} onClientVersionChange={setClientVersion} />
       </div>
     </div>
