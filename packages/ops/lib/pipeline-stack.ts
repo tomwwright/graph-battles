@@ -51,11 +51,13 @@ export class PipelineStack extends cdk.Stack {
         ],
         primaryOutputDirectory: "packages/ops/cdk.out",
       }),
-      synthCodeBuildDefaults: {
+      codeBuildDefaults: {
         buildEnvironment: {
           buildImage: LinuxArmBuildImage.AMAZON_LINUX_2023_STANDARD_3_0,
           computeType: ComputeType.LARGE,
         },
+      },
+      synthCodeBuildDefaults: {
         partialBuildSpec: BuildSpec.fromObject({
           phases: {
             install: {
