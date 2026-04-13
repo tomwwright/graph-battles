@@ -1,4 +1,4 @@
-import serverlessExpress from "@vendia/serverless-express";
+import serverlessExpress from "@codegenie/serverless-express";
 import express from "express";
 import cors from "cors";
 import { GameModel, PlayerActionsModel, table, ViewModel } from "./models";
