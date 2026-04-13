@@ -1,0 +1,731 @@
+{
+  "id": "generated-map",
+  "nextId": 20,
+  "type": "map",
+  "dataMap": {
+    "#P1": {
+      "colour": 0,
+      "gold": 0,
+      "goldProduction": 1,
+      "type": "player",
+      "id": "#P1"
+    },
+    "#P2": {
+      "colour": 0,
+      "gold": 0,
+      "goldProduction": 1,
+      "type": "player",
+      "id": "#P2"
+    },
+    "#P3": {
+      "colour": 0,
+      "gold": 0,
+      "goldProduction": 1,
+      "type": "player",
+      "id": "#P3"
+    },
+    "#P4": {
+      "colour": 0,
+      "gold": 0,
+      "goldProduction": 1,
+      "type": "player",
+      "id": "#P4"
+    },
+    "#T1": {
+      "food": 3,
+      "edgeIds": [
+        "#T1#T2",
+        "#T1#T3",
+        "#T1#T4",
+        "#T1#T6"
+      ],
+      "properties": [
+        0,
+        2,
+        3
+      ],
+      "type": "territory",
+      "id": "#T1",
+      "playerId": "#P1"
+    },
+    "#U0": {
+      "type": "unit",
+      "id": "#U0",
+      "playerId": "#P1",
+      "locationId": "#T1",
+      "statuses": []
+    },
+    "#U1": {
+      "type": "unit",
+      "id": "#U1",
+      "playerId": "#P1",
+      "locationId": "#T1",
+      "statuses": []
+    },
+    "#T2": {
+      "food": 3,
+      "edgeIds": [
+        "#T1#T2",
+        "#T2#T4",
+        "#T2#T5"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T2"
+    },
+    "#T3": {
+      "food": 3,
+      "edgeIds": [
+        "#T1#T3",
+        "#T3#T6",
+        "#T3#T7"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T3"
+    },
+    "#T4": {
+      "food": 3,
+      "edgeIds": [
+        "#T1#T4",
+        "#T2#T4",
+        "#T4#T6",
+        "#T4#T8"
+      ],
+      "properties": [
+        0,
+        1,
+        3
+      ],
+      "type": "territory",
+      "id": "#T4",
+      "playerId": "#P1"
+    },
+    "#U2": {
+      "type": "unit",
+      "id": "#U2",
+      "playerId": "#P1",
+      "locationId": "#T4",
+      "statuses": []
+    },
+    "#U3": {
+      "type": "unit",
+      "id": "#U3",
+      "playerId": "#P1",
+      "locationId": "#T4",
+      "statuses": []
+    },
+    "#U4": {
+      "type": "unit",
+      "id": "#U4",
+      "playerId": "#P1",
+      "locationId": "#T4",
+      "statuses": []
+    },
+    "#T5": {
+      "food": 3,
+      "edgeIds": [
+        "#T2#T5",
+        "#T5#T9"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T5"
+    },
+    "#T6": {
+      "food": 3,
+      "edgeIds": [
+        "#T1#T6",
+        "#T3#T6",
+        "#T4#T6",
+        "#T6#T7"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T6"
+    },
+    "#T7": {
+      "food": 3,
+      "edgeIds": [
+        "#T3#T7",
+        "#T6#T7",
+        "#T7#T10"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T7"
+    },
+    "#T8": {
+      "food": 3,
+      "edgeIds": [
+        "#T4#T8",
+        "#T8#T11",
+        "#T8#T12"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T8"
+    },
+    "#T9": {
+      "food": 3,
+      "edgeIds": [
+        "#T5#T9",
+        "#T9#T12",
+        "#T9#T13"
+      ],
+      "properties": [
+        0,
+        2,
+        3
+      ],
+      "type": "territory",
+      "id": "#T9",
+      "playerId": "#P2"
+    },
+    "#U5": {
+      "type": "unit",
+      "id": "#U5",
+      "playerId": "#P2",
+      "locationId": "#T9",
+      "statuses": []
+    },
+    "#U6": {
+      "type": "unit",
+      "id": "#U6",
+      "playerId": "#P2",
+      "locationId": "#T9",
+      "statuses": []
+    },
+    "#T10": {
+      "food": 3,
+      "edgeIds": [
+        "#T7#T10",
+        "#T10#T11",
+        "#T10#T14"
+      ],
+      "properties": [
+        0,
+        1,
+        3
+      ],
+      "type": "territory",
+      "id": "#T10",
+      "playerId": "#P3"
+    },
+    "#U7": {
+      "type": "unit",
+      "id": "#U7",
+      "playerId": "#P3",
+      "locationId": "#T10",
+      "statuses": []
+    },
+    "#U8": {
+      "type": "unit",
+      "id": "#U8",
+      "playerId": "#P3",
+      "locationId": "#T10",
+      "statuses": []
+    },
+    "#U9": {
+      "type": "unit",
+      "id": "#U9",
+      "playerId": "#P3",
+      "locationId": "#T10",
+      "statuses": []
+    },
+    "#T11": {
+      "food": 3,
+      "edgeIds": [
+        "#T8#T11",
+        "#T10#T11",
+        "#T11#T12",
+        "#T11#T14",
+        "#T11#T15"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T11"
+    },
+    "#T12": {
+      "food": 3,
+      "edgeIds": [
+        "#T8#T12",
+        "#T9#T12",
+        "#T11#T12",
+        "#T12#T13",
+        "#T12#T15",
+        "#T12#T16"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T12"
+    },
+    "#T13": {
+      "food": 3,
+      "edgeIds": [
+        "#T9#T13",
+        "#T12#T13",
+        "#T13#T16"
+      ],
+      "properties": [
+        0,
+        1,
+        3
+      ],
+      "type": "territory",
+      "id": "#T13",
+      "playerId": "#P2"
+    },
+    "#U10": {
+      "type": "unit",
+      "id": "#U10",
+      "playerId": "#P2",
+      "locationId": "#T13",
+      "statuses": []
+    },
+    "#U11": {
+      "type": "unit",
+      "id": "#U11",
+      "playerId": "#P2",
+      "locationId": "#T13",
+      "statuses": []
+    },
+    "#U12": {
+      "type": "unit",
+      "id": "#U12",
+      "playerId": "#P2",
+      "locationId": "#T13",
+      "statuses": []
+    },
+    "#T14": {
+      "food": 3,
+      "edgeIds": [
+        "#T10#T14",
+        "#T11#T14",
+        "#T14#T19"
+      ],
+      "properties": [
+        0,
+        2,
+        3
+      ],
+      "type": "territory",
+      "id": "#T14",
+      "playerId": "#P3"
+    },
+    "#U13": {
+      "type": "unit",
+      "id": "#U13",
+      "playerId": "#P3",
+      "locationId": "#T14",
+      "statuses": []
+    },
+    "#U14": {
+      "type": "unit",
+      "id": "#U14",
+      "playerId": "#P3",
+      "locationId": "#T14",
+      "statuses": []
+    },
+    "#T15": {
+      "food": 3,
+      "edgeIds": [
+        "#T11#T15",
+        "#T12#T15",
+        "#T15#T16",
+        "#T15#T17",
+        "#T15#T18"
+      ],
+      "properties": [
+        0,
+        3
+      ],
+      "type": "territory",
+      "id": "#T15"
+    },
+    "#T16": {
+      "food": 3,
+      "edgeIds": [
+        "#T12#T16",
+        "#T13#T16",
+        "#T15#T16",
+        "#T16#T18",
+        "#T16#T21"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T16"
+    },
+    "#T17": {
+      "food": 3,
+      "edgeIds": [
+        "#T15#T17",
+        "#T17#T19",
+        "#T17#T20",
+        "#T17#T22"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T17"
+    },
+    "#T18": {
+      "food": 3,
+      "edgeIds": [
+        "#T15#T18",
+        "#T16#T18",
+        "#T18#T21",
+        "#T18#T23"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T18"
+    },
+    "#T19": {
+      "food": 3,
+      "edgeIds": [
+        "#T14#T19",
+        "#T17#T19",
+        "#T19#T22"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T19"
+    },
+    "#T20": {
+      "food": 3,
+      "edgeIds": [
+        "#T17#T20",
+        "#T20#T22",
+        "#T20#T23"
+      ],
+      "properties": [
+        0,
+        1,
+        3
+      ],
+      "type": "territory",
+      "id": "#T20",
+      "playerId": "#P4"
+    },
+    "#U15": {
+      "type": "unit",
+      "id": "#U15",
+      "playerId": "#P4",
+      "locationId": "#T20",
+      "statuses": []
+    },
+    "#U16": {
+      "type": "unit",
+      "id": "#U16",
+      "playerId": "#P4",
+      "locationId": "#T20",
+      "statuses": []
+    },
+    "#U17": {
+      "type": "unit",
+      "id": "#U17",
+      "playerId": "#P4",
+      "locationId": "#T20",
+      "statuses": []
+    },
+    "#T21": {
+      "food": 3,
+      "edgeIds": [
+        "#T16#T21",
+        "#T18#T21",
+        "#T21#T23"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T21"
+    },
+    "#T22": {
+      "food": 3,
+      "edgeIds": [
+        "#T17#T22",
+        "#T19#T22",
+        "#T20#T22"
+      ],
+      "properties": [],
+      "type": "territory",
+      "id": "#T22"
+    },
+    "#T23": {
+      "food": 3,
+      "edgeIds": [
+        "#T18#T23",
+        "#T20#T23",
+        "#T21#T23"
+      ],
+      "properties": [
+        0,
+        2,
+        3
+      ],
+      "type": "territory",
+      "id": "#T23",
+      "playerId": "#P4"
+    },
+    "#U18": {
+      "type": "unit",
+      "id": "#U18",
+      "playerId": "#P4",
+      "locationId": "#T23",
+      "statuses": []
+    },
+    "#U19": {
+      "type": "unit",
+      "id": "#U19",
+      "playerId": "#P4",
+      "locationId": "#T23",
+      "statuses": []
+    },
+    "#T1#T2": {
+      "id": "#T1#T2",
+      "type": "edge",
+      "territoryAId": "#T1",
+      "territoryBId": "#T2"
+    },
+    "#T1#T3": {
+      "id": "#T1#T3",
+      "type": "edge",
+      "territoryAId": "#T1",
+      "territoryBId": "#T3"
+    },
+    "#T1#T4": {
+      "id": "#T1#T4",
+      "type": "edge",
+      "territoryAId": "#T1",
+      "territoryBId": "#T4"
+    },
+    "#T1#T6": {
+      "id": "#T1#T6",
+      "type": "edge",
+      "territoryAId": "#T1",
+      "territoryBId": "#T6"
+    },
+    "#T2#T4": {
+      "id": "#T2#T4",
+      "type": "edge",
+      "territoryAId": "#T2",
+      "territoryBId": "#T4"
+    },
+    "#T2#T5": {
+      "id": "#T2#T5",
+      "type": "edge",
+      "territoryAId": "#T2",
+      "territoryBId": "#T5"
+    },
+    "#T3#T6": {
+      "id": "#T3#T6",
+      "type": "edge",
+      "territoryAId": "#T3",
+      "territoryBId": "#T6"
+    },
+    "#T3#T7": {
+      "id": "#T3#T7",
+      "type": "edge",
+      "territoryAId": "#T3",
+      "territoryBId": "#T7"
+    },
+    "#T4#T6": {
+      "id": "#T4#T6",
+      "type": "edge",
+      "territoryAId": "#T4",
+      "territoryBId": "#T6"
+    },
+    "#T4#T8": {
+      "id": "#T4#T8",
+      "type": "edge",
+      "territoryAId": "#T4",
+      "territoryBId": "#T8"
+    },
+    "#T5#T9": {
+      "id": "#T5#T9",
+      "type": "edge",
+      "territoryAId": "#T5",
+      "territoryBId": "#T9"
+    },
+    "#T6#T7": {
+      "id": "#T6#T7",
+      "type": "edge",
+      "territoryAId": "#T6",
+      "territoryBId": "#T7"
+    },
+    "#T7#T10": {
+      "id": "#T7#T10",
+      "type": "edge",
+      "territoryAId": "#T7",
+      "territoryBId": "#T10"
+    },
+    "#T8#T11": {
+      "id": "#T8#T11",
+      "type": "edge",
+      "territoryAId": "#T8",
+      "territoryBId": "#T11"
+    },
+    "#T8#T12": {
+      "id": "#T8#T12",
+      "type": "edge",
+      "territoryAId": "#T8",
+      "territoryBId": "#T12"
+    },
+    "#T9#T12": {
+      "id": "#T9#T12",
+      "type": "edge",
+      "territoryAId": "#T9",
+      "territoryBId": "#T12"
+    },
+    "#T9#T13": {
+      "id": "#T9#T13",
+      "type": "edge",
+      "territoryAId": "#T9",
+      "territoryBId": "#T13"
+    },
+    "#T10#T11": {
+      "id": "#T10#T11",
+      "type": "edge",
+      "territoryAId": "#T10",
+      "territoryBId": "#T11"
+    },
+    "#T10#T14": {
+      "id": "#T10#T14",
+      "type": "edge",
+      "territoryAId": "#T10",
+      "territoryBId": "#T14"
+    },
+    "#T11#T12": {
+      "id": "#T11#T12",
+      "type": "edge",
+      "territoryAId": "#T11",
+      "territoryBId": "#T12"
+    },
+    "#T11#T14": {
+      "id": "#T11#T14",
+      "type": "edge",
+      "territoryAId": "#T11",
+      "territoryBId": "#T14"
+    },
+    "#T11#T15": {
+      "id": "#T11#T15",
+      "type": "edge",
+      "territoryAId": "#T11",
+      "territoryBId": "#T15"
+    },
+    "#T12#T13": {
+      "id": "#T12#T13",
+      "type": "edge",
+      "territoryAId": "#T12",
+      "territoryBId": "#T13"
+    },
+    "#T12#T15": {
+      "id": "#T12#T15",
+      "type": "edge",
+      "territoryAId": "#T12",
+      "territoryBId": "#T15"
+    },
+    "#T12#T16": {
+      "id": "#T12#T16",
+      "type": "edge",
+      "territoryAId": "#T12",
+      "territoryBId": "#T16"
+    },
+    "#T13#T16": {
+      "id": "#T13#T16",
+      "type": "edge",
+      "territoryAId": "#T13",
+      "territoryBId": "#T16"
+    },
+    "#T14#T19": {
+      "id": "#T14#T19",
+      "type": "edge",
+      "territoryAId": "#T14",
+      "territoryBId": "#T19"
+    },
+    "#T15#T16": {
+      "id": "#T15#T16",
+      "type": "edge",
+      "territoryAId": "#T15",
+      "territoryBId": "#T16"
+    },
+    "#T15#T17": {
+      "id": "#T15#T17",
+      "type": "edge",
+      "territoryAId": "#T15",
+      "territoryBId": "#T17"
+    },
+    "#T15#T18": {
+      "id": "#T15#T18",
+      "type": "edge",
+      "territoryAId": "#T15",
+      "territoryBId": "#T18"
+    },
+    "#T16#T18": {
+      "id": "#T16#T18",
+      "type": "edge",
+      "territoryAId": "#T16",
+      "territoryBId": "#T18"
+    },
+    "#T16#T21": {
+      "id": "#T16#T21",
+      "type": "edge",
+      "territoryAId": "#T16",
+      "territoryBId": "#T21"
+    },
+    "#T17#T19": {
+      "id": "#T17#T19",
+      "type": "edge",
+      "territoryAId": "#T17",
+      "territoryBId": "#T19"
+    },
+    "#T17#T20": {
+      "id": "#T17#T20",
+      "type": "edge",
+      "territoryAId": "#T17",
+      "territoryBId": "#T20"
+    },
+    "#T17#T22": {
+      "id": "#T17#T22",
+      "type": "edge",
+      "territoryAId": "#T17",
+      "territoryBId": "#T22"
+    },
+    "#T18#T21": {
+      "id": "#T18#T21",
+      "type": "edge",
+      "territoryAId": "#T18",
+      "territoryBId": "#T21"
+    },
+    "#T18#T23": {
+      "id": "#T18#T23",
+      "type": "edge",
+      "territoryAId": "#T18",
+      "territoryBId": "#T23"
+    },
+    "#T19#T22": {
+      "id": "#T19#T22",
+      "type": "edge",
+      "territoryAId": "#T19",
+      "territoryBId": "#T22"
+    },
+    "#T20#T22": {
+      "id": "#T20#T22",
+      "type": "edge",
+      "territoryAId": "#T20",
+      "territoryBId": "#T22"
+    },
+    "#T20#T23": {
+      "id": "#T20#T23",
+      "type": "edge",
+      "territoryAId": "#T20",
+      "territoryBId": "#T23"
+    },
+    "#T21#T23": {
+      "id": "#T21#T23",
+      "type": "edge",
+      "territoryAId": "#T21",
+      "territoryBId": "#T23"
+    }
+  },
+  "pendingActions": []
+}

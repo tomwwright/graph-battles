@@ -1,0 +1,40 @@
+.card {
+  display: flex;
+  padding: 16px;
+  margin: 8px 0;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.info {
+  flex: 1;
+  margin: 4px;
+}
+
+.info h3 {
+  margin: 0 0 4px;
+}
+
+.stats {
+  flex: 2;
+  margin: 4px;
+}
+
+.stats p {
+  margin: 2px 0;
+}
+
+.actions {
+  flex: 1;
+  margin: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.actions button {
+  padding: 6px 16px;
+  cursor: pointer;
+}
