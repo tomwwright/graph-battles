@@ -53,7 +53,11 @@ export function PlayerIdentity({ name, colour, onNameChange }: PlayerIdentityPro
   return (
     <div className={playerStyles.row}>
       <button className={playerStyles.colourSwatch} style={{ background: colour }} />
-      <span className={styles.displayName}>{name}</span>
+      {isNew ?
+        <span className={styles.placeholderName}>[enter name]</span>
+        :
+        <span className={styles.displayName}>{name}</span>
+      }
       <button className={styles.editButton} onClick={startEditing} title="Edit name">
         &#9998;
       </button>
