@@ -161,7 +161,7 @@ export function NewGame({ gameType, clientVersion }: NewGameProps) {
               onUpdateName={(name) => updateOtherName(i, name)}
             />
           ))}
-          {1 + otherPlayers.length < 4 && <button onClick={addPlayer}>+</button>}
+          {1 + otherPlayers.length < 4 && <button onClick={addPlayer}>+ Add</button>}
         </div>
         <div className={styles.settings}>
           <div className={styles.sliderGroup}>
