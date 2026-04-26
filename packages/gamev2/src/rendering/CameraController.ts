@@ -9,12 +9,16 @@ import {
   SineEase,
   Vector3,
 } from '@babylonjs/core';
+import { PointersInput } from './PointersInput';
 
 export class CameraController {
   readonly maxVisibleSurroundingDistance: number;
   private currentAnimation: Nullable<Animatable> = null;
   private maxX: number;
   private maxZ: number;
+
+  private readonly zoomLevels = [4, 10, 20];
+  private zoomIndex = 1;
 
   constructor(private readonly camera: ArcRotateCamera) {
     const maxCameraDistance = 25;
@@ -23,7 +27,7 @@ export class CameraController {
     this.maxX = 10;
     this.maxZ = 10;
 
-    camera.radius = 10;
+    camera.radius = this.zoomLevels[this.zoomIndex];
     camera.upperRadiusLimit = maxCameraDistance;
     camera.lowerRadiusLimit = 1.5;
     camera.alpha = 0;
@@ -44,6 +48,42 @@ export class CameraController {
         if (target.z < 0) target.z = 0;
         if (target.z > this.maxZ) target.z = this.maxZ;
       })
+    );
+
+    this.swapPointerInput();
+  }
+
+  private swapPointerInput(): void {
+    this.camera.inputs.removeByType('ArcRotateCameraPointersInput');
+    this.camera.inputs.add(new PointersInput(this));
+  }
+
+  cycleZoom(): void {
+    if (this.currentAnimation) return;
+
+    this.zoomIndex = (this.zoomIndex + 1) % this.zoomLevels.length;
+    const targetRadius = this.zoomLevels[this.zoomIndex];
+
+    const frameRate = 30;
+    const animRadius = new Animation('zoomCycle', 'radius', frameRate, Animation.ANIMATIONTYPE_FLOAT);
+    const easing = new SineEase();
+    easing.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+    animRadius.setEasingFunction(easing);
+    animRadius.setKeys([
+      { frame: 0, value: this.camera.radius },
+      { frame: frameRate, value: targetRadius },
+    ]);
+
+    this.currentAnimation = this.camera.getScene().beginDirectAnimation(
+      this.camera,
+      [animRadius],
+      0,
+      frameRate,
+      false,
+      2,
+      () => {
+        this.currentAnimation = null;
+      }
     );
   }
 
