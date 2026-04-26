@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.playerRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.playerRowActive {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.activeBadge {
+  font-size: 10px;
+  background: rgba(0, 128, 0, 0.5);
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: white;
+}

@@ -1,49 +1,82 @@
 .frame {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 50px 1fr 50px;
+  grid-template-columns: 1fr 1fr;
   pointer-events: none;
 }
 
 .header {
-  height: 50px;
+  grid-row: 1;
+  grid-column: 1 / -1;
   background-color: rgba(0, 0, 0, 0.3);
   padding: 4px 16px;
-  align-content: center;
-  pointer-events: auto;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  pointer-events: auto;
+  min-width: 0;
 }
 
-.sidebarContainer {
+.leftCol {
+  grid-row: 2;
+  grid-column: 1;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: stretch;
-  flex: auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  pointer-events: none;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.sidebar {
-  width: 260px;
-  pointer-events: none;
+.rightCol {
+  grid-row: 2;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
   padding: 8px;
+  pointer-events: none;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.selectedSlot {
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: flex-end;
+  width: 100%;
 }
 
 .footer {
-  height: 50px;
+  grid-row: 3;
+  grid-column: 1 / -1;
   background-color: rgba(0, 0, 0, 0.3);
   padding: 4px 16px;
-  align-items: center;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
   pointer-events: auto;
   color: white;
   font-family: monospace;
   font-size: 13px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+@media (min-width: 900px) {
+  .leftCol {
+    width: 260px;
+    justify-self: start;
+  }
+  .rightCol {
+    width: 260px;
+    justify-self: end;
+  }
 }

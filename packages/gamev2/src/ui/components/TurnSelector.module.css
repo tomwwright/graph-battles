@@ -1,21 +1,26 @@
 .container {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.turnRow {
-  display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  color: white;
+  font-family: monospace;
+  font-size: 13px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .turnButtons {
   display: flex;
-  flex-wrap: wrap;
   gap: 4px;
   flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
 }
 
 .turnButton {
@@ -29,6 +34,7 @@
   font-family: inherit;
   pointer-events: auto;
   min-width: 28px;
+  flex-shrink: 0;
 }
 
 .turnButton:hover:not(:disabled) {
@@ -55,6 +61,8 @@
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
+  color: white;
+  flex-shrink: 0;
 }
 
 .phasePlanning {
@@ -76,23 +84,4 @@
   composes: phaseBadge;
   background: rgba(255, 215, 0, 0.5);
   color: #ffd700;
-}
-
-.playerRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 4px;
-  border-radius: 3px;
-}
-
-.playerRowActive {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.activeBadge {
-  font-size: 10px;
-  background: rgba(0, 128, 0, 0.5);
-  padding: 1px 4px;
-  border-radius: 2px;
 }
