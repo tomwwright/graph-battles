@@ -48,6 +48,7 @@ export function GameContextProvider({ provider, renderMap, assetLoader, children
       selectedTerritoryId: null,
       hover: null,
       currentResolution: null,
+      autoResolve: false,
       visibilityMode: 'current-player',
     });
 

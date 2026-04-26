@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
 import { Combat } from '@battles/models';
 import { useGameStore } from '../../state/useGameStore';
-import { useUserActionDispatch } from '../../state/useUserActionDispatch';
 import { UnitInfo } from './UnitInfo';
 import { TerritoryInfo } from './TerritoryInfo';
 import { PlayerInfo } from './PlayerInfo';
@@ -20,22 +18,11 @@ const PHASE_LABELS: Record<string, string> = {
 };
 
 export function ResolutionPanel() {
-  const dispatch = useUserActionDispatch();
   const turnPhase = useGameStore((s) => s.turnPhase);
   const currentResolution = useGameStore((s) => s.currentResolution);
   const currentPlayerId = useGameStore((s) => s.currentPlayerId);
   const map = useGameStore((s) => s.map);
   useGameStore((s) => s.mapRevision);
-
-  const [autoPlay, setAutoPlay] = useState(false);
-
-  useEffect(() => {
-    if (!autoPlay || !currentResolution) return;
-    const timer = setTimeout(() => {
-      dispatch.onResolveNext();
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [autoPlay, currentResolution, dispatch]);
 
   if (turnPhase !== 'replaying') return null;
 
@@ -81,19 +68,6 @@ export function ResolutionPanel() {
       <div className={panelStyles.panel}>
         <div className={panelStyles.heading}>
           {currentResolution ? PHASE_LABELS[currentResolution.phase] ?? currentResolution.phase : '---'}
-        </div>
-        <div className={styles.controls}>
-          <button className={panelStyles.button} onClick={() => dispatch.onResolveNext()}>
-            Resolve Next
-          </button>
-          <label className={styles.autoPlayLabel}>
-            <input
-              type="checkbox"
-              checked={autoPlay}
-              onChange={(e) => setAutoPlay(e.target.checked)}
-            />
-            Auto
-          </label>
         </div>
       </div>
       {renderDetail()}

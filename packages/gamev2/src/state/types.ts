@@ -50,6 +50,7 @@ export type StoreState = {
 
   // Resolution replay
   currentResolution: Resolution | null;
+  autoResolve: boolean;
 
   // Visibility
   visibilityMode: VisibilityMode;
