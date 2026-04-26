@@ -1,5 +1,8 @@
-import { Frame, Header, SidebarContainer, Sidebar, Footer } from './components/Frame';
-import { GameInfoPanel } from './components/GameInfoPanel';
+import { Frame, Header, LeftColumn, RightColumn, SelectedSlot, Footer } from './components/Frame';
+import { TurnSelector } from './components/TurnSelector';
+import { PlayerLeaderboard } from './components/PlayerLeaderboard';
+import { GameSettingsPanel } from './components/GameSettingsPanel';
+import { ActionBar } from './components/ActionBar';
 import { SelectedInfoPanel } from './components/SelectedInfoPanel';
 import { ResolutionPanel } from './components/ResolutionPanel';
 import { NextPlayerPopup } from './components/NextPlayerPopup';
@@ -11,18 +14,21 @@ export function App() {
   return (
     <Frame>
       <Header>
+        <TurnSelector />
       </Header>
-      <SidebarContainer>
-        <Sidebar>
-          <GameInfoPanel />
+      <LeftColumn>
+        <PlayerLeaderboard />
+      </LeftColumn>
+      <RightColumn>
+        <GameSettingsPanel />
+        <SelectedSlot>
           <ResolutionPanel />
-        </Sidebar>
-        <Sidebar>
           <SelectedInfoPanel />
-        </Sidebar>
-      </SidebarContainer>
+        </SelectedSlot>
+      </RightColumn>
       <Footer>
         <FpsCounter />
+        <ActionBar />
       </Footer>
       <NextPlayerPopup />
       <VictoryPopup />

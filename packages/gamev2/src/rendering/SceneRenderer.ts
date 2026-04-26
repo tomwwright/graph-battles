@@ -125,7 +125,7 @@ export class SceneRenderer {
 
   resize(size: number, centerX: number, centerZ: number): void {
     this.skybox.position = new Vector3(centerX, 0, centerZ);
-    this.skybox.scaling = new Vector3(size, 50, size);
+    this.skybox.scaling = new Vector3(size, 100, size);
     this.ground.position = new Vector3(centerX, 0.1, centerZ);
     this.ground.scaling = new Vector3(size, 1, size);
   }

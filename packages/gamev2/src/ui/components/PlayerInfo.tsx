@@ -1,6 +1,6 @@
 import { Player, Values } from '@battles/models';
 import styles from './panels.module.css';
-import panelStyles from './GameInfoPanel.module.css';
+import panelStyles from './PlayerLeaderboard.module.css';
 
 type PlayerInfoProps = {
   player: Player;
