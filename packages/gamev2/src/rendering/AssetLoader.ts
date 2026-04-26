@@ -12,12 +12,15 @@ const TILE_TYPE_FILES: Partial<Record<TileType, string>> = {
   rocks: '/water-rocks.glb',
 };
 
+const UNIT_FILE = '/unit.glb';
+
 /**
  * Loads and caches GLB models by tile type.
  * Provides mesh instances on demand (cloned from cached originals).
  */
 export class AssetLoader {
   private templates = new Map<TileType, AbstractMesh>();
+  private unitTemplate: AbstractMesh | null = null;
 
   constructor(private readonly baseUrl: string) { }
 
@@ -43,6 +46,23 @@ export class AssetLoader {
 
       this.templates.set(tileType as TileType, mesh);
     }
+
+    if (!this.unitTemplate) {
+      const imported = await SceneLoader.ImportMeshAsync('', this.baseUrl + UNIT_FILE, undefined, undefined, undefined, '.glb');
+      const mesh = imported.meshes.find((m) => m.name === '__root__');
+      if (!mesh) throw new Error(`No __root__ in ${UNIT_FILE}`);
+      mesh.setEnabled(false);
+      this.unitTemplate = mesh;
+    }
+  }
+
+  cloneUnit(name: string): AbstractMesh | null {
+    if (!this.unitTemplate) return null;
+    const clone = this.unitTemplate.clone(name, null);
+    if (!clone) return null;
+    clone.setEnabled(true);
+    clone.rotationQuaternion = null; // clear quaternion rotation so we can use euler rotation
+    return clone;
   }
 
   /**

@@ -1,4 +1,5 @@
 import {
+  AbstractMesh,
   ActionManager,
   Animation,
   Color3,
@@ -7,6 +8,7 @@ import {
   LinesMesh,
   Mesh,
   MeshBuilder,
+  PBRMaterial,
   Scene,
   SineEase,
   StandardMaterial,
@@ -15,6 +17,7 @@ import {
 import { ID, Values, GameMap } from '@battles/models';
 import { HexCoord, hexCenterTile } from './HexCoordinates';
 import { HexGridController } from './HexGridController';
+import { AssetLoader } from './AssetLoader';
 import type { RenderMap } from '../map/MapParser';
 
 const UNIT_HEIGHT = 1.2;
@@ -30,7 +33,7 @@ const MOVE_FRAME_RATE = 30;
 const MOVE_FRAMES_PER_SEGMENT = 12;
 
 type UnitState = {
-  mesh: Mesh;
+  mesh: AbstractMesh;
   locationId: ID;
   statusMeshes: Mesh[];
   destinationLine: LinesMesh | null;
@@ -38,11 +41,10 @@ type UnitState = {
 };
 
 type UnitClickCallback = (unitId: ID) => void;
-type MeshRegistrationCallback = (mesh: Mesh) => void;
+type MeshRegistrationCallback = (mesh: AbstractMesh) => void;
 
 /**
- * Renders units as colored cylinders. Handles:
- * - Player colour tinting
+ * Renders units from the unit.glb asset. Handles:
  * - Status indicators (defend, starve)
  * - Smooth lerp animation through edge waypoints during moves
  * - Grid arrangement when multiple units share a location, with smooth tween on rearrange
@@ -59,7 +61,8 @@ export class UnitRenderer {
   constructor(
     private readonly scene: Scene,
     private readonly grid: HexGridController,
-    private readonly territoryCoordMap: Map<ID, HexCoord>
+    private readonly territoryCoordMap: Map<ID, HexCoord>,
+    private readonly assetLoader: AssetLoader
   ) { }
 
   onMeshRegistration(callback: MeshRegistrationCallback): void {
@@ -83,27 +86,14 @@ export class UnitRenderer {
 
   // --- Unit lifecycle ---
 
-  addUnit(unitId: ID, locationId: ID, colour: Values.Colour): Mesh | null {
+  addUnit(unitId: ID, locationId: ID, colour: Values.Colour): AbstractMesh | null {
     if (this.units.has(unitId)) return this.units.get(unitId)!.mesh;
 
-    const mesh = MeshBuilder.CreateCylinder(
-      `unit-${unitId}`,
-      { height: UNIT_HEIGHT, diameter: UNIT_DIAMETER, tessellation: 12 },
-      this.scene
-    );
+    const mesh = this.assetLoader.cloneUnit(`unit-${unitId}`);
+    if (!mesh) return null;
 
-    const mat = new StandardMaterial(`unit-mat-${unitId}`, this.scene);
-    mat.diffuseColor = this.colourToColor3(colour);
-    mat.specularColor = new Color3(0.3, 0.3, 0.3);
-    mesh.material = mat;
-
-    mesh.isPickable = true;
-    mesh.actionManager = new ActionManager(this.scene);
-    mesh.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
-        this.clickCallback?.(unitId);
-      })
-    );
+    this.tintPlayerMaterial(mesh, unitId, colour);
+    this.attachUnitPicking(mesh, unitId);
 
     this.units.set(unitId, {
       mesh,
@@ -116,6 +106,44 @@ export class UnitRenderer {
     this.meshRegistrationCallback?.(mesh);
     this.arrangeLocation(locationId, false);
     return mesh;
+  }
+
+  private tintPlayerMaterial(root: AbstractMesh, unitId: ID, colour: Values.Colour): void {
+    const tint = this.colourToColor3(colour);
+    const meshes: AbstractMesh[] = [root, ...root.getChildMeshes()];
+    for (const m of meshes) {
+      const mat = m.material;
+      if (!mat || !mat.name.startsWith('Player')) continue;
+      const cloned = mat.clone(`Player-${unitId}`);
+      if (!cloned) continue;
+      if (cloned instanceof PBRMaterial) {
+        cloned.albedoColor = tint;
+      } else if (cloned instanceof StandardMaterial) {
+        cloned.diffuseColor = tint;
+      }
+      m.material = cloned;
+    }
+  }
+
+  private colourToColor3(colour: Values.Colour): Color3 {
+    const r = ((colour >> 16) & 0xff) / 255;
+    const g = ((colour >> 8) & 0xff) / 255;
+    const b = (colour & 0xff) / 255;
+    return new Color3(r, g, b);
+  }
+
+  private attachUnitPicking(root: AbstractMesh, unitId: ID): void {
+    const apply = (m: AbstractMesh) => {
+      m.isPickable = true;
+      m.actionManager = new ActionManager(this.scene);
+      m.actionManager.registerAction(
+        new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+          this.clickCallback?.(unitId);
+        })
+      );
+    };
+    apply(root);
+    for (const child of root.getChildMeshes()) apply(child);
   }
 
   removeUnit(unitId: ID): void {
@@ -262,7 +290,7 @@ export class UnitRenderer {
     return Array.from(this.units.keys());
   }
 
-  getMeshes(): Mesh[] {
+  getMeshes(): AbstractMesh[] {
     return Array.from(this.units.values()).map((u) => u.mesh);
   }
 
@@ -475,7 +503,7 @@ export class UnitRenderer {
     return (Math.abs(dx) + Math.abs(dz) + Math.abs(dx + dz)) / 2;
   }
 
-  private async lerpMesh(mesh: Mesh, from: Vector3, to: Vector3, frames: number): Promise<void> {
+  private async lerpMesh(mesh: AbstractMesh, from: Vector3, to: Vector3, frames: number): Promise<void> {
     const animX = new Animation('moveX', 'position.x', MOVE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
     const animY = new Animation('moveY', 'position.y', MOVE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
     const animZ = new Animation('moveZ', 'position.z', MOVE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
@@ -490,12 +518,23 @@ export class UnitRenderer {
     animY.setKeys([{ frame: 0, value: from.y }, { frame: frames, value: to.y }]);
     animZ.setKeys([{ frame: 0, value: from.z }, { frame: frames, value: to.z }]);
 
+    const dx = to.x - from.x;
+    const dz = to.z - from.z;
+    const animations: Animation[] = [animX, animY, animZ];
+    if (dx !== 0 || dz !== 0) {
+      const targetYaw = this.nearestAngle(mesh.rotation.y, Math.atan2(-dx, -dz));
+      const animYaw = new Animation('moveYaw', 'rotation.y', MOVE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
+      animYaw.setEasingFunction(easing);
+      animYaw.setKeys([{ frame: 0, value: mesh.rotation.y }, { frame: frames, value: targetYaw }]);
+      animations.push(animYaw);
+    }
+
     return new Promise<void>((resolve) => {
-      this.scene.beginDirectAnimation(mesh, [animX, animY, animZ], 0, frames, false, 1, () => resolve());
+      this.scene.beginDirectAnimation(mesh, animations, 0, frames, false, 1, () => resolve());
     });
   }
 
-  private tweenMeshTo(mesh: Mesh, target: Vector3, frames: number): void {
+  private tweenMeshTo(mesh: AbstractMesh, target: Vector3, frames: number): void {
     const from = mesh.position.clone();
     const animX = new Animation('arrX', 'position.x', ARRANGE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
     const animZ = new Animation('arrZ', 'position.z', ARRANGE_FRAME_RATE, Animation.ANIMATIONTYPE_FLOAT);
@@ -509,6 +548,14 @@ export class UnitRenderer {
     animZ.setKeys([{ frame: 0, value: from.z }, { frame: frames, value: target.z }]);
 
     this.scene.beginDirectAnimation(mesh, [animX, animZ], 0, frames, false);
+  }
+
+  private nearestAngle(current: number, target: number): number {
+    const TWO_PI = Math.PI * 2;
+    let t = target;
+    while (t - current > Math.PI) t -= TWO_PI;
+    while (t - current < -Math.PI) t += TWO_PI;
+    return t;
   }
 
   private createStatusIndicator(unitId: ID, status: number): Mesh | null {
@@ -534,10 +581,4 @@ export class UnitRenderer {
     return new Vector3(p.x, p.y + dy, p.z);
   }
 
-  private colourToColor3(colour: Values.Colour): Color3 {
-    const r = ((colour >> 16) & 0xff) / 255;
-    const g = ((colour >> 8) & 0xff) / 255;
-    const b = (colour & 0xff) / 255;
-    return new Color3(r, g, b);
-  }
 }
