@@ -38,7 +38,7 @@ export class GameRenderer {
     this.grid = new HexGridController(scene);
     this.assetLoader = assetLoader;
     this.mapRenderer = new MapRenderer(scene, this.grid, this.assetLoader);
-    this.unitRenderer = new UnitRenderer(scene, this.grid, this.territoryCoordMap);
+    this.unitRenderer = new UnitRenderer(scene, this.grid, this.territoryCoordMap, this.assetLoader);
     this.unitRenderer.onMeshRegistration((mesh) => this.sceneRenderer.registerMeshes([mesh]));
   }
 
