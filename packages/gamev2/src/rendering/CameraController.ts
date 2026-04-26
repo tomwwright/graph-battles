@@ -17,11 +17,11 @@ export class CameraController {
   private maxX: number;
   private maxZ: number;
 
-  private readonly zoomLevels = [4, 10, 20];
+  private readonly zoomLevels = [4, 20, 50];
   private zoomIndex = 1;
 
   constructor(private readonly camera: ArcRotateCamera) {
-    const maxCameraDistance = 25;
+    const maxCameraDistance = 50;
     const cameraAngleDegrees = (Math.PI / 180) * 40;
 
     this.maxX = 10;
@@ -34,7 +34,7 @@ export class CameraController {
     camera.mapPanning = true;
     camera.lowerBetaLimit = cameraAngleDegrees;
     camera.upperBetaLimit = cameraAngleDegrees;
-    camera.maxZ = 100;
+    camera.maxZ = 200;
 
     this.maxVisibleSurroundingDistance = Math.sin(cameraAngleDegrees) * maxCameraDistance * 2.25;
 
