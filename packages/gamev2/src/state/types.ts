@@ -41,7 +41,10 @@ export type StoreState = {
   turn: number;
 
   // UI phase
-  turnPhase: 'planning' | 'ready' | 'replaying' | 'victory' | 'next-player';
+  turnPhase: 'planning' | 'ready' | 'replaying' | 'victory' | 'next-player' | 'waiting';
+
+  /** Optional user identity for remote play. When set, only this user's players appear in the planning cycle. */
+  userId?: ID;
 
   // Selection
   selectedUnitIds: ID[];

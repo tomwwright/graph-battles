@@ -9,10 +9,15 @@ import { MapLoader } from './ui/MapLoader';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MapLoader>
-      {({ assetLoader, renderMap, provider }) => (
+      {({ assetLoader, renderMap, provider, userId }) => (
         <CursorProvider>
           <BabylonJsProvider>
-            <GameContextProvider assetLoader={assetLoader} provider={provider} renderMap={renderMap}>
+            <GameContextProvider
+              assetLoader={assetLoader}
+              provider={provider}
+              renderMap={renderMap}
+              userId={userId}
+            >
               <App />
             </GameContextProvider>
           </BabylonJsProvider>

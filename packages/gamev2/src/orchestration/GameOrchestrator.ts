@@ -6,8 +6,11 @@ import { ResolutionRunner } from './ResolutionRunner';
 import { UnitMeshSyncer } from './UnitMeshSyncer';
 import { OverlaySyncer } from './OverlaySyncer';
 import { GameProvider } from '../providers/GameProvider';
+import { APIGameProvider } from '../providers/APIGameProvider';
 import type { RenderMap } from '../map/MapParser';
 import { getValidDestinations } from './Utils';
+
+const REMOTE_POLL_INTERVAL_MS = 10_000;
 
 /**
  * Central coordinator. Owns GameStore, GameRenderer, ResolutionRunner, GameProvider.
@@ -24,16 +27,25 @@ export class GameOrchestrator implements UserActionDispatch {
   private overlaySyncer: OverlaySyncer | null = null;
   private provider: GameProvider;
   private renderMap: RenderMap | null = null;
+  private readonly userId: ID | undefined;
+  private readonly isRemote: boolean;
+  private playableplayerIds: ID[] = [];
 
   // Resolution control
   private advanceResolve: ((value: 'next' | 'skip') => void) | null = null;
   private abortController: AbortController | null = null;
 
-  constructor(store: GameStore, renderer: GameRenderer, provider: GameProvider) {
+  // Remote turn-resolution polling
+  private pollTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pollCancelled = false;
+
+  constructor(store: GameStore, renderer: GameRenderer, provider: GameProvider, userId?: ID) {
     this.store = store;
     this.renderer = renderer;
     this.resolutionRunner = new ResolutionRunner(store, renderer);
     this.provider = provider;
+    this.userId = userId;
+    this.isRemote = provider instanceof APIGameProvider;
   }
 
   /**
@@ -46,11 +58,13 @@ export class GameOrchestrator implements UserActionDispatch {
     const game = await this.provider.get();
     const map = new GameMap(game.latestMap);
 
+    this.playableplayerIds = this.resolvePlayableplayerIds(game, map);
+
     this.store.setState({
       game,
       map,
       mapRevision: 0,
-      currentPlayerId: map.playerIds[0],
+      currentPlayerId: this.playableplayerIds[0] ?? map.playerIds[0],
       turn: game.turn,
       turnPhase: 'next-player',
       selectedUnitIds: [],
@@ -58,6 +72,7 @@ export class GameOrchestrator implements UserActionDispatch {
       hover: null,
       currentResolution: null,
       visibilityMode: 'all',
+      userId: this.userId,
     });
 
     await this.renderer.initialise(renderMap, map);
@@ -76,6 +91,19 @@ export class GameOrchestrator implements UserActionDispatch {
   dispose(): void {
     this.unitMeshSyncer?.dispose();
     this.overlaySyncer?.dispose();
+    this.cancelPoll();
+  }
+
+  /**
+   * Players this tab is allowed to control. For remote play with a userId,
+   * limit to that user's players (mirrors v1 setFilteredUserIds). Otherwise
+   * all players (hot-seat / stub).
+   */
+  private resolvePlayableplayerIds(game: { users: { data: { id: ID }; players: { data: { id: ID } }[] }[] }, map: GameMap): ID[] {
+    if (!this.userId) return map.playerIds;
+    const user = game.users.find((u) => u.data.id === this.userId);
+    if (!user) return map.playerIds;
+    return user.players.map((p) => p.data.id);
   }
 
   // --- UserActionDispatch implementation ---
@@ -84,17 +112,16 @@ export class GameOrchestrator implements UserActionDispatch {
     const { map, currentPlayerId, turnPhase } = this.store.getState();
     if (turnPhase !== 'planning') return;
 
-    // Apply ready action
-    map.applyAction({ type: 'ready-player', playerId: currentPlayerId, isReady: true });
+    const action = { type: 'ready-player', playerId: currentPlayerId, isReady: true } as const;
+    map.applyAction(action);
     this.store.setState({ map });
+    this.dispatchToProvider(action);
 
-    // Cycle to next player or trigger resolution
-    const playerIds = map.playerIds;
-    const currentIdx = playerIds.indexOf(currentPlayerId);
+    const cycle = this.playableplayerIds;
+    const currentIdx = cycle.indexOf(currentPlayerId);
 
-    if (currentIdx < playerIds.length - 1) {
-      // Show "next player" popup instead of immediately switching
-      const nextPlayerId = playerIds[currentIdx + 1];
+    if (currentIdx < cycle.length - 1) {
+      const nextPlayerId = cycle[currentIdx + 1];
       this.store.setState({
         turnPhase: 'next-player',
         currentPlayerId: nextPlayerId,
@@ -102,9 +129,20 @@ export class GameOrchestrator implements UserActionDispatch {
         selectedTerritoryId: null,
       });
     } else {
-      // All players ready — resolve the turn
       this.onAllPlayersReady();
     }
+  }
+
+  /**
+   * Fire-and-forget action push to the provider. Provider returns the locally-mutated
+   * Game; we already mutated `map` in place, so the result is discarded. Errors
+   * during the API push (only on `ready-player`) surface as console warnings —
+   * action stays cached locally for retry on next `get()`.
+   */
+  private dispatchToProvider(action: import('@battles/models').Actions.ModelAction): void {
+    this.provider.action(action).catch((e) => {
+      console.warn('[GameOrchestrator] provider.action failed:', e);
+    });
   }
 
   onResolveNext(): void {
@@ -154,9 +192,11 @@ export class GameOrchestrator implements UserActionDispatch {
     const { map, turnPhase } = this.store.getState();
     if (turnPhase !== 'planning') return;
 
+    const modelAction = { type: 'territory' as const, territoryId, action };
     try {
-      map.applyAction({ type: 'territory', territoryId, action });
+      map.applyAction(modelAction);
       this.store.setState({ map });
+      this.dispatchToProvider(modelAction);
     } catch (e) {
       console.warn('[GameOrchestrator] Territory action failed:', e);
     }
@@ -168,9 +208,11 @@ export class GameOrchestrator implements UserActionDispatch {
 
     // Passing a null action refunds and removes the pending action
     // (see packages/models/src/actions/territory.ts).
+    const modelAction = { type: 'territory' as const, territoryId, action: null as any };
     try {
-      map.applyAction({ type: 'territory', territoryId, action: null as any });
+      map.applyAction(modelAction);
       this.store.setState({ map });
+      this.dispatchToProvider(modelAction);
     } catch (e) {
       console.warn('[GameOrchestrator] Cancel territory action failed:', e);
     }
@@ -186,10 +228,11 @@ export class GameOrchestrator implements UserActionDispatch {
     const { map, turnPhase } = this.store.getState();
     if (turnPhase !== 'planning') return;
 
-    // Apply move with null destination to cancel
+    const modelAction = { type: 'move-units' as const, unitIds, destinationId: null as any };
     try {
-      map.applyAction({ type: 'move-units', unitIds, destinationId: null as any });
+      map.applyAction(modelAction);
       this.store.setState({ map, selectedUnitIds: [] });
+      this.dispatchToProvider(modelAction);
     } catch (e) {
       console.warn('[GameOrchestrator] Cancel move failed:', e);
     }
@@ -277,9 +320,11 @@ export class GameOrchestrator implements UserActionDispatch {
   private moveSelectedUnits(destinationId: ID): void {
     const { map, selectedUnitIds } = this.store.getState();
 
+    const modelAction = { type: 'move-units' as const, unitIds: selectedUnitIds, destinationId };
     try {
-      map.applyAction({ type: 'move-units', unitIds: selectedUnitIds, destinationId });
+      map.applyAction(modelAction);
       this.store.setState({ map, selectedUnitIds: [], selectedTerritoryId: null });
+      this.dispatchToProvider(modelAction);
     } catch (e) {
       console.warn('[GameOrchestrator] Move failed:', e);
     }
@@ -288,14 +333,66 @@ export class GameOrchestrator implements UserActionDispatch {
   // --- Resolution replay ---
 
   private async onAllPlayersReady(): Promise<void> {
-    const { game } = this.store.getState();
+    if (this.isRemote) {
+      // Remote: this user's players are ready. Server resolves once every user has submitted.
+      // Wait for the next turn to appear via polling.
+      this.store.setState({ turnPhase: 'waiting' });
+      this.startPollingForResolvedTurn();
+      return;
+    }
 
-    // Clone the current map (which has all pending actions) and resolve
+    const { game } = this.store.getState();
     const mapData = Utils.clone(game.latestMap);
     const resolveMap = new GameMap(mapData);
 
     this.store.setState({ turnPhase: 'replaying' });
     await this.startResolution(resolveMap);
+  }
+
+  /**
+   * Poll provider.get() until game.turn advances past the current turn — this
+   * indicates the server has resolved a turn. Cancellable via cancelPoll().
+   */
+  private startPollingForResolvedTurn(): void {
+    this.cancelPoll();
+    this.pollCancelled = false;
+    const startTurn = this.store.getState().turn;
+
+    const tick = async (): Promise<void> => {
+      if (this.pollCancelled) return;
+      try {
+        const game = await this.provider.get();
+        if (this.pollCancelled) return;
+        if (game.turn > startTurn) {
+          const map = new GameMap(game.latestMap);
+          this.playableplayerIds = this.resolvePlayableplayerIds(game, map);
+          this.store.setState({
+            game,
+            map,
+            turn: game.turn,
+            turnPhase: 'next-player',
+            currentPlayerId: this.playableplayerIds[0] ?? map.playerIds[0],
+            selectedUnitIds: [],
+            selectedTerritoryId: null,
+            currentResolution: null,
+          });
+          return;
+        }
+      } catch (e) {
+        console.warn('[GameOrchestrator] Poll failed:', e);
+      }
+      this.pollTimeout = setTimeout(tick, REMOTE_POLL_INTERVAL_MS);
+    };
+
+    tick();
+  }
+
+  private cancelPoll(): void {
+    this.pollCancelled = true;
+    if (this.pollTimeout) {
+      clearTimeout(this.pollTimeout);
+      this.pollTimeout = null;
+    }
   }
 
   private async startResolution(map?: GameMap): Promise<void> {

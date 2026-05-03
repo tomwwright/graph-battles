@@ -92,7 +92,7 @@ function createStubGameData(renderMap: RenderMap): GameData {
   };
 }
 
-export function createStubProvider(renderMap: RenderMap): GameProvider {
+export function createStubProvider(renderMap: RenderMap, mapText: string): GameProvider {
   const gameData = createStubGameData(renderMap);
 
   return {
@@ -103,9 +103,8 @@ export function createStubProvider(renderMap: RenderMap): GameProvider {
       console.warn('[StubGameProvider] action() called — no-op in stub mode', action);
       return new Game(gameData);
     },
-    async create() {
-      console.warn('[StubGameProvider] create() called — returning default stub game');
-      return new Game(gameData);
+    async getMapText() {
+      return mapText;
     },
   };
 }

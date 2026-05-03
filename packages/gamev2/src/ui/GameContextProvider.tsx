@@ -16,6 +16,7 @@ type GameContextProviderProps = {
   provider: GameProvider;
   renderMap: RenderMap;
   assetLoader: AssetLoader;
+  userId?: string;
   children: ReactNode;
 };
 
@@ -24,7 +25,7 @@ type GameContextProviderProps = {
  * then provides GameStoreContext and UserActionDispatchContext to children.
  * Uses a ref to ensure only one orchestrator is created even under StrictMode double-mount.
  */
-export function GameContextProvider({ provider, renderMap, assetLoader, children }: GameContextProviderProps) {
+export function GameContextProvider({ provider, renderMap, assetLoader, userId, children }: GameContextProviderProps) {
   const { scene, camera } = useBabylonJs();
   const orchestratorRef = useRef<GameOrchestrator | null>(null);
   const [orchestrator, setOrchestrator] = useState<GameOrchestrator | null>(null);
@@ -52,7 +53,7 @@ export function GameContextProvider({ provider, renderMap, assetLoader, children
       visibilityMode: 'current-player',
     });
 
-    const orch = new GameOrchestrator(store, renderer, provider);
+    const orch = new GameOrchestrator(store, renderer, provider, userId);
     orchestratorRef.current = orch;
 
     orch.initialise(renderMap).then(() => {
@@ -60,7 +61,7 @@ export function GameContextProvider({ provider, renderMap, assetLoader, children
     });
 
     // Don't dispose on cleanup — StrictMode remounts effects in dev
-  }, [scene, camera, provider, renderMap]);
+  }, [scene, camera, provider, renderMap, userId]);
 
   if (!orchestrator) {
     return null;
