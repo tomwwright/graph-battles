@@ -9,4 +9,4 @@ ADD tsconfig.json ${LAMBDA_TASK_ROOT}
 RUN yarn build
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "dist/tsc/main.handler" ]  
+CMD [ "dist/tsc/server.handler" ]

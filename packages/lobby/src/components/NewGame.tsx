@@ -4,8 +4,10 @@ import { NewPlayer } from './NewPlayer';
 import { PlayerIdentity } from './PlayerIdentity';
 import { PlayerNameCta } from './PlayerNameCta';
 import { useSavedGames } from '../hooks/useSavedGames';
-import * as api from '../services/api';
-import type { ClientVersion, GameMode, VersionedViewData } from '../types';
+import { GameApiClient, type VersionedViewData } from '@battles/api/client';
+import type { ClientVersion, GameMode } from '../types';
+
+const api = new GameApiClient();
 import styles from './NewGame.module.css';
 import { useLobbySettings } from '../providers/LobbySettingsProvider';
 

@@ -26,7 +26,9 @@ export function SavedGameList({ clientVersion }: SavedGameListProps) {
         <SavedGameCard
           key={game.gameData.id}
           game={game}
-          onOpen={() => window.open(getGameUrl(clientVersion, game.gameData.id), '_blank')}
+          onOpen={() =>
+            window.open(getGameUrl(clientVersion, game.gameData.id, undefined, true), '_blank')
+          }
           onDelete={() => deleteGame(game.gameData.id)}
         />
       ))}

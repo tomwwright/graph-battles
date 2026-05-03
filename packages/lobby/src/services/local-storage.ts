@@ -1,5 +1,5 @@
 import { GameData, Utils } from '@battles/models';
-import { StoredViewData } from '../types';
+import type { StoredViewData } from '@battles/api/client';
 
 const KEY_PREFIX = 'graph-battles-';
 const KEY_GAME_LIST = KEY_PREFIX + 'gamelist';

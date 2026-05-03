@@ -1,13 +1,15 @@
 import type { ClientVersion } from './types';
 
-export function getGameUrl(clientVersion: ClientVersion, gameId: string, userId?: string): string {
-  if (clientVersion === 'v2') {
-    const params = new URLSearchParams({ gameId });
-    if (userId) params.set('userId', userId);
-    return `/v2/?${params}`;
-  }
+export function getGameUrl(
+  clientVersion: ClientVersion,
+  gameId: string,
+  userId?: string,
+  isLocal?: boolean,
+): string {
   const params = new URLSearchParams({ gameId });
   if (userId) params.set('userId', userId);
+  if (isLocal) params.set('local', 'true');
+  if (clientVersion === 'v2') return `/v2/?${params}`;
   return `/assets/html/index.html?${params}`;
 }
 
