@@ -4,6 +4,19 @@ import type { GameProvider } from './GameProvider';
 import type { RenderMap } from '../map/MapParser';
 
 /**
+ * Hard-coded fallback map used when the page is loaded with no `gameId` in the
+ * URL (dev / demo mode). Inlined as a string so the stub provider has no
+ * external asset dependency.
+ */
+export const STUB_MAP_TEXT = [
+  '_gT_ggT',
+  'g_gT__g',
+  'g__g_T_',
+  'gT_Tg__',
+  '_gg____',
+].join('\n');
+
+/**
  * Creates a stub GameData from a RenderMap.
  * Assigns players to alternating territories and places one unit on the first territory.
  */
@@ -92,10 +105,11 @@ function createStubGameData(renderMap: RenderMap): GameData {
   };
 }
 
-export function createStubProvider(renderMap: RenderMap, mapText: string): GameProvider {
+export function createStubProvider(renderMap: RenderMap): GameProvider {
   const gameData = createStubGameData(renderMap);
 
   return {
+    mode: 'local',
     async get() {
       return new Game(gameData);
     },
@@ -104,7 +118,10 @@ export function createStubProvider(renderMap: RenderMap, mapText: string): GameP
       return new Game(gameData);
     },
     async getMapText() {
-      return mapText;
+      return STUB_MAP_TEXT;
+    },
+    subscribeToResolution() {
+      return () => {};
     },
   };
 }
