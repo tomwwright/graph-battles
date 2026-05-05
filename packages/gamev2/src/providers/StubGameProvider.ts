@@ -109,7 +109,6 @@ export function createStubProvider(renderMap: RenderMap): GameProvider {
   const gameData = createStubGameData(renderMap);
 
   return {
-    mode: 'local',
     async get() {
       return new Game(gameData);
     },
@@ -120,8 +119,8 @@ export function createStubProvider(renderMap: RenderMap): GameProvider {
     async getMapText() {
       return STUB_MAP_TEXT;
     },
-    subscribeToResolution() {
-      return () => {};
+    async waitForTurn(): Promise<Game> {
+      throw new Error('StubGameProvider: turn resolution not supported');
     },
   };
 }

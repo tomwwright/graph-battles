@@ -16,4 +16,12 @@ export interface GameProvider {
   action(action: Actions.ModelAction): Promise<Game>;
   /** Returns the v2 map text for `parseMap`. Throws if the stored view data is v1. */
   getMapText(): Promise<string>;
+  /**
+   * Resolves with the new Game once turn resolution has advanced past
+   * `currentTurn`. For local providers this is checked once against persisted
+   * state; for remote it polls until the server publishes a resolved turn.
+   * Throws if no resolution is available and the provider has no way to wait
+   * (e.g. stub).
+   */
+  waitForTurn(currentTurn: number): Promise<Game>;
 }

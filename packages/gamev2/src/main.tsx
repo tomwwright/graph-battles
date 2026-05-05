@@ -1,28 +1,21 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BabylonJsProvider } from './ui/BabylonJsProvider';
-import { GameContextProvider } from './ui/GameContextProvider';
+import { GameOrchestratorProvider } from './ui/GameOrchestratorProvider';
 import { CursorProvider } from './ui/CursorProvider';
 import { App } from './ui/App';
-import { MapLoader } from './ui/MapLoader';
+import { GameSessionProvider } from './ui/GameSessionProvider';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MapLoader>
-      {({ assetLoader, renderMap, provider, userId }) => (
-        <CursorProvider>
-          <BabylonJsProvider>
-            <GameContextProvider
-              assetLoader={assetLoader}
-              provider={provider}
-              renderMap={renderMap}
-              userId={userId}
-            >
-              <App />
-            </GameContextProvider>
-          </BabylonJsProvider>
-        </CursorProvider>
-      )}
-    </MapLoader>
+    <GameSessionProvider>
+      <CursorProvider>
+        <BabylonJsProvider>
+          <GameOrchestratorProvider>
+            <App />
+          </GameOrchestratorProvider>
+        </BabylonJsProvider>
+      </CursorProvider>
+    </GameSessionProvider>
   </StrictMode>
 );

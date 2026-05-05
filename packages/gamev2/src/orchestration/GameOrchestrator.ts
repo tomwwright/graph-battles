@@ -1,16 +1,14 @@
-import { ID, Values, GameMap, resolveTurn, Utils } from '@battles/models';
+import { ID, Values, Game, GameMap, resolveTurn, Utils } from '@battles/models';
+import type { Actions } from '@battles/models';
 import { GameStore } from '../state/GameStore';
-import { UserActionDispatch } from '../state/types';
+import type { StoreState, UserActionDispatch } from '../state/types';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { ResolutionRunner } from './ResolutionRunner';
 import { UnitMeshSyncer } from './UnitMeshSyncer';
 import { OverlaySyncer } from './OverlaySyncer';
 import { GameProvider } from '../providers/GameProvider';
-import { APIGameProvider } from '../providers/APIGameProvider';
 import type { RenderMap } from '../map/MapParser';
 import { getValidDestinations } from './Utils';
-
-const REMOTE_POLL_INTERVAL_MS = 10_000;
 
 /**
  * Central coordinator. Owns GameStore, GameRenderer, ResolutionRunner, GameProvider.
@@ -28,16 +26,11 @@ export class GameOrchestrator implements UserActionDispatch {
   private provider: GameProvider;
   private renderMap: RenderMap | null = null;
   private readonly userId: ID | undefined;
-  private readonly isRemote: boolean;
-  private playableplayerIds: ID[] = [];
+  private playablePlayerIds: ID[] = [];
 
   // Resolution control
   private advanceResolve: ((value: 'next' | 'skip') => void) | null = null;
   private abortController: AbortController | null = null;
-
-  // Remote turn-resolution polling
-  private pollTimeout: ReturnType<typeof setTimeout> | null = null;
-  private pollCancelled = false;
 
   constructor(store: GameStore, renderer: GameRenderer, provider: GameProvider, userId?: ID) {
     this.store = store;
@@ -45,7 +38,6 @@ export class GameOrchestrator implements UserActionDispatch {
     this.resolutionRunner = new ResolutionRunner(store, renderer);
     this.provider = provider;
     this.userId = userId;
-    this.isRemote = provider instanceof APIGameProvider;
   }
 
   /**
@@ -58,13 +50,13 @@ export class GameOrchestrator implements UserActionDispatch {
     const game = await this.provider.get();
     const map = new GameMap(game.latestMap);
 
-    this.playableplayerIds = this.resolvePlayableplayerIds(game, map);
+    this.playablePlayerIds = this.resolvePlayablePlayerIds(game, map);
 
     this.store.setState({
       game,
       map,
       mapRevision: 0,
-      currentPlayerId: this.playableplayerIds[0] ?? map.playerIds[0],
+      currentPlayerId: this.playablePlayerIds[0] ?? map.playerIds[0],
       turn: game.turn,
       turnPhase: 'next-player',
       selectedUnitIds: [],
@@ -91,7 +83,25 @@ export class GameOrchestrator implements UserActionDispatch {
   dispose(): void {
     this.unitMeshSyncer?.dispose();
     this.overlaySyncer?.dispose();
-    this.cancelPoll();
+  }
+
+  /**
+   * Apply an action to the current map, push to the provider, and merge any
+   * additional state updates (e.g. clearing selection) into the store. Errors
+   * during `map.applyAction` are caught and logged so a thrown action does not
+   * leave half-applied store state.
+   */
+  private apply(action: Actions.ModelAction, stateUpdate: Partial<StoreState> = {}): void {
+    const { map } = this.store.getState();
+    try {
+      map.applyAction(action);
+      this.store.setState({ map, ...stateUpdate });
+      this.provider.action(action).catch((e) => {
+        console.warn('[GameOrchestrator] provider.action failed:', e);
+      });
+    } catch (e) {
+      console.warn('[GameOrchestrator] apply failed:', action, e);
+    }
   }
 
   /**
@@ -99,7 +109,10 @@ export class GameOrchestrator implements UserActionDispatch {
    * limit to that user's players (mirrors v1 setFilteredUserIds). Otherwise
    * all players (hot-seat / stub).
    */
-  private resolvePlayableplayerIds(game: { users: { data: { id: ID }; players: { data: { id: ID } }[] }[] }, map: GameMap): ID[] {
+  private resolvePlayablePlayerIds(
+    game: { users: { data: { id: ID }; players: { data: { id: ID } }[] }[] },
+    map: GameMap,
+  ): ID[] {
     if (!this.userId) return map.playerIds;
     const user = game.users.find((u) => u.data.id === this.userId);
     if (!user) return map.playerIds;
@@ -109,40 +122,36 @@ export class GameOrchestrator implements UserActionDispatch {
   // --- UserActionDispatch implementation ---
 
   onReadyPlayer(): void {
-    const { map, currentPlayerId, turnPhase } = this.store.getState();
+    const { currentPlayerId, turnPhase, turn } = this.store.getState();
     if (turnPhase !== 'planning') return;
 
-    const action = { type: 'ready-player', playerId: currentPlayerId, isReady: true } as const;
-    map.applyAction(action);
-    this.store.setState({ map });
-    this.dispatchToProvider(action);
-
-    const cycle = this.playableplayerIds;
+    const cycle = this.playablePlayerIds;
     const currentIdx = cycle.indexOf(currentPlayerId);
+    const isLast = currentIdx >= cycle.length - 1;
 
-    if (currentIdx < cycle.length - 1) {
-      const nextPlayerId = cycle[currentIdx + 1];
-      this.store.setState({
-        turnPhase: 'next-player',
-        currentPlayerId: nextPlayerId,
-        selectedUnitIds: [],
-        selectedTerritoryId: null,
-      });
-    } else {
-      this.onAllPlayersReady();
+    this.apply(
+      { type: 'ready-player', playerId: currentPlayerId, isReady: true },
+      isLast
+        ? { turnPhase: 'waiting' }
+        : {
+            turnPhase: 'next-player',
+            currentPlayerId: cycle[currentIdx + 1],
+            selectedUnitIds: [],
+            selectedTerritoryId: null,
+          },
+    );
+
+    if (isLast) {
+      // Local: provider.action() above already advanced persisted turn.
+      // Remote: action() sent to API; provider.waitForTurn polls until server resolves.
+      this.provider
+        .waitForTurn(turn)
+        .then((resolved) => this.runReplayAndAdvance(resolved, turn))
+        .catch((e) => {
+          console.warn('[GameOrchestrator] waitForTurn failed:', e);
+          this.store.setState({ turnPhase: 'planning' });
+        });
     }
-  }
-
-  /**
-   * Fire-and-forget action push to the provider. Provider returns the locally-mutated
-   * Game; we already mutated `map` in place, so the result is discarded. Errors
-   * during the API push (only on `ready-player`) surface as console warnings —
-   * action stays cached locally for retry on next `get()`.
-   */
-  private dispatchToProvider(action: import('@battles/models').Actions.ModelAction): void {
-    this.provider.action(action).catch((e) => {
-      console.warn('[GameOrchestrator] provider.action failed:', e);
-    });
   }
 
   onResolveNext(): void {
@@ -184,38 +193,20 @@ export class GameOrchestrator implements UserActionDispatch {
     });
 
     if (isReplaying) {
-      this.startResolution(map);
+      void this.runReplay(map);
     }
   }
 
   onTerritoryAction(territoryId: ID, action: Values.TerritoryAction): void {
-    const { map, turnPhase } = this.store.getState();
-    if (turnPhase !== 'planning') return;
-
-    const modelAction = { type: 'territory' as const, territoryId, action };
-    try {
-      map.applyAction(modelAction);
-      this.store.setState({ map });
-      this.dispatchToProvider(modelAction);
-    } catch (e) {
-      console.warn('[GameOrchestrator] Territory action failed:', e);
-    }
+    if (this.store.getState().turnPhase !== 'planning') return;
+    this.apply({ type: 'territory', territoryId, action });
   }
 
   onCancelTerritoryAction(territoryId: ID): void {
-    const { map, turnPhase } = this.store.getState();
-    if (turnPhase !== 'planning') return;
-
+    if (this.store.getState().turnPhase !== 'planning') return;
     // Passing a null action refunds and removes the pending action
     // (see packages/models/src/actions/territory.ts).
-    const modelAction = { type: 'territory' as const, territoryId, action: null as any };
-    try {
-      map.applyAction(modelAction);
-      this.store.setState({ map });
-      this.dispatchToProvider(modelAction);
-    } catch (e) {
-      console.warn('[GameOrchestrator] Cancel territory action failed:', e);
-    }
+    this.apply({ type: 'territory', territoryId, action: null as any });
   }
 
   onConfirmNextPlayer(): void {
@@ -225,17 +216,11 @@ export class GameOrchestrator implements UserActionDispatch {
   }
 
   onCancelMove(unitIds: ID[]): void {
-    const { map, turnPhase } = this.store.getState();
-    if (turnPhase !== 'planning') return;
-
-    const modelAction = { type: 'move-units' as const, unitIds, destinationId: null as any };
-    try {
-      map.applyAction(modelAction);
-      this.store.setState({ map, selectedUnitIds: [] });
-      this.dispatchToProvider(modelAction);
-    } catch (e) {
-      console.warn('[GameOrchestrator] Cancel move failed:', e);
-    }
+    if (this.store.getState().turnPhase !== 'planning') return;
+    this.apply(
+      { type: 'move-units', unitIds, destinationId: null as any },
+      { selectedUnitIds: [] },
+    );
   }
 
   // --- Input handlers (from renderer callbacks) ---
@@ -318,134 +303,74 @@ export class GameOrchestrator implements UserActionDispatch {
   }
 
   private moveSelectedUnits(destinationId: ID): void {
-    const { map, selectedUnitIds } = this.store.getState();
-
-    const modelAction = { type: 'move-units' as const, unitIds: selectedUnitIds, destinationId };
-    try {
-      map.applyAction(modelAction);
-      this.store.setState({ map, selectedUnitIds: [], selectedTerritoryId: null });
-      this.dispatchToProvider(modelAction);
-    } catch (e) {
-      console.warn('[GameOrchestrator] Move failed:', e);
-    }
+    const { selectedUnitIds } = this.store.getState();
+    this.apply(
+      { type: 'move-units', unitIds: selectedUnitIds, destinationId },
+      { selectedUnitIds: [], selectedTerritoryId: null },
+    );
   }
 
   // --- Resolution replay ---
 
-  private async onAllPlayersReady(): Promise<void> {
-    if (this.isRemote) {
-      // Remote: this user's players are ready. Server resolves once every user has submitted.
-      // Wait for the next turn to appear via polling.
-      this.store.setState({ turnPhase: 'waiting' });
-      this.startPollingForResolvedTurn();
-      return;
-    }
-
-    const { game } = this.store.getState();
-    const mapData = Utils.clone(game.latestMap);
-    const resolveMap = new GameMap(mapData);
-
-    this.store.setState({ turnPhase: 'replaying' });
-    await this.startResolution(resolveMap);
-  }
-
   /**
-   * Poll provider.get() until game.turn advances past the current turn — this
-   * indicates the server has resolved a turn. Cancellable via cancelPoll().
+   * Runs the replay animation against `map` (the pre-resolve snapshot with all
+   * pending actions baked in). Returns false if aborted.
    */
-  private startPollingForResolvedTurn(): void {
-    this.cancelPoll();
-    this.pollCancelled = false;
-    const startTurn = this.store.getState().turn;
-
-    const tick = async (): Promise<void> => {
-      if (this.pollCancelled) return;
-      try {
-        const game = await this.provider.get();
-        if (this.pollCancelled) return;
-        if (game.turn > startTurn) {
-          const map = new GameMap(game.latestMap);
-          this.playableplayerIds = this.resolvePlayableplayerIds(game, map);
-          this.store.setState({
-            game,
-            map,
-            turn: game.turn,
-            turnPhase: 'next-player',
-            currentPlayerId: this.playableplayerIds[0] ?? map.playerIds[0],
-            selectedUnitIds: [],
-            selectedTerritoryId: null,
-            currentResolution: null,
-          });
-          return;
-        }
-      } catch (e) {
-        console.warn('[GameOrchestrator] Poll failed:', e);
-      }
-      this.pollTimeout = setTimeout(tick, REMOTE_POLL_INTERVAL_MS);
-    };
-
-    tick();
-  }
-
-  private cancelPoll(): void {
-    this.pollCancelled = true;
-    if (this.pollTimeout) {
-      clearTimeout(this.pollTimeout);
-      this.pollTimeout = null;
-    }
-  }
-
-  private async startResolution(map?: GameMap): Promise<void> {
-    const resolveMap = map ?? new GameMap(Utils.clone(this.store.getState().map.data));
-
+  private async runReplay(map: GameMap): Promise<boolean> {
     this.abortController = new AbortController();
-    this.store.setState({ turnPhase: 'replaying', map: resolveMap });
+    this.store.setState({ map, turnPhase: 'replaying' });
 
-    const generator = resolveTurn(resolveMap);
-
+    const generator = resolveTurn(map);
     await this.resolutionRunner.run(
       generator,
       () => this.waitForAdvance(),
       this.abortController.signal,
     );
 
-    if (this.abortController?.signal.aborted) return;
+    const aborted = this.abortController.signal.aborted;
     this.abortController = null;
-
-    // Post-resolution: check victory, advance turn
-    this.onResolutionComplete(resolveMap);
+    return !aborted;
   }
 
-  private onResolutionComplete(resolvedMap: GameMap): void {
-    const { game } = this.store.getState();
+  /**
+   * Replay the just-resolved turn (animation against the pre-resolve map at
+   * `priorTurn`), then advance store state to point at the authoritative
+   * resolved Game returned by the provider.
+   */
+  private async runReplayAndAdvance(resolved: Game, priorTurn: number): Promise<void> {
+    // The pre-resolve snapshot is at maps[priorTurn - 1] — the server (or local
+    // resolver) has all pending actions applied to it before resolveTurn() ran.
+    const preResolveMap = new GameMap(Utils.clone(resolved.data.maps[priorTurn - 1]));
+    const completed = await this.runReplay(preResolveMap);
+    if (!completed) return;
 
-    // Push resolved map as new turn
-    game.data.maps.push(resolvedMap.data);
+    const nextMap = new GameMap(resolved.latestMap);
+    this.playablePlayerIds = this.resolvePlayablePlayerIds(resolved, nextMap);
 
-    // Check for winners
-    const winners = new GameMap(resolvedMap.data).winningPlayers(
-      game.data.maxVictoryPoints,
-      game.turn > game.data.maxTurns
+    const winners = nextMap.winningPlayers(
+      resolved.data.maxVictoryPoints,
+      resolved.turn > resolved.data.maxTurns,
     );
-
     if (winners.length > 0) {
-      this.store.setState({ game, turnPhase: 'victory' });
+      this.store.setState({
+        game: resolved,
+        map: nextMap,
+        turn: resolved.turn,
+        turnPhase: 'victory',
+      });
       return;
     }
 
-    // Advance to next turn — first player gets "next player" popup
-    const nextMap = new GameMap(game.latestMap);
     this.store.setState({
-      game,
+      game: resolved,
       map: nextMap,
-      turn: game.turn,
+      turn: resolved.turn,
       turnPhase: 'next-player',
-      currentPlayerId: nextMap.playerIds[0],
+      currentPlayerId: this.playablePlayerIds[0] ?? nextMap.playerIds[0],
       selectedUnitIds: [],
       selectedTerritoryId: null,
       currentResolution: null,
     });
-
   }
 
   private waitForAdvance(): Promise<'next' | 'skip'> {
@@ -453,5 +378,4 @@ export class GameOrchestrator implements UserActionDispatch {
       this.advanceResolve = resolve;
     });
   }
-
 }

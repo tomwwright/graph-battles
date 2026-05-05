@@ -50,7 +50,7 @@ export function parseMap(mapString: string): RenderMap {
       const coord: HexCoord = { x, z };
 
       if (cell === 'T') {
-        const id = `#${nextTerritoryId++}`;
+        const id = `#T${nextTerritoryId++}`;
         territories.push({ id, coord });
         territoryAt.set(coordKey(coord), id);
       } else if (cell === 'g') {

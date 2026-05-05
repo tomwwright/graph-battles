@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react';
 import { useGameStore } from '../../state/useGameStore';
 import { useUserActionDispatch } from '../../state/useUserActionDispatch';
-import { GameStoreContext } from '../GameContextProvider';
+import { GameStoreContext } from '../GameOrchestratorProvider';
 import panelStyles from './panels.module.css';
 import styles from './ActionBar.module.css';
 

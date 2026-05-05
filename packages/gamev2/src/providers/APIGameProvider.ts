@@ -4,6 +4,8 @@ import { GameApiClient, unwrapV2MapText } from '@battles/api/client';
 import type { GameProvider } from './GameProvider';
 import { PlayerActionStorage } from './PlayerActionStorage';
 
+const POLL_INTERVAL_MS = 10_000;
+
 export class APIGameProvider implements GameProvider {
   private readonly storage: PlayerActionStorage;
   private readonly api: GameApiClient;
@@ -58,6 +60,22 @@ export class APIGameProvider implements GameProvider {
     if (!ready) throw new Error('Pushing actions without a ready action');
     await this.api.putPlayerActions(this.gameId, ready.playerId, actions);
     this.storage.saveActions([]);
+  }
+
+  /**
+   * Polls `get()` every POLL_INTERVAL_MS until `game.turn > currentTurn`,
+   * then resolves with the new Game.
+   */
+  async waitForTurn(currentTurn: number): Promise<Game> {
+    while (true) {
+      try {
+        const game = await this.get();
+        if (game.turn > currentTurn) return game;
+      } catch (e) {
+        console.warn('[APIGameProvider] resolution poll failed:', e);
+      }
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+    }
   }
 
   private async findLatestActions(): Promise<Actions.ModelAction[]> {

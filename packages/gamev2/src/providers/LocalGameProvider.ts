@@ -54,6 +54,18 @@ export class LocalGameProvider implements GameProvider {
     }
   }
 
+  /**
+   * Local play resolves the turn synchronously inside `action()` — by the time
+   * the orchestrator awaits this, the persisted game state already has the
+   * advanced turn. Reads localStorage and returns it. Throws if not advanced
+   * (i.e. all-ready not yet reached).
+   */
+  async waitForTurn(currentTurn: number): Promise<Game> {
+    const game = new Game(this.load().gameData);
+    if (game.turn > currentTurn) return game;
+    throw new Error(`LocalGameProvider: turn ${currentTurn} not yet resolved`);
+  }
+
   private load(): SavedGame {
     const raw = window.localStorage.getItem(KEY_PREFIX + this.gameId);
     if (!raw) throw new Error(`Game '${this.gameId}' not in localStorage`);
