@@ -172,7 +172,13 @@ export class GameAPI {
   async getViewData(gameId: string): Promise<ViewData> {
     const url = `${this.endpoint}/game/${gameId}/view`;
     const viewResponse = await Axios.get(url);
-    return viewResponse.data as ViewData;
+
+    // view data published by @battles/lobby have an envelope of { version: 'v1', data: <view> }
+    if (viewResponse.data.data !== undefined) {
+      return viewResponse.data.data as ViewData;
+    } else {
+      return viewResponse.data as ViewData;
+    }
   }
 
   async getGameData(gameId: string): Promise<GameData> {
