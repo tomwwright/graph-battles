@@ -105,10 +105,14 @@ export function parseMap(mapString: string): RenderMap {
       for (let j = i + 1; j < tIds.length; j++) {
         const a = tIds[i];
         const b = tIds[j];
-        const edgeKey = a < b ? `${a}-${b}` : `${b}-${a}`;
+        const edgeKey = a < b ? `${a}${b}` : `${b}${a}`;
         if (!edgeSet.has(edgeKey)) {
           edgeSet.add(edgeKey);
-          edges.push({ territoryA: a, territoryB: b, grassCoords: component });
+          edges.push({
+            territoryA: a < b ? a : b,
+            territoryB: a < b ? b : a,
+            grassCoords: component
+          });
         }
       }
     }

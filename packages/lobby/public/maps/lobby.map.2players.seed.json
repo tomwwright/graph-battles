@@ -61,27 +61,22 @@
   {
     "type": "edge",
     "territoryAId": "#T1",
-    "territoryBId": "#T4"
-  },
-  {
-    "type": "edge",
-    "territoryAId": "#T2",
     "territoryBId": "#T3"
   },
   {
     "type": "edge",
     "territoryAId": "#T2",
-    "territoryBId": "#T5"
+    "territoryBId": "#T4"
   },
   {
     "type": "edge",
     "territoryAId": "#T3",
-    "territoryBId": "#T6"
+    "territoryBId": "#T5"
   },
   {
     "type": "edge",
     "territoryAId": "#T4",
-    "territoryBId": "#T5"
+    "territoryBId": "#T6"
   },
   {
     "type": "edge",

@@ -49,7 +49,7 @@ function createStubGameData(renderMap: RenderMap): GameData {
 
   // Create edges
   for (const e of renderMap.edges) {
-    const edgeId = `e${edgeNextId++}`;
+    const edgeId = `${e.territoryA}${e.territoryB}`;
     edgeIds[e.territoryA]?.push(edgeId);
     edgeIds[e.territoryB]?.push(edgeId);
     dataMap[edgeId] = {
