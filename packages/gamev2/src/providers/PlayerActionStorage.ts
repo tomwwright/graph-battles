@@ -1,34 +1,35 @@
-import type { Actions } from '@battles/models';
+import type { Actions, ID } from '@battles/models';
 import type { PlayerActionRecord } from '@battles/api/client';
 
 const KEY_PREFIX = 'graph-battles-v2-actions';
 
 /**
- * Per-(gameId, userId) cache of pending actions in localStorage.
+ * Per-(gameId, playerId) cache of pending actions in localStorage.
  * Mirrors v1 PlayerActionLocalStorage but uses a v2-specific key prefix
- * so v1 and v2 caches for the same gameId do not collide.
+ * so v1 and v2 caches for the same gameId do not collide. Keyed by playerId
+ * (not userId) to match the API's per-player action endpoint.
  */
 export class PlayerActionStorage {
-  constructor(private readonly gameId: string, private readonly userId: string) {}
+  constructor(private readonly gameId: string) {}
 
-  addAction(action: Actions.ModelAction): void {
-    const next = this.currentActions.actions;
+  addAction(playerId: ID, action: Actions.ModelAction): void {
+    const next = this.currentActions(playerId).actions;
     next.push(action);
-    this.saveActions(next);
+    this.saveActions(playerId, next);
   }
 
-  saveActions(actions: Actions.ModelAction[]): void {
+  saveActions(playerId: ID, actions: Actions.ModelAction[]): void {
     const record: PlayerActionRecord = { actions, updatedAt: Date.now() };
-    window.localStorage.setItem(this.key, JSON.stringify(record));
+    window.localStorage.setItem(this.key(playerId), JSON.stringify(record));
   }
 
-  get currentActions(): PlayerActionRecord {
-    const raw = window.localStorage.getItem(this.key);
+  currentActions(playerId: ID): PlayerActionRecord {
+    const raw = window.localStorage.getItem(this.key(playerId));
     if (raw === null) return { actions: [], updatedAt: 0 };
     return JSON.parse(raw) as PlayerActionRecord;
   }
 
-  private get key(): string {
-    return `${KEY_PREFIX}-${this.gameId}-${this.userId}`;
+  private key(playerId: ID): string {
+    return `${KEY_PREFIX}-${this.gameId}-${playerId}`;
   }
 }

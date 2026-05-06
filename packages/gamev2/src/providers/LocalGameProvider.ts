@@ -1,5 +1,5 @@
 import { Game, GameMap } from '@battles/models';
-import type { Actions, GameData } from '@battles/models';
+import type { Actions, GameData, ID } from '@battles/models';
 import { unwrapV2MapText } from '@battles/api/client';
 import type { StoredViewData } from '@battles/api/client';
 import type { GameProvider } from './GameProvider';
@@ -28,7 +28,7 @@ export class LocalGameProvider implements GameProvider {
     return new Game(this.load().gameData);
   }
 
-  async action(action: Actions.ModelAction): Promise<Game> {
+  async action(_playerId: ID, action: Actions.ModelAction): Promise<Game> {
     const saved = this.load();
     const game = new Game(saved.gameData);
     const map = new GameMap(game.latestMap);

@@ -92,11 +92,11 @@ export class GameOrchestrator implements UserActionDispatch {
    * leave half-applied store state.
    */
   private apply(action: Actions.ModelAction, stateUpdate: Partial<StoreState> = {}): void {
-    const { map } = this.store.getState();
+    const { map, currentPlayerId } = this.store.getState();
     try {
       map.applyAction(action);
       this.store.setState({ map, ...stateUpdate });
-      this.provider.action(action).catch((e) => {
+      this.provider.action(currentPlayerId, action).catch((e) => {
         console.warn('[GameOrchestrator] provider.action failed:', e);
       });
     } catch (e) {

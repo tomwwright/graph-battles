@@ -112,7 +112,7 @@ export function createStubProvider(renderMap: RenderMap): GameProvider {
     async get() {
       return new Game(gameData);
     },
-    async action(action) {
+    async action(_playerId, action) {
       console.warn('[StubGameProvider] action() called — no-op in stub mode', action);
       return new Game(gameData);
     },
