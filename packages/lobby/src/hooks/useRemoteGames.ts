@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import * as api from '../services/api';
-import type { GameSummary } from '../services/api';
+import { GameApiClient, type GameSummary } from '@battles/api/client';
 
 export type { GameSummary };
+
+const api = new GameApiClient();
 
 export function useRemoteGames() {
   const [games, setGames] = useState<GameSummary[]>([]);

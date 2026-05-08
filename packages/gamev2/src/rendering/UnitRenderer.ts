@@ -21,11 +21,10 @@ import { AssetLoader } from './AssetLoader';
 import type { RenderMap } from '../map/MapParser';
 
 const UNIT_HEIGHT = 1.2;
-const UNIT_DIAMETER = 0.6;
 const UNIT_BASE_Y = UNIT_HEIGHT / 2 + 1;
 
 const UNITS_PER_ROW = 3;
-const UNIT_SPACING = 0.7;
+const UNIT_SPACING = 1.4;
 
 const ARRANGE_FRAME_RATE = 30;
 const ARRANGE_FRAMES = 8;

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "A turn-based tactics game for web built with Phaser, Mobx, and React.",
   "scripts": {
+    "dev": "docker compose up",
     "bundle:client": "webpack --config webpack.config.js",
     "compile": "tsc",
     "build:client": "yarn compile && yarn bundle:client",

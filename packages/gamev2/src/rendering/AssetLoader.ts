@@ -1,4 +1,4 @@
-import { AbstractMesh, SceneLoader, Tools, Vector3 } from '@babylonjs/core';
+import { AbstractMesh, SceneLoader, Vector3 } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import { TileType } from './TerritoryComposition';
 
@@ -23,10 +23,6 @@ export class AssetLoader {
   private unitTemplate: AbstractMesh | null = null;
 
   constructor(private readonly baseUrl: string) { }
-
-  async load(filename: string): Promise<string> {
-    return Tools.LoadFileAsync(this.baseUrl + filename, false)
-  }
 
   async loadAll(): Promise<void> {
     for (const [tileType, filename] of Object.entries(TILE_TYPE_FILES)) {

@@ -18,6 +18,7 @@
   },
   "include": ["src"],
   "references": [
-    { "path": "../models" }
+    { "path": "../models" },
+    { "path": "../api/tsconfig.client.json" }
   ]
 }

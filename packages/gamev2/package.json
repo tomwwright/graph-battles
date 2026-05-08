@@ -13,6 +13,7 @@
   "dependencies": {
     "@babylonjs/core": "^9.0.0",
     "@babylonjs/loaders": "^9.0.0",
+    "@battles/api": "0.0.1",
     "@battles/models": "0.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

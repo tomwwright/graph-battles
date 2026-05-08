@@ -1,6 +1,6 @@
 {
   "name": "@battles/api",
-  "version": "0.4.2",
+  "version": "0.0.1",
   "description": "API using AWS Lambda, DynamoDB, and CDK",
   "author": "Tom Wright",
   "repository": "https://github.com/tomwwright/graph-battles.git",
@@ -10,18 +10,24 @@
     "boilerplate",
     "esbuild"
   ],
-  "main": "./dist/tsc/main.js",
-  "types": "./dist/tsc/main.d.ts",
-  "browser": "./dist/esbuild/browser.js",
-  "bin": {
-    "my-cli-tool": "./dist/esbuild/cli.js"
+  "exports": {
+    "./client": {
+      "types": "./dist/esm/client/index.d.ts",
+      "import": "./dist/esm/client/index.js",
+      "default": "./dist/esm/client/index.js"
+    },
+    "./server": {
+      "types": "./dist/tsc/server.d.ts",
+      "default": "./dist/tsc/server.js"
+    }
   },
+  "sideEffects": false,
   "scripts": {
     "cli": "tsx src/cli.ts",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
     "test": "jest",
     "clean": "rm -rf dist build package",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc --build tsconfig.json"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",

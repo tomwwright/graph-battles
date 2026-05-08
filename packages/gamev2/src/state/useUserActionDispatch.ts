@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { UserActionDispatchContext } from '../ui/GameContextProvider';
+import { UserActionDispatchContext } from '../ui/GameOrchestratorProvider';
 import { UserActionDispatch } from './types';
 
 /**
@@ -8,7 +8,7 @@ import { UserActionDispatch } from './types';
 export function useUserActionDispatch(): UserActionDispatch {
   const dispatch = useContext(UserActionDispatchContext);
   if (!dispatch) {
-    throw new Error('useUserActionDispatch must be used within a GameContextProvider');
+    throw new Error('useUserActionDispatch must be used within a GameOrchestratorProvider');
   }
   return dispatch;
 }

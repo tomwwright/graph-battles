@@ -1,5 +1,5 @@
 import { useContext, useSyncExternalStore } from 'react';
-import { GameStoreContext } from '../ui/GameContextProvider';
+import { GameStoreContext } from '../ui/GameOrchestratorProvider';
 import { StoreState } from './types';
 
 /**
@@ -9,7 +9,7 @@ import { StoreState } from './types';
 export function useGameStore<T>(selector: (state: StoreState) => T): T {
   const store = useContext(GameStoreContext);
   if (!store) {
-    throw new Error('useGameStore must be used within a GameContextProvider');
+    throw new Error('useGameStore must be used within a GameOrchestratorProvider');
   }
 
   return useSyncExternalStore(

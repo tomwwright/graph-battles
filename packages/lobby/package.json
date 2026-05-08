@@ -11,6 +11,7 @@
     "package": "rm -f package.zip && cd dist && zip -r ../package.zip ."
   },
   "dependencies": {
+    "@battles/api": "0.0.1",
     "@battles/models": "0.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -4,6 +4,19 @@ import type { GameProvider } from './GameProvider';
 import type { RenderMap } from '../map/MapParser';
 
 /**
+ * Hard-coded fallback map used when the page is loaded with no `gameId` in the
+ * URL (dev / demo mode). Inlined as a string so the stub provider has no
+ * external asset dependency.
+ */
+export const STUB_MAP_TEXT = [
+  '_gT_ggT',
+  'g_gT__g',
+  'g__g_T_',
+  'gT_Tg__',
+  '_gg____',
+].join('\n');
+
+/**
  * Creates a stub GameData from a RenderMap.
  * Assigns players to alternating territories and places one unit on the first territory.
  */
@@ -36,7 +49,7 @@ function createStubGameData(renderMap: RenderMap): GameData {
 
   // Create edges
   for (const e of renderMap.edges) {
-    const edgeId = `e${edgeNextId++}`;
+    const edgeId = `${e.territoryA}${e.territoryB}`;
     edgeIds[e.territoryA]?.push(edgeId);
     edgeIds[e.territoryB]?.push(edgeId);
     dataMap[edgeId] = {
@@ -99,13 +112,15 @@ export function createStubProvider(renderMap: RenderMap): GameProvider {
     async get() {
       return new Game(gameData);
     },
-    async action(action) {
+    async action(_playerId, action) {
       console.warn('[StubGameProvider] action() called — no-op in stub mode', action);
       return new Game(gameData);
     },
-    async create() {
-      console.warn('[StubGameProvider] create() called — returning default stub game');
-      return new Game(gameData);
+    async getMapText() {
+      return STUB_MAP_TEXT;
+    },
+    async waitForTurn(): Promise<Game> {
+      throw new Error('StubGameProvider: turn resolution not supported');
     },
   };
 }

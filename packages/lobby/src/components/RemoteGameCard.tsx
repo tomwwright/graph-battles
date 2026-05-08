@@ -1,4 +1,4 @@
-import type { GameSummary } from '../services/api';
+import type { GameSummary } from '@battles/api/client';
 import { toTimeDescription } from '../util';
 import styles from './GameCard.module.css';
 
