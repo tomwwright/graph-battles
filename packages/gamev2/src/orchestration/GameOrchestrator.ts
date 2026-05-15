@@ -52,13 +52,20 @@ export class GameOrchestrator implements UserActionDispatch {
 
     this.playablePlayerIds = this.resolvePlayablePlayerIds(game, map);
 
+    const notReadyPlayablePlayerIds = this.playablePlayerIds.filter((id) => {
+      const player = map.player(id);
+      return player != null && !player.ready;
+    });
+    const allPlayableReady = notReadyPlayablePlayerIds.length === 0;
+
     this.store.setState({
       game,
       map,
       mapRevision: 0,
-      currentPlayerId: this.playablePlayerIds[0] ?? map.playerIds[0],
+      currentPlayerId:
+        notReadyPlayablePlayerIds[0] ?? this.playablePlayerIds[0] ?? map.playerIds[0],
       turn: game.turn,
-      turnPhase: 'next-player',
+      turnPhase: allPlayableReady ? 'waiting' : 'next-player',
       selectedUnitIds: [],
       selectedTerritoryId: null,
       hover: null,
@@ -66,6 +73,16 @@ export class GameOrchestrator implements UserActionDispatch {
       visibilityMode: 'all',
       userId: this.userId,
     });
+
+    if (allPlayableReady && this.playablePlayerIds.length > 0) {
+      this.provider
+        .waitForTurn(game.turn)
+        .then((resolved) => this.runReplayAndAdvance(resolved, game.turn))
+        .catch((e) => {
+          console.warn('[GameOrchestrator] waitForTurn failed:', e);
+          this.store.setState({ turnPhase: 'planning' });
+        });
+    }
 
     await this.renderer.initialise(renderMap, map);
 
