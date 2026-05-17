@@ -22,6 +22,10 @@ export interface GameProvider {
    * state; for remote it polls until the server publishes a resolved turn.
    * Throws if no resolution is available and the provider has no way to wait
    * (e.g. stub).
+   *
+   * Pass `signal` to cancel an in-flight wait. Aborted waits reject with an
+   * `AbortError` (DOMException) — callers should treat this as a normal
+   * cancellation and not log it as a failure.
    */
-  waitForTurn(currentTurn: number): Promise<Game>;
+  waitForTurn(currentTurn: number, signal?: AbortSignal): Promise<Game>;
 }

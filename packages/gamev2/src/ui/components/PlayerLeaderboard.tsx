@@ -1,10 +1,11 @@
 import { useGameStore } from '../../state/useGameStore';
+import { selectCurrentPlayerId } from '../../state/selectors';
 import { PlayerInfo } from './PlayerInfo';
 import panelStyles from './panels.module.css';
 import styles from './PlayerLeaderboard.module.css';
 
 export function PlayerLeaderboard() {
-  const currentPlayerId = useGameStore((s) => s.currentPlayerId);
+  const currentPlayerId = useGameStore(selectCurrentPlayerId);
   const map = useGameStore((s) => s.map);
   useGameStore((s) => s.mapRevision);
 

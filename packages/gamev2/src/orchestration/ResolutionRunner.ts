@@ -3,6 +3,7 @@ import { ID, Resolution, GameMap, Values } from '@battles/models';
 import { GameStore } from '../state/GameStore';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { isLocationVisible, isUnitVisible } from './Utils';
+import { selectCurrentPlayerId } from '../state/selectors';
 
 /**
  * Drives the resolveTurn() generator. Maps each Resolution type to the
@@ -85,8 +86,11 @@ export class ResolutionRunner {
   // --- Visibility ---
 
   private isResolutionVisible(resolution: Resolution): boolean {
-    const { visibilityMode, map, currentPlayerId } = this.store.getState();
-    if (visibilityMode === 'all') return true;
+    const state = this.store.getState();
+    if (state.visibilityMode === 'all') return true;
+    const currentPlayerId = selectCurrentPlayerId(state);
+    if (!currentPlayerId) return true;
+    const { map } = state;
 
     switch (resolution.phase) {
       case 'move':

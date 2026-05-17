@@ -1,5 +1,5 @@
 import { useGameStore } from '../../state/useGameStore';
-import { useUserActionDispatch } from '../../state/useUserActionDispatch';
+import { useDispatch } from '../../state/useDispatch';
 import styles from './TurnSelector.module.css';
 
 const PHASE_CLASSES: Record<string, string> = {
@@ -11,16 +11,16 @@ const PHASE_CLASSES: Record<string, string> = {
 
 const PHASE_LABELS: Record<string, string> = {
   planning: 'Planning',
-  ready: 'Ready',
+  waiting: 'Waiting',
   replaying: 'Replaying',
   'next-player': 'Next Player',
   victory: 'Victory',
 };
 
 export function TurnSelector() {
-  const dispatch = useUserActionDispatch();
+  const dispatch = useDispatch();
   const turn = useGameStore((s) => s.turn);
-  const turnPhase = useGameStore((s) => s.turnPhase);
+  const phaseType = useGameStore((s) => s.phase.type);
   const game = useGameStore((s) => s.game);
 
   const numTurns = game.data.maps.length;
@@ -34,14 +34,14 @@ export function TurnSelector() {
             key={t}
             className={t === numTurns ? styles.turnButtonLatest : styles.turnButton}
             disabled={t === turn}
-            onClick={() => dispatch.onSetTurn(t)}
+            onClick={() => dispatch({ type: 'set-turn', turn: t })}
           >
             {t}
           </button>
         ))}
       </div>
-      <span className={PHASE_CLASSES[turnPhase] ?? styles.phaseBadge}>
-        {PHASE_LABELS[turnPhase] ?? turnPhase}
+      <span className={PHASE_CLASSES[phaseType] ?? styles.phaseBadge}>
+        {PHASE_LABELS[phaseType] ?? phaseType}
       </span>
     </div>
   );

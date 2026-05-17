@@ -1,14 +1,14 @@
 import { createContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { GameStore } from '../state/GameStore';
-import { UserActionDispatch } from '../state/types';
+import type { Dispatch } from '../state/types';
 import { GameOrchestrator } from '../orchestration/GameOrchestrator';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { useBabylonJs } from './BabylonJsProvider';
 import { useGameSession } from './GameSessionProvider';
 
 export const GameStoreContext = createContext<GameStore | null>(null);
-export const UserActionDispatchContext = createContext<UserActionDispatch | null>(null);
+export const DispatchContext = createContext<Dispatch | null>(null);
 
 type GameOrchestratorProviderProps = {
   children: ReactNode;
@@ -16,7 +16,7 @@ type GameOrchestratorProviderProps = {
 
 /**
  * Creates the orchestrator from BabylonJs context + GameSession, initialises it,
- * then provides GameStoreContext and UserActionDispatchContext to children.
+ * then provides GameStoreContext and DispatchContext to children.
  * Uses a ref to ensure only one orchestrator is created even under StrictMode double-mount.
  */
 export function GameOrchestratorProvider({ children }: GameOrchestratorProviderProps) {
@@ -34,9 +34,8 @@ export function GameOrchestratorProvider({ children }: GameOrchestratorProviderP
         game: null!,
         map: null!,
         mapRevision: 0,
-        currentPlayerId: '',
         turn: 0,
-        turnPhase: 'planning',
+        phase: { type: 'next-player', currentPlayerId: '' },
         selectedUnitIds: [],
         selectedTerritoryId: null,
         hover: null,
@@ -67,9 +66,9 @@ export function GameOrchestratorProvider({ children }: GameOrchestratorProviderP
 
   return (
     <GameStoreContext.Provider value={orchestrator.store}>
-      <UserActionDispatchContext.Provider value={orchestrator}>
+      <DispatchContext.Provider value={orchestrator.dispatch}>
         {children}
-      </UserActionDispatchContext.Provider>
+      </DispatchContext.Provider>
     </GameStoreContext.Provider>
   );
 }

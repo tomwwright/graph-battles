@@ -60,7 +60,8 @@ export class LocalGameProvider implements GameProvider {
    * advanced turn. Reads localStorage and returns it. Throws if not advanced
    * (i.e. all-ready not yet reached).
    */
-  async waitForTurn(currentTurn: number): Promise<Game> {
+  async waitForTurn(currentTurn: number, _signal?: AbortSignal): Promise<Game> {
+    void _signal;
     const game = new Game(this.load().gameData);
     if (game.turn > currentTurn) return game;
     throw new Error(`LocalGameProvider: turn ${currentTurn} not yet resolved`);

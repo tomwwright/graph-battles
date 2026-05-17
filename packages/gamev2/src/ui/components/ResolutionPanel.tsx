@@ -1,5 +1,6 @@
 import { Combat } from '@battles/models';
 import { useGameStore } from '../../state/useGameStore';
+import { selectCurrentPlayerId } from '../../state/selectors';
 import { UnitInfo } from './UnitInfo';
 import { TerritoryInfo } from './TerritoryInfo';
 import { PlayerInfo } from './PlayerInfo';
@@ -18,15 +19,15 @@ const PHASE_LABELS: Record<string, string> = {
 };
 
 export function ResolutionPanel() {
-  const turnPhase = useGameStore((s) => s.turnPhase);
+  const phaseType = useGameStore((s) => s.phase.type);
   const currentResolution = useGameStore((s) => s.currentResolution);
-  const currentPlayerId = useGameStore((s) => s.currentPlayerId);
+  const currentPlayerId = useGameStore(selectCurrentPlayerId);
   const map = useGameStore((s) => s.map);
   useGameStore((s) => s.mapRevision);
 
-  if (turnPhase !== 'replaying') return null;
+  if (phaseType !== 'replaying') return null;
 
-  const currentPlayer = map.player(currentPlayerId);
+  const currentPlayer = currentPlayerId ? map.player(currentPlayerId) : null;
 
   const renderDetail = () => {
     if (!currentResolution) return null;

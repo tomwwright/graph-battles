@@ -1,16 +1,16 @@
 import { Values } from '@battles/models';
 import { useGameStore } from '../../state/useGameStore';
-import { useUserActionDispatch } from '../../state/useUserActionDispatch';
+import { useDispatch } from '../../state/useDispatch';
 import styles from './Popup.module.css';
 
 export function VictoryPopup() {
-  const dispatch = useUserActionDispatch();
-  const turnPhase = useGameStore((s) => s.turnPhase);
+  const dispatch = useDispatch();
+  const phaseType = useGameStore((s) => s.phase.type);
   const game = useGameStore((s) => s.game);
   const map = useGameStore((s) => s.map);
   useGameStore((s) => s.mapRevision);
 
-  if (turnPhase !== 'victory') return null;
+  if (phaseType !== 'victory') return null;
 
   const winners = map.winningPlayers(
     game.data.maxVictoryPoints,
@@ -50,7 +50,7 @@ export function VictoryPopup() {
 
         <button
           className={styles.popupButton}
-          onClick={() => dispatch.onSetTurn(game.data.maps.length - 1)}
+          onClick={() => dispatch({ type: 'set-turn', turn: game.data.maps.length - 1 })}
         >
           Replay Final Turn
         </button>
