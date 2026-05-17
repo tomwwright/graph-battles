@@ -15,7 +15,6 @@ import { CameraSyncer } from './CameraSyncer';
 import { GameProvider } from '../providers/GameProvider';
 import type { RenderMap } from '../map/MapParser';
 import type { HandlerContext } from './HandlerContext';
-import { PhaseChangeListeners } from './PhaseChangeListeners';
 import { WaitForTurnResolutionListener } from './WaitForTurnResolutionListener';
 import { ReplayingListener } from './ReplayingListener';
 import {
@@ -34,8 +33,9 @@ import {
  * commands to handlers, and exposes a small service interface (`HandlerContext`)
  * that handlers call back into.
  *
- * Phase-bound side effects live in `WaitForTurnResolutionListener` and
- * `ReplayingListener`, wired into `PhaseEffects` here.
+ * Phase-bound side effects are owned by self-subscribing listeners
+ * (`WaitForTurnResolutionListener`, `ReplayingListener`) — each watches its
+ * own slice of the phase state machine and fires its own enter/exit.
  *
  * Per-phase data (advance callback, abort controller, current player) lives
  * on the `Phase` discriminated union in the store, not on this instance.
@@ -50,7 +50,6 @@ export class GameOrchestrator {
   private provider: GameProvider;
   private renderMap: RenderMap | null = null;
   private readonly userId: ID | undefined;
-  private readonly phaseEffects: PhaseChangeListeners;
   private readonly waitListener: WaitForTurnResolutionListener;
   private readonly replayingListener: ReplayingListener;
 
@@ -71,24 +70,19 @@ export class GameOrchestrator {
       applyAction: (action) => this.applyAction(action),
     };
 
+    // Self-subscribing listeners. Construct before `initialise()` dispatches
+    // the real initial phase so the placeholder→real transition fires the
+    // appropriate entry hook automatically.
     this.replayingListener = new ReplayingListener(
       this.store,
       this.resolutionRunner,
       this.userId,
     );
-    this.waitListener = new WaitForTurnResolutionListener(this.provider, {
+    this.waitListener = new WaitForTurnResolutionListener(this.store, this.provider, {
       onResolved: (resolved, priorTurn) =>
         this.replayingListener.runReplayAndAdvance(resolved, priorTurn),
       onError: (e) => this.handleWaitForTurnError(e),
     });
-
-    // Phase entry/exit side effects. Wired before initialise()'s setState so
-    // the placeholder→real phase transition fires the appropriate entry hook.
-    this.phaseEffects = new PhaseChangeListeners(this.store)
-      .onEnter('waiting', (s) => this.waitListener.start(s.turn))
-      .onExit('waiting', () => this.waitListener.cancel())
-      .onEnter('replaying', (s) => this.replayingListener.start(s))
-      .onExit('replaying', (phase) => this.replayingListener.cancel(phase));
   }
 
   async initialise(renderMap: RenderMap): Promise<void> {
@@ -146,7 +140,8 @@ export class GameOrchestrator {
     this.unitSyncer?.dispose();
     this.territorySyncer?.dispose();
     this.cameraSyncer?.dispose();
-    this.phaseEffects.dispose();
+    this.waitListener.dispose();
+    this.replayingListener.dispose();
   }
 
   // --- Command routing ---

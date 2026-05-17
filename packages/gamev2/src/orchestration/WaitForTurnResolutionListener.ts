@@ -1,5 +1,6 @@
 import type { Game } from '@battles/models';
 import type { GameProvider } from '../providers/GameProvider';
+import type { Phase, StoreState, Subscribable } from '../state/types';
 
 export type WaitForTurnCallbacks = {
   /** Called when polling resolves with a new turn. */
@@ -13,25 +14,46 @@ export type WaitForTurnCallbacks = {
 };
 
 /**
- * Owns the in-flight `provider.waitForTurn` poll for the 'waiting' phase.
+ * Self-subscribing listener for the 'waiting' phase.
  *
- * Wired to PhaseEffects in GameOrchestrator:
- *   .onEnter('waiting', s => waitListener.start(s.turn))
- *   .onExit('waiting', () => waitListener.cancel())
+ * On enter: kicks `provider.waitForTurn` and pipes the result into
+ * `callbacks.onResolved`. On exit: aborts the in-flight poll via the
+ * internal `AbortController` — the rejected promise's `AbortError` is
+ * swallowed silently.
  *
- * `cancel()` aborts the poll via `AbortController`. The aborted poll rejects
- * with `AbortError`, which the listener swallows — `onError` only fires for
- * genuine failures.
+ * Subscribes itself to the store in the constructor and tracks `lastPhase`
+ * to detect entry/exit transitions. The previous `PhaseChangeListeners`
+ * abstraction is no longer needed.
  */
 export class WaitForTurnResolutionListener {
   private pollAbort: AbortController | null = null;
+  private lastPhase: Phase;
+  private readonly unsubscribe: () => void;
 
   constructor(
+    private readonly source: Subscribable<StoreState>,
     private readonly provider: GameProvider,
     private readonly callbacks: WaitForTurnCallbacks,
-  ) {}
+  ) {
+    this.lastPhase = source.getState().phase;
+    this.unsubscribe = source.subscribe(() => this.onChange());
+  }
 
-  start(turn: number): void {
+  dispose(): void {
+    this.cancel();
+    this.unsubscribe();
+  }
+
+  private onChange(): void {
+    const next = this.source.getState().phase;
+    const prev = this.lastPhase;
+    if (prev.type === next.type) return;
+    this.lastPhase = next;
+    if (prev.type === 'waiting') this.cancel();
+    if (next.type === 'waiting') this.start(this.source.getState().turn);
+  }
+
+  private start(turn: number): void {
     this.pollAbort = new AbortController();
     const signal = this.pollAbort.signal;
     this.provider
@@ -46,7 +68,7 @@ export class WaitForTurnResolutionListener {
       });
   }
 
-  cancel(): void {
+  private cancel(): void {
     this.pollAbort?.abort();
     this.pollAbort = null;
   }
