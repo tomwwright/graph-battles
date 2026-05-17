@@ -16,8 +16,8 @@ export function onAdvanceResolution(
   ctx: HandlerContext,
   cmd: Cmd<'resolve-next'> | Cmd<'skip-resolution'>,
 ): void {
-  const { phase } = ctx.store.getState();
+  const { phase } = ctx.getState();
   if (phase.type !== 'replaying') return;
   phase.advance?.(cmd.type === 'resolve-next' ? 'next' : 'skip');
-  ctx.store.dispatch({ type: 'phase/set', phase: { ...phase, advance: null } });
+  ctx.dispatch({ type: 'phase/set', phase: { ...phase, advance: null } });
 }

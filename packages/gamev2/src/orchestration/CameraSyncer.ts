@@ -1,7 +1,6 @@
 import { GameMap, Resolution } from '@battles/models';
 import type { ID } from '@battles/models';
-import type { GameStore } from '../state/GameStore';
-import type { Subscribable } from '../state/types';
+import type { AnimationTracker, Subscribable } from '../state/types';
 
 /** Minimal `StoreState` shape this syncer reads. */
 type CameraSyncerState = { currentResolution: Resolution | null; map: GameMap };
@@ -26,7 +25,7 @@ export class CameraSyncer {
 
   constructor(
     private readonly source: Subscribable<CameraSyncerState>,
-    private readonly store: GameStore,
+    private readonly tracker: AnimationTracker,
     private readonly renderer: CameraTarget,
   ) {
     this.unsubscribe = this.source.subscribe(() => this.onChange());
@@ -44,7 +43,7 @@ export class CameraSyncer {
     if (!next) return;
     const focusId = getResolutionFocusTerritory(next, state.map);
     if (focusId == null) return;
-    this.store.trackAnimation(this.renderer.focusOn(focusId));
+    this.tracker.trackAnimation(this.renderer.focusOn(focusId));
   }
 }
 

@@ -3,11 +3,11 @@ import type { Cmd } from '../../state/types';
 import { selectionFromTerritoryClick } from '../selection';
 
 export function onClickTerritory(ctx: HandlerContext, cmd: Cmd<'click-territory'>): void {
-  const state = ctx.store.getState();
+  const state = ctx.getState();
   const result = selectionFromTerritoryClick(state, cmd.territoryId);
 
   if (result.selection) {
-    ctx.store.dispatch({
+    ctx.dispatch({
       type: 'selection/set',
       unitIds: result.selection.unitIds,
       territoryId: result.selection.territoryId,

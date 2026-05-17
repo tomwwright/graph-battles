@@ -1,20 +1,16 @@
 import type { Actions } from '@battles/models';
-import type { GameStore } from '../state/GameStore';
+import type { StateChange, StoreState } from '../state/types';
 
 /**
- * Service interface passed to every handler. Handlers read/mutate state via
- * `store` and request side effects via these methods. Keeps handlers free of
- * direct dependencies on `GameProvider`, `GameRenderer`, `ResolutionRunner`
- * etc — the orchestrator owns those and exposes only the operations
- * handlers actually need.
- *
- * Side effects bound to phase transitions (kick poll on enter `waiting`,
- * start replay on enter `replaying`, abort poll/replay on exit) are wired via
- * `PhaseEffects` in the orchestrator constructor — handlers don't see them.
- * Just transition the phase.
+ * Service interface passed to every handler. Handlers read state via
+ * `getState`, mutate via `dispatch`, and request domain side effects via
+ * `applyAction`. Keeps handlers free of direct dependencies on `GameStore`,
+ * `GameProvider`, `GameRenderer`, `ResolutionRunner` — the orchestrator owns
+ * those and exposes only the operations handlers actually need.
  */
 export type HandlerContext = {
-  store: GameStore;
-  /** Mutate map + push to provider. Logs failures, doesn't throw. */
+  getState(): StoreState;
+  dispatch(action: StateChange): void;
+  /** Apply a domain action: mutates map, bumps revision, fires provider write. */
   applyAction(action: Actions.ModelAction): void;
 };

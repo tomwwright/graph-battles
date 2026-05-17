@@ -1,7 +1,6 @@
 import { Game, GameMap, resolveTurn, Utils } from '@battles/models';
 import type { ID } from '@battles/models';
-import type { GameStore } from '../state/GameStore';
-import type { Phase, Subscribable } from '../state/types';
+import type { Phase, StateDispatcher, Subscribable } from '../state/types';
 import {
   resolvePlayablePlayerIds,
   selectResolvedCurrentPlayerId,
@@ -34,7 +33,7 @@ export class ReplayingListener {
 
   constructor(
     private readonly source: Subscribable<ReplayingListenerState>,
-    private readonly store: GameStore,
+    private readonly dispatcher: StateDispatcher,
     private readonly resolutionRunner: ResolutionRunner,
     private readonly userId: ID | undefined,
   ) {
@@ -59,7 +58,7 @@ export class ReplayingListener {
     const state = this.source.getState();
     const carriedPlayerId = selectResolvedCurrentPlayerId(state);
 
-    this.store.dispatch({
+    this.dispatcher.dispatch({
       type: 'replay/started-post-resolution',
       map: preResolveMap,
       currentPlayerId: carriedPlayerId,
@@ -100,7 +99,7 @@ export class ReplayingListener {
     );
 
     if (winners.length > 0) {
-      this.store.dispatch({
+      this.dispatcher.dispatch({
         type: 'game/advanced-to-victory',
         game: resolved,
         map: nextMap,
@@ -109,7 +108,7 @@ export class ReplayingListener {
       return;
     }
 
-    this.store.dispatch({
+    this.dispatcher.dispatch({
       type: 'game/advanced-to-next-player',
       game: resolved,
       map: nextMap,
@@ -134,7 +133,7 @@ export class ReplayingListener {
         resolve('skip');
         return;
       }
-      this.store.dispatch({ type: 'phase/set', phase: { ...phase, advance: resolve } });
+      this.dispatcher.dispatch({ type: 'phase/set', phase: { ...phase, advance: resolve } });
     });
   }
 }

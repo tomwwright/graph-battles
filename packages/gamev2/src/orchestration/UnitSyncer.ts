@@ -1,7 +1,6 @@
 import { GameMap, Resolution, Values } from '@battles/models';
 import type { ID } from '@battles/models';
-import type { GameStore } from '../state/GameStore';
-import type { Phase, Subscribable } from '../state/types';
+import type { AnimationTracker, Phase, Subscribable } from '../state/types';
 import { UnitRenderer } from '../rendering/UnitRenderer';
 
 /** Minimal `StoreState` shape this syncer reads. */
@@ -34,7 +33,7 @@ export class UnitSyncer {
 
   constructor(
     private readonly source: Subscribable<UnitSyncerState>,
-    private readonly store: GameStore,
+    private readonly tracker: AnimationTracker,
     private readonly renderer: UnitRenderer,
   ) {
     this.syncIfChanged();
@@ -87,7 +86,7 @@ export class UnitSyncer {
         currentResolution.unitId === unitId;
 
       if (wasPresent && prev !== undefined && prev !== nextLocation && isMoveResolution) {
-        this.store.trackAnimation(
+        this.tracker.trackAnimation(
           this.renderer.animateUnitMove(unitId, prev, nextLocation, replayingSignal),
         );
       } else if (wasPresent && prev !== undefined && prev !== nextLocation) {

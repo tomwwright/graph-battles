@@ -13,6 +13,24 @@ export type Subscribable<T> = {
   subscribe(listener: () => void): () => void;
 };
 
+/**
+ * Capability interface: emit a typed state change against the store reducer.
+ * Consumers depend on this instead of the concrete `GameStore` so the write
+ * surface is the only thing they see.
+ */
+export type StateDispatcher = {
+  dispatch(action: StateChange): void;
+};
+
+/**
+ * Capability interface: register an in-flight animation with the store so
+ * `pendingAnimations` reflects the lifecycle. Syncers consume this; the
+ * resolution runner awaits `pendingAnimations.length === 0` between steps.
+ */
+export type AnimationTracker = {
+  trackAnimation(promise: Promise<unknown>): string;
+};
+
 /** Narrow slice of store state that map-driven syncers care about. */
 export type MapState = {
   map: GameMap;

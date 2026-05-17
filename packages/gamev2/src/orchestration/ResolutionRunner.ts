@@ -1,9 +1,9 @@
 import { Game, GameMap, Resolution } from '@battles/models';
 import type { ID } from '@battles/models';
-import { GameStore } from '../state/GameStore';
 import type {
   AnimationToken,
   Phase,
+  StateDispatcher,
   Subscribable,
   VisibilityMode,
 } from '../state/types';
@@ -46,7 +46,7 @@ type ResolutionRunnerState = {
 export class ResolutionRunner {
   constructor(
     private readonly source: Subscribable<ResolutionRunnerState>,
-    private readonly store: GameStore,
+    private readonly dispatcher: StateDispatcher,
   ) {}
 
   async run(
@@ -66,7 +66,7 @@ export class ResolutionRunner {
         continue;
       }
 
-      this.store.dispatch({ type: 'resolution/set', resolution });
+      this.dispatcher.dispatch({ type: 'resolution/set', resolution });
       await this.waitForNoRunningAnimations(signal);
       if (signal.aborted) return;
 
@@ -79,17 +79,17 @@ export class ResolutionRunner {
         while (!result.done) {
           result = generator.next();
         }
-        this.store.dispatch({ type: 'resolution/set', resolution: null });
-        this.store.dispatch({ type: 'map/mutated' });
+        this.dispatcher.dispatch({ type: 'resolution/set', resolution: null });
+        this.dispatcher.dispatch({ type: 'map/mutated' });
         return;
       }
 
       result = generator.next();
-      this.store.dispatch({ type: 'map/mutated' });
+      this.dispatcher.dispatch({ type: 'map/mutated' });
       await this.waitForNoRunningAnimations(signal);
     }
 
-    this.store.dispatch({ type: 'resolution/set', resolution: null });
+    this.dispatcher.dispatch({ type: 'resolution/set', resolution: null });
   }
 
   private isResolutionVisible(resolution: Resolution): boolean {

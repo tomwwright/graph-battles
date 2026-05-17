@@ -2,7 +2,7 @@ import type { HandlerContext } from '../HandlerContext';
 import { selectPlayablePlayerIds } from '../../state/selectors';
 
 export function onReadyPlayer(ctx: HandlerContext): void {
-  const state = ctx.store.getState();
+  const state = ctx.getState();
   if (state.phase.type !== 'planning') return;
 
   const cycle = selectPlayablePlayerIds(state);
@@ -20,15 +20,15 @@ export function onReadyPlayer(ctx: HandlerContext): void {
     // entry hook wired in GameOrchestrator. Local: provider.action above
     // already advanced persisted turn. Remote: action sent to API; the
     // hook-driven poll waits for the server to resolve.
-    ctx.store.dispatch({
+    ctx.dispatch({
       type: 'phase/set',
       phase: { type: 'waiting', submittedAtTurn: state.turn },
     });
   } else {
-    ctx.store.dispatch({
+    ctx.dispatch({
       type: 'phase/set',
       phase: { type: 'next-player', currentPlayerId: cycle[idx + 1] },
     });
-    ctx.store.dispatch({ type: 'selection/clear' });
+    ctx.dispatch({ type: 'selection/clear' });
   }
 }

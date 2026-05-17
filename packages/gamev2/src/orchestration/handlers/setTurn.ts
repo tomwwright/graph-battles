@@ -4,7 +4,7 @@ import type { Cmd } from '../../state/types';
 import { selectResolvedCurrentPlayerId } from '../../state/selectors';
 
 export function onSetTurn(ctx: HandlerContext, cmd: Cmd<'set-turn'>): void {
-  const state = ctx.store.getState();
+  const state = ctx.getState();
   if (cmd.turn < 1 || cmd.turn > state.game.turn) return;
 
   // No need to abort an in-flight replay here — exiting 'replaying' fires the
@@ -19,14 +19,14 @@ export function onSetTurn(ctx: HandlerContext, cmd: Cmd<'set-turn'>): void {
   if (isReplaying) {
     // The reducer constructs the AbortController for the new replaying phase.
     // Entering 'replaying' starts the replay via the PhaseEffects entry hook.
-    ctx.store.dispatch({
+    ctx.dispatch({
       type: 'turn/scrubbed-to-past',
       turn: cmd.turn,
       map,
       currentPlayerId: carriedPlayerId,
     });
   } else {
-    ctx.store.dispatch({
+    ctx.dispatch({
       type: 'turn/jumped-to-current',
       turn: cmd.turn,
       map,

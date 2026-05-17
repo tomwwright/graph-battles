@@ -66,7 +66,8 @@ export class GameOrchestrator {
     this.provider = provider;
     this.userId = userId;
     this.ctx = {
-      store: this.store,
+      getState: () => this.store.getState(),
+      dispatch: (action) => this.store.dispatch(action),
       applyAction: (action) => this.applyAction(action),
     };
 

@@ -1,9 +1,9 @@
 import type { HandlerContext } from '../HandlerContext';
 
 export function onConfirmNextPlayer(ctx: HandlerContext): void {
-  const { phase } = ctx.store.getState();
+  const { phase } = ctx.getState();
   if (phase.type !== 'next-player') return;
-  ctx.store.dispatch({
+  ctx.dispatch({
     type: 'phase/set',
     phase: { type: 'planning', currentPlayerId: phase.currentPlayerId },
   });
