@@ -37,6 +37,27 @@ export function selectCurrentPlayerId(state: StoreState): ID | null {
   return selectPlayablePlayerIds(state)[0] ?? state.map?.playerIds[0] ?? null;
 }
 
+/**
+ * Three-tier fallback for "which player should be active now":
+ *   1. The phase's carried `currentPlayerId` (planning / next-player / replaying).
+ *   2. First playable player.
+ *   3. First player in the map.
+ *
+ * Returns an ID always — assumes the map has at least one player. Used by
+ * handlers that transition into a phase carrying a player id without wanting
+ * to handle the empty case at each call site.
+ *
+ * Distinct from `selectCurrentPlayerId` which returns `ID | null` for UI
+ * components that may render before the store is populated.
+ */
+export function selectResolvedCurrentPlayerId(state: StoreState): ID {
+  return (
+    currentPlayerIdFromPhase(state.phase) ??
+    selectPlayablePlayerIds(state)[0] ??
+    state.map.playerIds[0]
+  );
+}
+
 export function currentPlayerIdFromPhase(phase: Phase): ID | null {
   switch (phase.type) {
     case 'planning':

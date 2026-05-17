@@ -3,9 +3,8 @@ import type { ID } from '@battles/models';
 import type { GameStore } from '../state/GameStore';
 import type { Phase, StoreState } from '../state/types';
 import {
-  currentPlayerIdFromPhase,
   resolvePlayablePlayerIds,
-  selectPlayablePlayerIds,
+  selectResolvedCurrentPlayerId,
 } from '../state/selectors';
 import type { ResolutionRunner } from './ResolutionRunner';
 
@@ -58,10 +57,7 @@ export class ReplayingListener {
   runReplayAndAdvance(resolved: Game, priorTurn: number): void {
     const preResolveMap = new GameMap(Utils.clone(resolved.data.maps[priorTurn - 1]));
     const state = this.store.getState();
-    const carriedPlayerId =
-      currentPlayerIdFromPhase(state.phase) ??
-      selectPlayablePlayerIds(state)[0] ??
-      state.map.playerIds[0];
+    const carriedPlayerId = selectResolvedCurrentPlayerId(state);
 
     this.store.dispatch({
       type: 'replay/started-post-resolution',

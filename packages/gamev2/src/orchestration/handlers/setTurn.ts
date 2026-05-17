@@ -1,10 +1,7 @@
 import { GameMap, Utils } from '@battles/models';
 import type { HandlerContext } from '../HandlerContext';
 import type { Cmd } from '../../state/types';
-import {
-  currentPlayerIdFromPhase,
-  selectPlayablePlayerIds,
-} from '../../state/selectors';
+import { selectResolvedCurrentPlayerId } from '../../state/selectors';
 
 export function onSetTurn(ctx: HandlerContext, cmd: Cmd<'set-turn'>): void {
   const state = ctx.store.getState();
@@ -17,10 +14,7 @@ export function onSetTurn(ctx: HandlerContext, cmd: Cmd<'set-turn'>): void {
   const mapData = state.game.data.maps[cmd.turn - 1];
   // Clone past-turn snapshots so replay mutations don't poison persisted state
   const map = new GameMap(isReplaying ? Utils.clone(mapData) : mapData);
-  const carriedPlayerId =
-    currentPlayerIdFromPhase(state.phase) ??
-    selectPlayablePlayerIds(state)[0] ??
-    state.map.playerIds[0];
+  const carriedPlayerId = selectResolvedCurrentPlayerId(state);
 
   if (isReplaying) {
     // The reducer constructs the AbortController for the new replaying phase.

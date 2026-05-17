@@ -4,6 +4,7 @@ export { useDispatch } from './useDispatch';
 export {
   selectCurrentPlayerId,
   selectPlayablePlayerIds,
+  selectResolvedCurrentPlayerId,
   resolvePlayablePlayerIds,
   currentPlayerIdFromPhase,
 } from './selectors';

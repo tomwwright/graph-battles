@@ -5,7 +5,7 @@ import type { Command, Dispatch, Phase } from '../state/types';
 import {
   currentPlayerIdFromPhase,
   resolvePlayablePlayerIds,
-  selectPlayablePlayerIds,
+  selectResolvedCurrentPlayerId,
 } from '../state/selectors';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { ResolutionRunner } from './ResolutionRunner';
@@ -198,8 +198,10 @@ export class GameOrchestrator {
       type: 'phase/set',
       phase: {
         type: 'planning',
-        currentPlayerId:
-          selectPlayablePlayerIds(state)[0] ?? state.map.playerIds[0],
+        // Phase is 'waiting' here, which has no `currentPlayerId`, so the
+        // three-tier selector falls through to playable[0] / map[0] —
+        // equivalent to the explicit two-tier chain it replaces.
+        currentPlayerId: selectResolvedCurrentPlayerId(state),
       },
     });
   }
