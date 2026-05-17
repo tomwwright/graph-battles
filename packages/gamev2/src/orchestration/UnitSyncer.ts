@@ -1,8 +1,17 @@
-import { Values } from '@battles/models';
+import { GameMap, Resolution, Values } from '@battles/models';
 import type { ID } from '@battles/models';
 import type { GameStore } from '../state/GameStore';
-import type { StoreState, Subscribable } from '../state/types';
+import type { Phase, Subscribable } from '../state/types';
 import { UnitRenderer } from '../rendering/UnitRenderer';
+
+/** Minimal `StoreState` shape this syncer reads. */
+type UnitSyncerState = {
+  map: GameMap;
+  mapRevision: number;
+  currentResolution: Resolution | null;
+  /** Read to pluck the abort signal during a `replaying` phase. */
+  phase: Phase;
+};
 
 /**
  * Projects unit state onto the renderer. Subscribes to the store, diffs on
@@ -24,7 +33,7 @@ export class UnitSyncer {
   private readonly lastPositions = new Map<ID, ID>();
 
   constructor(
-    private readonly source: Subscribable<StoreState>,
+    private readonly source: Subscribable<UnitSyncerState>,
     private readonly store: GameStore,
     private readonly renderer: UnitRenderer,
   ) {

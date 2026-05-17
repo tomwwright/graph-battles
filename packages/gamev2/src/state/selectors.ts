@@ -1,6 +1,17 @@
 import { GameMap } from '@battles/models';
 import type { Game, ID } from '@battles/models';
-import type { Phase, StoreState } from './types';
+import type { AnimationToken, Phase } from './types';
+
+/**
+ * State types named here describe the minimal subset of `StoreState` each
+ * selector reads. Generic `<S extends ...State>` lets callers pass narrower
+ * structural subsets — supports the "track what state each consumer reads"
+ * convention without forcing every caller to widen to full `StoreState`.
+ */
+
+type PlayablePlayerIdsState = { game: Game; userId?: ID; map: GameMap };
+type CurrentPlayerIdState = PlayablePlayerIdsState & { phase: Phase };
+type AnimationsState = { pendingAnimations: AnimationToken[] };
 
 /**
  * Players this tab is allowed to control. Derived from `(game, userId)`:
@@ -9,7 +20,7 @@ import type { Phase, StoreState } from './types';
  *
  * Pure derivation — not stored in state.
  */
-export function selectPlayablePlayerIds(state: StoreState): ID[] {
+export function selectPlayablePlayerIds<S extends PlayablePlayerIdsState>(state: S): ID[] {
   return resolvePlayablePlayerIds(state.game, state.userId, state.map);
 }
 
@@ -31,7 +42,7 @@ export function resolvePlayablePlayerIds(
  * the first player in the map. UI components should prefer this over reading
  * `phase.currentPlayerId` directly when they may render across phases.
  */
-export function selectCurrentPlayerId(state: StoreState): ID | null {
+export function selectCurrentPlayerId<S extends CurrentPlayerIdState>(state: S): ID | null {
   const fromPhase = currentPlayerIdFromPhase(state.phase);
   if (fromPhase) return fromPhase;
   return selectPlayablePlayerIds(state)[0] ?? state.map?.playerIds[0] ?? null;
@@ -50,7 +61,7 @@ export function selectCurrentPlayerId(state: StoreState): ID | null {
  * Distinct from `selectCurrentPlayerId` which returns `ID | null` for UI
  * components that may render before the store is populated.
  */
-export function selectResolvedCurrentPlayerId(state: StoreState): ID {
+export function selectResolvedCurrentPlayerId<S extends CurrentPlayerIdState>(state: S): ID {
   return (
     currentPlayerIdFromPhase(state.phase) ??
     selectPlayablePlayerIds(state)[0] ??
@@ -59,7 +70,7 @@ export function selectResolvedCurrentPlayerId(state: StoreState): ID {
 }
 
 /** True when no animations are in flight. */
-export function selectNoRunningAnimations(state: StoreState): boolean {
+export function selectNoRunningAnimations<S extends AnimationsState>(state: S): boolean {
   return state.pendingAnimations.length === 0;
 }
 

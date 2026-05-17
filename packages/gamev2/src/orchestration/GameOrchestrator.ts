@@ -62,7 +62,7 @@ export class GameOrchestrator {
   constructor(store: GameStore, renderer: GameRenderer, provider: GameProvider, userId?: ID) {
     this.store = store;
     this.renderer = renderer;
-    this.resolutionRunner = new ResolutionRunner(store);
+    this.resolutionRunner = new ResolutionRunner(store, store);
     this.provider = provider;
     this.userId = userId;
     this.ctx = {
@@ -74,6 +74,7 @@ export class GameOrchestrator {
     // the real initial phase so the placeholder→real transition fires the
     // appropriate entry hook automatically.
     this.replayingListener = new ReplayingListener(
+      this.store,
       this.store,
       this.resolutionRunner,
       this.userId,

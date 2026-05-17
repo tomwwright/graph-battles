@@ -1,7 +1,10 @@
 import { GameMap, Resolution } from '@battles/models';
 import type { ID } from '@battles/models';
 import type { GameStore } from '../state/GameStore';
-import type { StoreState, Subscribable } from '../state/types';
+import type { Subscribable } from '../state/types';
+
+/** Minimal `StoreState` shape this syncer reads. */
+type CameraSyncerState = { currentResolution: Resolution | null; map: GameMap };
 
 export type CameraTarget = {
   focusOn(territoryId: ID): Promise<void>;
@@ -22,7 +25,7 @@ export class CameraSyncer {
   private lastResolution: Resolution | null = null;
 
   constructor(
-    private readonly source: Subscribable<StoreState>,
+    private readonly source: Subscribable<CameraSyncerState>,
     private readonly store: GameStore,
     private readonly renderer: CameraTarget,
   ) {

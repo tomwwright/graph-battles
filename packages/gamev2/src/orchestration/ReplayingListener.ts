@@ -1,12 +1,15 @@
 import { Game, GameMap, resolveTurn, Utils } from '@battles/models';
 import type { ID } from '@battles/models';
 import type { GameStore } from '../state/GameStore';
-import type { Phase } from '../state/types';
+import type { Phase, Subscribable } from '../state/types';
 import {
   resolvePlayablePlayerIds,
   selectResolvedCurrentPlayerId,
 } from '../state/selectors';
 import type { ResolutionRunner } from './ResolutionRunner';
+
+/** Minimal `StoreState` shape this listener reads. */
+type ReplayingListenerState = { phase: Phase; map: GameMap; game: Game; userId?: ID };
 
 /**
  * Self-subscribing listener for the 'replaying' phase.
@@ -30,12 +33,13 @@ export class ReplayingListener {
   private readonly unsubscribe: () => void;
 
   constructor(
+    private readonly source: Subscribable<ReplayingListenerState>,
     private readonly store: GameStore,
     private readonly resolutionRunner: ResolutionRunner,
     private readonly userId: ID | undefined,
   ) {
-    this.lastPhase = store.getState().phase;
-    this.unsubscribe = store.subscribe(() => this.onChange());
+    this.lastPhase = source.getState().phase;
+    this.unsubscribe = source.subscribe(() => this.onChange());
   }
 
   dispose(): void {
@@ -52,7 +56,7 @@ export class ReplayingListener {
    */
   runReplayAndAdvance(resolved: Game, priorTurn: number): void {
     const preResolveMap = new GameMap(Utils.clone(resolved.data.maps[priorTurn - 1]));
-    const state = this.store.getState();
+    const state = this.source.getState();
     const carriedPlayerId = selectResolvedCurrentPlayerId(state);
 
     this.store.dispatch({
@@ -64,7 +68,7 @@ export class ReplayingListener {
   }
 
   private onChange(): void {
-    const next = this.store.getState().phase;
+    const next = this.source.getState().phase;
     const prev = this.lastPhase;
     if (prev.type === next.type) return;
     this.lastPhase = next;
@@ -77,7 +81,7 @@ export class ReplayingListener {
   }
 
   private enterReplaying(phase: Extract<Phase, { type: 'replaying' }>): void {
-    const generator = resolveTurn(this.store.getState().map);
+    const generator = resolveTurn(this.source.getState().map);
     void this.resolutionRunner
       .run(generator, () => this.waitForAdvance(), phase.abort.signal)
       .then(() => {
@@ -125,7 +129,7 @@ export class ReplayingListener {
    */
   private waitForAdvance(): Promise<'next' | 'skip'> {
     return new Promise((resolve) => {
-      const phase = this.store.getState().phase;
+      const phase = this.source.getState().phase;
       if (phase.type !== 'replaying') {
         resolve('skip');
         return;

@@ -1,6 +1,9 @@
 import type { Game } from '@battles/models';
 import type { GameProvider } from '../providers/GameProvider';
-import type { Phase, StoreState, Subscribable } from '../state/types';
+import type { Phase, Subscribable } from '../state/types';
+
+/** Minimal `StoreState` shape this listener reads. */
+type WaitForTurnResolutionListenerState = { phase: Phase; turn: number };
 
 export type WaitForTurnCallbacks = {
   /** Called when polling resolves with a new turn. */
@@ -31,7 +34,7 @@ export class WaitForTurnResolutionListener {
   private readonly unsubscribe: () => void;
 
   constructor(
-    private readonly source: Subscribable<StoreState>,
+    private readonly source: Subscribable<WaitForTurnResolutionListenerState>,
     private readonly provider: GameProvider,
     private readonly callbacks: WaitForTurnCallbacks,
   ) {

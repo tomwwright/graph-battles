@@ -1,7 +1,24 @@
-import { Resolution } from '@battles/models';
+import { Game, GameMap, Resolution } from '@battles/models';
+import type { ID } from '@battles/models';
 import { GameStore } from '../state/GameStore';
+import type {
+  AnimationToken,
+  Phase,
+  Subscribable,
+  VisibilityMode,
+} from '../state/types';
 import { isLocationVisible, isUnitVisible } from './Utils';
-import { selectNoRunningAnimations, selectCurrentPlayerId } from '../state/selectors';
+import { selectCurrentPlayerId, selectNoRunningAnimations } from '../state/selectors';
+
+/** Minimal `StoreState` shape this runner reads. */
+type ResolutionRunnerState = {
+  map: GameMap;
+  visibilityMode: VisibilityMode;
+  pendingAnimations: AnimationToken[];
+  phase: Phase;
+  game: Game;
+  userId?: ID;
+};
 
 /**
  * Drives a `resolveTurn()` generator. Each iteration:
@@ -27,7 +44,10 @@ import { selectNoRunningAnimations, selectCurrentPlayerId } from '../state/selec
  * a stale resolution.
  */
 export class ResolutionRunner {
-  constructor(private readonly store: GameStore) { }
+  constructor(
+    private readonly source: Subscribable<ResolutionRunnerState>,
+    private readonly store: GameStore,
+  ) {}
 
   async run(
     generator: Generator<Resolution>,
@@ -73,7 +93,7 @@ export class ResolutionRunner {
   }
 
   private isResolutionVisible(resolution: Resolution): boolean {
-    const state = this.store.getState();
+    const state = this.source.getState();
     if (state.visibilityMode === 'all') return true;
     const currentPlayerId = selectCurrentPlayerId(state);
     if (!currentPlayerId) return true;
@@ -95,10 +115,10 @@ export class ResolutionRunner {
   }
 
   private waitForNoRunningAnimations(signal: AbortSignal): Promise<void> {
-    if (selectNoRunningAnimations(this.store.getState())) return Promise.resolve();
+    if (selectNoRunningAnimations(this.source.getState())) return Promise.resolve();
     return new Promise((resolve) => {
-      const unsub = this.store.subscribe(() => {
-        if (signal.aborted || selectNoRunningAnimations(this.store.getState())) {
+      const unsub = this.source.subscribe(() => {
+        if (signal.aborted || selectNoRunningAnimations(this.source.getState())) {
           unsub();
           resolve();
         }

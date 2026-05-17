@@ -1,7 +1,16 @@
 import { Color3 } from '@babylonjs/core';
-import { ID, GameMap, Values } from '@battles/models';
-import type { StoreState, Subscribable } from '../state/types';
+import { ID, GameMap, Resolution, Values } from '@battles/models';
+import type { Subscribable } from '../state/types';
 import { getValidDestinations } from './Utils';
+
+/** Minimal `StoreState` shape this syncer reads. */
+type TerritorySyncerState = {
+  map: GameMap;
+  mapRevision: number;
+  currentResolution: Resolution | null;
+  selectedUnitIds: ID[];
+  selectedTerritoryId: ID | null;
+};
 
 export type TerritoryRenderTarget = {
   clearOverlays(): void;
@@ -27,9 +36,8 @@ export type TerritoryRenderTarget = {
  *   arrays to the renderer so tile meshes are swapped. `updateTerritory` is
  *   a no-op when the arrays match, so calling it on every revision is safe.
  *
- * Subscribes to the full `StoreState` (not a narrow slice) because three
- * different inputs gate the work — keeping the subscription wide is simpler
- * than threading three selectors.
+ * Slice combines three inputs (map revision, current resolution, selection)
+ * — the syncer projects multiple state slices into the renderer in one pass.
  */
 export class TerritorySyncer {
   private readonly unsubscribe: () => void;
@@ -40,7 +48,7 @@ export class TerritorySyncer {
   private readonly lastProperties = new Map<ID, Values.TerritoryProperty[]>();
 
   constructor(
-    private readonly source: Subscribable<StoreState>,
+    private readonly source: Subscribable<TerritorySyncerState>,
     private readonly target: TerritoryRenderTarget,
   ) {
     this.sync();
@@ -77,7 +85,7 @@ export class TerritorySyncer {
 
   private syncComposition(
     map: GameMap,
-    currentResolution: StoreState['currentResolution'],
+    currentResolution: Resolution | null,
   ): void {
     const animateId =
       currentResolution !== null && currentResolution.phase === 'territory-action'
