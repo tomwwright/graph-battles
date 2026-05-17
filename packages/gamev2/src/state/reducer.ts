@@ -53,6 +53,13 @@ export function reducer(state: StoreState, change: StateChange): StoreState {
       return { ...state, currentResolution: change.resolution };
     case 'auto-resolve/set':
       return { ...state, autoResolve: change.autoResolve };
+    case 'animation/started':
+      return { ...state, pendingAnimations: [...state.pendingAnimations, { id: change.id }] };
+    case 'animation/completed':
+      return {
+        ...state,
+        pendingAnimations: state.pendingAnimations.filter((a) => a.id !== change.id),
+      };
     case 'replay/started-post-resolution':
       return {
         ...state,

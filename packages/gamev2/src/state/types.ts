@@ -122,6 +122,10 @@ export type StateChange =
   | { type: 'resolution/set'; resolution: Resolution | null }
   /** Toggle the auto-advance flag used by `ActionBar` to drive step-through replay. */
   | { type: 'auto-resolve/set'; autoResolve: boolean }
+  /** A syncer kicked off an animation. Adds the token to `pendingAnimations`. */
+  | { type: 'animation/started'; id: string }
+  /** An animation finished (or aborted). Removes the token from `pendingAnimations`. */
+  | { type: 'animation/completed'; id: string }
   /**
    * Post-resolution replay begins. Replaces map with the pre-resolve snapshot,
    * sets phase to 'replaying' with a fresh AbortController and `onComplete`
@@ -175,4 +179,15 @@ export type StoreState = {
 
   // Visibility
   visibilityMode: VisibilityMode;
+
+  /**
+   * In-flight animations registered by syncers. Empty when the renderer is
+   * idle. The resolution sequencer awaits `pendingAnimations.length === 0`
+   * between steps so animations complete before the next mutation is applied.
+   *
+   * Tokens are opaque identifiers — only the count matters.
+   */
+  pendingAnimations: AnimationToken[];
 };
+
+export type AnimationToken = { id: string };

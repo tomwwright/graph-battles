@@ -2,6 +2,7 @@ export { GameStore } from './GameStore';
 export { useGameStore } from './useGameStore';
 export { useDispatch } from './useDispatch';
 export {
+  selectNoRunningAnimations as selectAnimationsIdle,
   selectCurrentPlayerId,
   selectPlayablePlayerIds,
   selectResolvedCurrentPlayerId,
@@ -16,6 +17,7 @@ export type {
   Cmd,
   Dispatch,
   StateChange,
+  AnimationToken,
   VisibilityMode,
   HoverInfo,
   MapState,

@@ -58,6 +58,11 @@ export function selectResolvedCurrentPlayerId(state: StoreState): ID {
   );
 }
 
+/** True when no animations are in flight. */
+export function selectNoRunningAnimations(state: StoreState): boolean {
+  return state.pendingAnimations.length === 0;
+}
+
 export function currentPlayerIdFromPhase(phase: Phase): ID | null {
   switch (phase.type) {
     case 'planning':

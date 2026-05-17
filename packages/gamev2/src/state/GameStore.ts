@@ -15,6 +15,7 @@ type Unsubscribe = () => void;
 export class GameStore {
   private state: StoreState;
   private listeners = new Set<Listener>();
+  private animationCounter = 0;
 
   constructor(initialState: StoreState) {
     this.state = initialState;
@@ -28,6 +29,22 @@ export class GameStore {
     console.log('ACTION', action);
     this.state = reducer(this.state, action);
     this.notify();
+  }
+
+  /**
+   * Register an in-flight animation. Adds a token to `pendingAnimations` and
+   * removes it when the promise settles. Callers can ignore the returned id —
+   * it exists only so listeners awaiting idle can observe the lifecycle.
+   *
+   * Used by syncers to advertise "renderer animation in flight". The
+   * resolution sequencer awaits `pendingAnimations.length === 0` between
+   * generator steps so animations complete before the next mutation applies.
+   */
+  trackAnimation(promise: Promise<unknown>): string {
+    const id = `anim-${++this.animationCounter}`;
+    this.dispatch({ type: 'animation/started', id });
+    promise.finally(() => this.dispatch({ type: 'animation/completed', id }));
+    return id;
   }
 
   subscribe(listener: Listener): Unsubscribe {

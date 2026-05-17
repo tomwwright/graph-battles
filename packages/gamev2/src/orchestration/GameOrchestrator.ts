@@ -9,8 +9,9 @@ import {
 } from '../state/selectors';
 import { GameRenderer } from '../rendering/GameRenderer';
 import { ResolutionRunner } from './ResolutionRunner';
-import { UnitMeshSyncer } from './UnitMeshSyncer';
-import { OverlaySyncer } from './OverlaySyncer';
+import { UnitSyncer } from './UnitSyncer';
+import { TerritorySyncer } from './TerritorySyncer';
+import { CameraSyncer } from './CameraSyncer';
 import { GameProvider } from '../providers/GameProvider';
 import type { RenderMap } from '../map/MapParser';
 import type { HandlerContext } from './HandlerContext';
@@ -43,8 +44,9 @@ export class GameOrchestrator {
   readonly store: GameStore;
   private renderer: GameRenderer;
   private resolutionRunner: ResolutionRunner;
-  private unitMeshSyncer: UnitMeshSyncer | null = null;
-  private overlaySyncer: OverlaySyncer | null = null;
+  private unitSyncer: UnitSyncer | null = null;
+  private territorySyncer: TerritorySyncer | null = null;
+  private cameraSyncer: CameraSyncer | null = null;
   private provider: GameProvider;
   private renderMap: RenderMap | null = null;
   private readonly userId: ID | undefined;
@@ -61,7 +63,7 @@ export class GameOrchestrator {
   constructor(store: GameStore, renderer: GameRenderer, provider: GameProvider, userId?: ID) {
     this.store = store;
     this.renderer = renderer;
-    this.resolutionRunner = new ResolutionRunner(store, renderer);
+    this.resolutionRunner = new ResolutionRunner(store);
     this.provider = provider;
     this.userId = userId;
     this.ctx = {
@@ -123,6 +125,7 @@ export class GameOrchestrator {
         currentResolution: null,
         autoResolve: false,
         visibilityMode: 'all',
+        pendingAnimations: [],
       },
     });
 
@@ -134,13 +137,15 @@ export class GameOrchestrator {
     this.renderer.onUnitClick((unitId) => this.dispatch({ type: 'click-unit', unitId }));
     this.renderer.onHover((hover) => this.store.dispatch({ type: 'hover/set', hover }));
 
-    this.unitMeshSyncer = new UnitMeshSyncer(this.store, this.renderer.getUnitRenderer());
-    this.overlaySyncer = new OverlaySyncer(this.store, this.renderer);
+    this.unitSyncer = new UnitSyncer(this.store, this.store, this.renderer.getUnitRenderer());
+    this.territorySyncer = new TerritorySyncer(this.store, this.renderer);
+    this.cameraSyncer = new CameraSyncer(this.store, this.store, this.renderer);
   }
 
   dispose(): void {
-    this.unitMeshSyncer?.dispose();
-    this.overlaySyncer?.dispose();
+    this.unitSyncer?.dispose();
+    this.territorySyncer?.dispose();
+    this.cameraSyncer?.dispose();
     this.phaseEffects.dispose();
   }
 
