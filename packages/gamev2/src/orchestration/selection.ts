@@ -2,8 +2,14 @@ import type { ID } from '@battles/models';
 import type { StoreState } from '../state/types';
 import { getValidDestinations } from './Utils';
 
+/**
+ * Selection delta returned by `selectionFromUnitClick` /
+ * `selectionFromTerritoryClick`. `null` means "no change to selection".
+ */
+export type Selection = { unitIds: ID[]; territoryId: ID | null };
+
 export type SelectionResult = {
-  patch: Partial<StoreState>;
+  selection: Selection | null;
   /** Set when a unit-bearing territory click resolves to a valid move destination. */
   moveTo: ID | null;
 };
@@ -18,14 +24,16 @@ export type SelectionResult = {
  * Selection is exclusive: a unit selection clears any selected territory.
  *
  * During non-planning phases, units may still be clicked for inspection.
+ *
+ * Returns `null` if the click resolves to no change (unknown unit id).
  */
-export function selectionFromUnitClick(state: StoreState, unitId: ID): Partial<StoreState> {
+export function selectionFromUnitClick(state: StoreState, unitId: ID): Selection | null {
   const { map, selectedUnitIds, phase } = state;
   const unit = map.unit(unitId);
-  if (!unit) return {};
+  if (!unit) return null;
 
   if (phase.type !== 'planning') {
-    return { selectedUnitIds: [unitId], selectedTerritoryId: null };
+    return { unitIds: [unitId], territoryId: null };
   }
 
   let nextSelection: ID[];
@@ -43,7 +51,7 @@ export function selectionFromUnitClick(state: StoreState, unitId: ID): Partial<S
     }
   }
 
-  return { selectedUnitIds: nextSelection, selectedTerritoryId: null };
+  return { unitIds: nextSelection, territoryId: null };
 }
 
 /**
@@ -57,7 +65,7 @@ export function selectionFromTerritoryClick(state: StoreState, territoryId: ID):
   const { map, selectedUnitIds, phase } = state;
   if (phase.type !== 'planning') {
     return {
-      patch: { selectedTerritoryId: territoryId, selectedUnitIds: [] },
+      selection: { unitIds: [], territoryId },
       moveTo: null,
     };
   }
@@ -66,17 +74,17 @@ export function selectionFromTerritoryClick(state: StoreState, territoryId: ID):
     const validDestinations = getValidDestinations(map, selectedUnitIds);
     if (validDestinations.includes(territoryId)) {
       return {
-        patch: { selectedUnitIds: [], selectedTerritoryId: null },
+        selection: { unitIds: [], territoryId: null },
         moveTo: territoryId,
       };
     }
   }
 
   const territory = map.territory(territoryId);
-  if (!territory) return { patch: {}, moveTo: null };
+  if (!territory) return { selection: null, moveTo: null };
 
   return {
-    patch: { selectedTerritoryId: territoryId, selectedUnitIds: [] },
+    selection: { unitIds: [], territoryId },
     moveTo: null,
   };
 }

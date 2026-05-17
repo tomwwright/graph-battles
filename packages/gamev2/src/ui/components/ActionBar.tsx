@@ -37,7 +37,7 @@ export function ActionBar() {
         <div className={styles.container}>
           <button
             className={panelStyles.buttonDanger}
-            onClick={() => store?.setState({ autoResolve: false })}
+            onClick={() => store?.dispatch({ type: 'auto-resolve/set', autoResolve: false })}
           >
             Cancel
           </button>
@@ -48,7 +48,7 @@ export function ActionBar() {
       <div className={styles.container}>
         <button
           className={panelStyles.button}
-          onClick={() => store?.setState({ autoResolve: true })}
+          onClick={() => store?.dispatch({ type: 'auto-resolve/set', autoResolve: true })}
           disabled={!currentResolution}
         >
           Replay All

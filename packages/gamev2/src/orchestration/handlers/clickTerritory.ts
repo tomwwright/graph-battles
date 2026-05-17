@@ -6,18 +6,21 @@ export function onClickTerritory(ctx: HandlerContext, cmd: Cmd<'click-territory'
   const state = ctx.store.getState();
   const result = selectionFromTerritoryClick(state, cmd.territoryId);
 
+  if (result.selection) {
+    ctx.store.dispatch({
+      type: 'selection/set',
+      unitIds: result.selection.unitIds,
+      territoryId: result.selection.territoryId,
+    });
+  }
+
   if (result.moveTo != null) {
-    // Click landed on a valid destination — emit a move action. Apply the
-    // selection clear first so the post-action store update reflects the
-    // cleared selection alongside the new map state.
-    ctx.store.setState(result.patch);
+    // Click landed on a valid destination — emit a move action against the
+    // previously selected unit list (we already cleared selection above).
     ctx.applyAction({
       type: 'move-units',
       unitIds: state.selectedUnitIds,
       destinationId: result.moveTo,
     });
-    return;
   }
-
-  if (Object.keys(result.patch).length > 0) ctx.store.setState(result.patch);
 }

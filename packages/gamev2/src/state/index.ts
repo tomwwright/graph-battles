@@ -14,8 +14,10 @@ export type {
   Command,
   Cmd,
   Dispatch,
+  StateChange,
   VisibilityMode,
   HoverInfo,
   MapState,
   Subscribable,
 } from './types';
+export { reducer } from './reducer';

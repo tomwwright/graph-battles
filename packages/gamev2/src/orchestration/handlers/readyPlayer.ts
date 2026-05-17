@@ -20,12 +20,15 @@ export function onReadyPlayer(ctx: HandlerContext): void {
     // entry hook wired in GameOrchestrator. Local: provider.action above
     // already advanced persisted turn. Remote: action sent to API; the
     // hook-driven poll waits for the server to resolve.
-    ctx.store.setState({ phase: { type: 'waiting', submittedAtTurn: state.turn } });
-  } else {
-    ctx.store.setState({
-      phase: { type: 'next-player', currentPlayerId: cycle[idx + 1] },
-      selectedUnitIds: [],
-      selectedTerritoryId: null,
+    ctx.store.dispatch({
+      type: 'phase/set',
+      phase: { type: 'waiting', submittedAtTurn: state.turn },
     });
+  } else {
+    ctx.store.dispatch({
+      type: 'phase/set',
+      phase: { type: 'next-player', currentPlayerId: cycle[idx + 1] },
+    });
+    ctx.store.dispatch({ type: 'selection/clear' });
   }
 }

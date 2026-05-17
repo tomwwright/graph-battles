@@ -4,7 +4,7 @@ import type { Cmd } from '../../state/types';
 
 export function onCancelMove(ctx: HandlerContext, cmd: Cmd<'cancel-move'>): void {
   if (ctx.store.getState().phase.type !== 'planning') return;
-  ctx.store.setState({ selectedUnitIds: [] });
+  ctx.store.dispatch({ type: 'selection/units', unitIds: [] });
   // Passing a null destination refunds and removes the pending move
   // (see packages/models/src/actions/move.ts).
   ctx.applyAction({

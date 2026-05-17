@@ -57,22 +57,17 @@ export class ReplayingListener {
    */
   runReplayAndAdvance(resolved: Game, priorTurn: number): void {
     const preResolveMap = new GameMap(Utils.clone(resolved.data.maps[priorTurn - 1]));
-    const abort = new AbortController();
     const state = this.store.getState();
     const carriedPlayerId =
       currentPlayerIdFromPhase(state.phase) ??
       selectPlayablePlayerIds(state)[0] ??
       state.map.playerIds[0];
 
-    this.store.setState({
+    this.store.dispatch({
+      type: 'replay/started-post-resolution',
       map: preResolveMap,
-      phase: {
-        type: 'replaying',
-        abort,
-        advance: null,
-        currentPlayerId: carriedPlayerId,
-        onComplete: (aborted) => this.afterPostResolutionReplay(aborted, resolved),
-      },
+      currentPlayerId: carriedPlayerId,
+      onComplete: (aborted) => this.afterPostResolutionReplay(aborted, resolved),
     });
   }
 
@@ -87,26 +82,21 @@ export class ReplayingListener {
     );
 
     if (winners.length > 0) {
-      this.store.setState({
+      this.store.dispatch({
+        type: 'game/advanced-to-victory',
         game: resolved,
         map: nextMap,
         turn: resolved.turn,
-        phase: { type: 'victory' },
       });
       return;
     }
 
-    this.store.setState({
+    this.store.dispatch({
+      type: 'game/advanced-to-next-player',
       game: resolved,
       map: nextMap,
       turn: resolved.turn,
-      phase: {
-        type: 'next-player',
-        currentPlayerId: playablePlayerIds[0] ?? nextMap.playerIds[0],
-      },
-      selectedUnitIds: [],
-      selectedTerritoryId: null,
-      currentResolution: null,
+      currentPlayerId: playablePlayerIds[0] ?? nextMap.playerIds[0],
     });
   }
 
@@ -122,7 +112,10 @@ export class ReplayingListener {
         resolve('skip');
         return;
       }
-      this.store.setState({ phase: { ...phase, advance: resolve } });
+      // `phase.advance` still lives on the phase variant in phases 1-7 of the
+      // refactor. Phase 8 lifts the resolver onto this listener instance and
+      // simplifies this method away.
+      this.store.dispatch({ type: 'phase/set', phase: { ...phase, advance: resolve } });
     });
   }
 }

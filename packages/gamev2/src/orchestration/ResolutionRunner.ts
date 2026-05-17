@@ -47,7 +47,7 @@ export class ResolutionRunner {
       const preState = this.capturePreState(resolution);
 
       // Update store with current resolution (React UI shows what's about to happen)
-      this.store.setState({ currentResolution: resolution });
+      this.store.dispatch({ type: 'resolution/set', resolution });
 
       // Focus camera on resolution subject
       const focusTerritoryId = this.getResolutionFocusTerritory(resolution);
@@ -80,7 +80,7 @@ export class ResolutionRunner {
       this.updateMapState();
     }
 
-    this.store.setState({ currentResolution: null });
+    this.store.dispatch({ type: 'resolution/set', resolution: null });
   }
 
   // --- Visibility ---
@@ -183,10 +183,9 @@ export class ResolutionRunner {
   // --- Post-resolution sync ---
 
   private updateMapState(): void {
-    const { map } = this.store.getState();
-    // Shallow copy forces useSyncExternalStore to detect the change
-    // even though map is mutated in place
-    this.store.setState({ map });
+    // GameMap is mutated in place by the generator — bump the revision so
+    // useSyncExternalStore selectors and map-driven syncers re-run.
+    this.store.dispatch({ type: 'map/mutated' });
   }
 
   // --- Camera focus ---

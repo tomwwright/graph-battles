@@ -108,18 +108,22 @@ export class GameOrchestrator {
         ? { type: 'waiting', submittedAtTurn: game.turn }
         : { type: 'next-player', currentPlayerId: startingPlayerId };
 
-    this.store.setState({
-      game,
-      map,
-      mapRevision: 0,
-      turn: game.turn,
-      phase: initialPhase,
-      userId: this.userId,
-      selectedUnitIds: [],
-      selectedTerritoryId: null,
-      hover: null,
-      currentResolution: null,
-      visibilityMode: 'all',
+    this.store.dispatch({
+      type: 'init',
+      state: {
+        game,
+        map,
+        mapRevision: 0,
+        turn: game.turn,
+        phase: initialPhase,
+        userId: this.userId,
+        selectedUnitIds: [],
+        selectedTerritoryId: null,
+        hover: null,
+        currentResolution: null,
+        autoResolve: false,
+        visibilityMode: 'all',
+      },
     });
 
     await this.renderer.initialise(renderMap, map);
@@ -128,7 +132,7 @@ export class GameOrchestrator {
       this.dispatch({ type: 'click-territory', territoryId }),
     );
     this.renderer.onUnitClick((unitId) => this.dispatch({ type: 'click-unit', unitId }));
-    this.renderer.onHover((hover) => this.store.setState({ hover }));
+    this.renderer.onHover((hover) => this.store.dispatch({ type: 'hover/set', hover }));
 
     this.unitMeshSyncer = new UnitMeshSyncer(this.store, this.renderer.getUnitRenderer());
     this.overlaySyncer = new OverlaySyncer(this.store, this.renderer);
@@ -170,7 +174,7 @@ export class GameOrchestrator {
     const { map, phase } = this.store.getState();
     try {
       map.applyAction(action);
-      this.store.setState({ map });
+      this.store.dispatch({ type: 'map/mutated' });
       const playerId = currentPlayerIdFromPhase(phase);
       if (playerId) {
         this.provider.action(playerId, action).catch((e) => {
@@ -190,7 +194,8 @@ export class GameOrchestrator {
     console.warn('[GameOrchestrator] waitForTurn failed:', e);
     const state = this.store.getState();
     if (state.phase.type !== 'waiting') return;
-    this.store.setState({
+    this.store.dispatch({
+      type: 'phase/set',
       phase: {
         type: 'planning',
         currentPlayerId:

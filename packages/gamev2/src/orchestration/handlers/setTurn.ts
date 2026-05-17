@@ -23,25 +23,20 @@ export function onSetTurn(ctx: HandlerContext, cmd: Cmd<'set-turn'>): void {
     state.map.playerIds[0];
 
   if (isReplaying) {
-    const abort = new AbortController();
+    // The reducer constructs the AbortController for the new replaying phase.
     // Entering 'replaying' starts the replay via the PhaseEffects entry hook.
-    // No `onComplete` — when the replay finishes the phase just stays.
-    ctx.store.setState({
-      map,
+    ctx.store.dispatch({
+      type: 'turn/scrubbed-to-past',
       turn: cmd.turn,
-      selectedUnitIds: [],
-      selectedTerritoryId: null,
-      currentResolution: null,
-      phase: { type: 'replaying', abort, advance: null, currentPlayerId: carriedPlayerId },
+      map,
+      currentPlayerId: carriedPlayerId,
     });
   } else {
-    ctx.store.setState({
-      map,
+    ctx.store.dispatch({
+      type: 'turn/jumped-to-current',
       turn: cmd.turn,
-      selectedUnitIds: [],
-      selectedTerritoryId: null,
-      currentResolution: null,
-      phase: { type: 'planning', currentPlayerId: carriedPlayerId },
+      map,
+      currentPlayerId: carriedPlayerId,
     });
   }
 }
