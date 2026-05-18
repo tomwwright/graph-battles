@@ -1,19 +1,18 @@
 import { Values } from '@battles/models';
 import { useGameStore } from '../../state/useGameStore';
-import { useUserActionDispatch } from '../../state/useUserActionDispatch';
+import { useDispatch } from '../../state/useDispatch';
 import styles from './Popup.module.css';
 
 export function NextPlayerPopup() {
-  const dispatch = useUserActionDispatch();
-  const turnPhase = useGameStore((s) => s.turnPhase);
-  const currentPlayerId = useGameStore((s) => s.currentPlayerId);
+  const dispatch = useDispatch();
+  const phase = useGameStore((s) => s.phase);
   const game = useGameStore((s) => s.game);
   const map = useGameStore((s) => s.map);
   useGameStore((s) => s.mapRevision);
 
-  if (turnPhase !== 'next-player') return null;
+  if (phase.type !== 'next-player') return null;
 
-  const player = map.player(currentPlayerId);
+  const player = map.player(phase.currentPlayerId);
   if (!player) return null;
 
   const colour = Values.ColourStrings[player.data.colour] ?? 'white';
@@ -30,7 +29,7 @@ export function NextPlayerPopup() {
           </span>{' '}
           you're up!
         </div>
-        <button className={styles.popupButton} onClick={() => dispatch.onConfirmNextPlayer()}>
+        <button className={styles.popupButton} onClick={() => dispatch({ type: 'confirm-next-player' })}>
           Go
         </button>
       </div>

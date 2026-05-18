@@ -6,6 +6,25 @@ import { PlayerActionStorage } from './PlayerActionStorage';
 
 const POLL_INTERVAL_MS = 10_000;
 
+function abortableSleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException('Aborted', 'AbortError'));
+      return;
+    }
+    const onAbort = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      reject(new DOMException('Aborted', 'AbortError'));
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener('abort', onAbort);
+  });
+}
+
 export class APIGameProvider implements GameProvider {
   private readonly storage: PlayerActionStorage;
   private readonly api: GameApiClient;
@@ -57,17 +76,19 @@ export class APIGameProvider implements GameProvider {
 
   /**
    * Polls `get()` every POLL_INTERVAL_MS until `game.turn > currentTurn`,
-   * then resolves with the new Game.
+   * then resolves with the new Game. Honours `signal` — cancels both the
+   * `get()` await window and the inter-poll sleep, rejecting with `AbortError`.
    */
-  async waitForTurn(currentTurn: number): Promise<Game> {
+  async waitForTurn(currentTurn: number, signal?: AbortSignal): Promise<Game> {
     while (true) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
       try {
         const game = await this.get();
         if (game.turn > currentTurn) return game;
       } catch (e) {
         console.warn('[APIGameProvider] resolution poll failed:', e);
       }
-      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+      await abortableSleep(POLL_INTERVAL_MS, signal);
     }
   }
 

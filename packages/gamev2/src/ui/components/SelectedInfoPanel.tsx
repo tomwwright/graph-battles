@@ -1,20 +1,21 @@
 import { useGameStore } from '../../state/useGameStore';
-import { useUserActionDispatch } from '../../state/useUserActionDispatch';
+import { useDispatch } from '../../state/useDispatch';
+import { selectCurrentPlayerId } from '../../state/selectors';
 import { UnitInfo } from './UnitInfo';
 import { TerritoryInfo } from './TerritoryInfo';
 import styles from './SelectedInfoPanel.module.css';
 
 export function SelectedInfoPanel() {
-  const dispatch = useUserActionDispatch();
+  const dispatch = useDispatch();
   const selectedTerritoryId = useGameStore((s) => s.selectedTerritoryId);
   const selectedUnitIds = useGameStore((s) => s.selectedUnitIds);
-  const currentPlayerId = useGameStore((s) => s.currentPlayerId);
-  const turnPhase = useGameStore((s) => s.turnPhase);
+  const currentPlayerId = useGameStore(selectCurrentPlayerId);
+  const phaseType = useGameStore((s) => s.phase.type);
   const map = useGameStore((s) => s.map);
   useGameStore((s) => s.mapRevision);
 
-  const isPlanning = turnPhase === 'planning';
-  const currentPlayer = map.player(currentPlayerId);
+  const isPlanning = phaseType === 'planning';
+  const currentPlayer = currentPlayerId ? map.player(currentPlayerId) : null;
 
   if (selectedUnitIds.length > 0) {
     return (
@@ -27,7 +28,7 @@ export function SelectedInfoPanel() {
               key={id}
               unit={unit}
               isPlanning={isPlanning}
-              onCancelMove={() => dispatch.onCancelMove([id])}
+              onCancelMove={() => dispatch({ type: 'cancel-move', unitIds: [id] })}
             />
           );
         })}
@@ -45,8 +46,12 @@ export function SelectedInfoPanel() {
           territory={territory}
           currentPlayer={currentPlayer}
           isPlanning={isPlanning}
-          onTerritoryAction={(action) => dispatch.onTerritoryAction(selectedTerritoryId, action)}
-          onCancelTerritoryAction={() => dispatch.onCancelTerritoryAction(selectedTerritoryId)}
+          onTerritoryAction={(action) =>
+            dispatch({ type: 'territory-action', territoryId: selectedTerritoryId, action })
+          }
+          onCancelTerritoryAction={() =>
+            dispatch({ type: 'territory-action', territoryId: selectedTerritoryId, action: null })
+          }
         />
       </div>
     );

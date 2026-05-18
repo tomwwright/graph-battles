@@ -1,4 +1,4 @@
-import { Game, Values } from '@battles/models';
+import { Game, GameMap, Values } from '@battles/models';
 import type { GameData, GameMapData } from '@battles/models';
 import type { GameProvider } from './GameProvider';
 import type { RenderMap } from '../map/MapParser';
@@ -106,21 +106,33 @@ function createStubGameData(renderMap: RenderMap): GameData {
 }
 
 export function createStubProvider(renderMap: RenderMap): GameProvider {
-  const gameData = createStubGameData(renderMap);
+  let gameData = createStubGameData(renderMap);
 
   return {
     async get() {
       return new Game(gameData);
     },
     async action(_playerId, action) {
-      console.warn('[StubGameProvider] action() called — no-op in stub mode', action);
-      return new Game(gameData);
+      // Mirror LocalGameProvider: apply action to in-memory game, resolve the
+      // turn synchronously when all players are ready. Lets stub mode exercise
+      // the full turn-flow loop without persistence or a backend.
+      const game = new Game(gameData);
+      const map = new GameMap(game.latestMap);
+      map.applyAction(action);
+      if (action.type === 'ready-player' && map.players.every((p) => p.ready)) {
+        game.resolveTurn();
+      }
+      gameData = game.data;
+      return game;
     },
     async getMapText() {
       return STUB_MAP_TEXT;
     },
-    async waitForTurn(): Promise<Game> {
-      throw new Error('StubGameProvider: turn resolution not supported');
+    async waitForTurn(currentTurn: number, _signal?: AbortSignal): Promise<Game> {
+      void _signal;
+      const game = new Game(gameData);
+      if (game.turn > currentTurn) return game;
+      throw new Error(`StubGameProvider: turn ${currentTurn} not yet resolved`);
     },
   };
 }
