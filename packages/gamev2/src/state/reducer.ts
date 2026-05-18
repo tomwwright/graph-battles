@@ -1,3 +1,8 @@
+import { GameMap, Utils } from '@battles/models';
+import {
+  resolvePlayablePlayerIds,
+  selectResolvedCurrentPlayerId,
+} from './selectors';
 import type { StateChange, StoreState } from './types';
 
 /**
@@ -15,28 +20,103 @@ export function reducer(state: StoreState, change: StateChange): StoreState {
       return change.state;
     case 'map/mutated':
       return { ...state, mapRevision: (state.mapRevision ?? 0) + 1 };
-    case 'turn/scrubbed-to-past':
+    case 'turn/set': {
+      if (change.turn < 1 || change.turn > state.game.turn) return state;
+      const isReplay = change.turn < state.game.turn;
+      const mapData = state.game.data.maps[change.turn - 1];
+      // Clone past-turn snapshots so generator mutations don't poison
+      // `game.data.maps[*]`. Current-turn map is the live snapshot.
+      const map = new GameMap(isReplay ? Utils.clone(mapData) : mapData);
+      const currentPlayerId = selectResolvedCurrentPlayerId(state);
       return {
         ...state,
-        map: change.map,
+        map,
         mapRevision: (state.mapRevision ?? 0) + 1,
         turn: change.turn,
         selectedUnitIds: [],
         selectedTerritoryId: null,
         currentResolution: null,
-        phase: { type: 'replaying', abort: new AbortController(), advance: null, currentPlayerId: change.currentPlayerId },
+        phase: isReplay
+          ? { type: 'replaying', currentPlayerId }
+          : { type: 'planning', currentPlayerId },
       };
-    case 'turn/jumped-to-current':
+    }
+    case 'turn/resolved': {
+      const turn = change.resolved.turn - 1; // start replaying the turn that just resolved
+      const replayMap = new GameMap(
+        Utils.clone(change.resolved.data.maps[turn - 1]),
+      );
       return {
         ...state,
-        map: change.map,
+        game: change.resolved,
+        map: replayMap,
         mapRevision: (state.mapRevision ?? 0) + 1,
-        turn: change.turn,
+        turn,
         selectedUnitIds: [],
         selectedTerritoryId: null,
         currentResolution: null,
-        phase: { type: 'planning', currentPlayerId: change.currentPlayerId },
+        phase: {
+          type: 'replaying',
+          currentPlayerId: selectResolvedCurrentPlayerId(state),
+        },
       };
+    }
+    case 'replay/completed': {
+      if (state.phase.type !== 'replaying') return state;
+      const nextTurn = state.turn + 1;
+      if (nextTurn < state.game.turn) {
+        // More history to replay. Load next turn's pre-resolve snapshot and
+        // stay in `replaying` — the listener observes the new map reference
+        // and restarts the generator.
+        const mapData = state.game.data.maps[nextTurn - 1];
+        const nextSnapshot = new GameMap(Utils.clone(mapData));
+        return {
+          ...state,
+          map: nextSnapshot,
+          mapRevision: (state.mapRevision ?? 0) + 1,
+          turn: nextTurn,
+          selectedUnitIds: [],
+          selectedTerritoryId: null,
+          currentResolution: null,
+          phase: { type: 'replaying', currentPlayerId: state.phase.currentPlayerId },
+        };
+      }
+      // Reached current turn. Exit replay.
+      const nextMap = new GameMap(state.game.latestMap);
+      const playablePlayerIds = resolvePlayablePlayerIds(state.game, state.userId, nextMap);
+      const winners = nextMap.winningPlayers(
+        state.game.data.maxVictoryPoints,
+        state.game.turn > state.game.data.maxTurns,
+      );
+      const common = {
+        ...state,
+        map: nextMap,
+        mapRevision: (state.mapRevision ?? 0) + 1,
+        turn: state.game.turn,
+        selectedUnitIds: [],
+        selectedTerritoryId: null,
+        currentResolution: null,
+      };
+      return winners.length > 0
+        ? { ...common, phase: { type: 'victory' as const } }
+        : {
+          ...common,
+          phase: {
+            type: 'next-player' as const,
+            currentPlayerId: playablePlayerIds[0] ?? nextMap.playerIds[0],
+          },
+        };
+    }
+    case 'wait-for-turn/failed': {
+      if (state.phase.type !== 'waiting') return state;
+      return {
+        ...state,
+        phase: {
+          type: 'planning',
+          currentPlayerId: selectResolvedCurrentPlayerId(state),
+        },
+      };
+    }
     case 'phase/set':
       return { ...state, phase: change.phase };
     case 'selection/units':
@@ -59,40 +139,6 @@ export function reducer(state: StoreState, change: StateChange): StoreState {
       return {
         ...state,
         pendingAnimations: state.pendingAnimations.filter((a) => a.id !== change.id),
-      };
-    case 'replay/started-post-resolution':
-      return {
-        ...state,
-        map: change.map,
-        mapRevision: (state.mapRevision ?? 0) + 1,
-        phase: {
-          type: 'replaying',
-          abort: new AbortController(),
-          advance: null,
-          currentPlayerId: change.currentPlayerId,
-          onComplete: change.onComplete,
-        },
-      };
-    case 'game/advanced-to-victory':
-      return {
-        ...state,
-        game: change.game,
-        map: change.map,
-        mapRevision: (state.mapRevision ?? 0) + 1,
-        turn: change.turn,
-        phase: { type: 'victory' },
-      };
-    case 'game/advanced-to-next-player':
-      return {
-        ...state,
-        game: change.game,
-        map: change.map,
-        mapRevision: (state.mapRevision ?? 0) + 1,
-        turn: change.turn,
-        phase: { type: 'next-player', currentPlayerId: change.currentPlayerId },
-        selectedUnitIds: [],
-        selectedTerritoryId: null,
-        currentResolution: null,
       };
   }
   // TS exhaustiveness ensures every variant above returns; this guards against

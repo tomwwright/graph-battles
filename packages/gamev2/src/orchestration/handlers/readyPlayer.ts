@@ -16,10 +16,10 @@ export function onReadyPlayer(ctx: HandlerContext): void {
   });
 
   if (isLast) {
-    // Entering 'waiting' kicks `provider.waitForTurn` via the PhaseEffects
-    // entry hook wired in GameOrchestrator. Local: provider.action above
+    // Entering 'waiting' kicks `provider.waitForTurn` via
+    // `WaitForTurnResolutionListener`. Local: provider.action above
     // already advanced persisted turn. Remote: action sent to API; the
-    // hook-driven poll waits for the server to resolve.
+    // listener-driven poll waits for the server to resolve.
     ctx.dispatch({
       type: 'phase/set',
       phase: { type: 'waiting', submittedAtTurn: state.turn },

@@ -1,6 +1,6 @@
 import { GameMap, Resolution, Values } from '@battles/models';
 import type { ID } from '@battles/models';
-import type { AnimationTracker, Phase, Subscribable } from '../state/types';
+import type { AnimationTracker, Subscribable } from '../state/types';
 import { UnitRenderer } from '../rendering/UnitRenderer';
 
 /** Minimal `StoreState` shape this syncer reads. */
@@ -8,8 +8,6 @@ type UnitSyncerState = {
   map: GameMap;
   mapRevision: number;
   currentResolution: Resolution | null;
-  /** Read to pluck the abort signal during a `replaying` phase. */
-  phase: Phase;
 };
 
 /**
@@ -56,9 +54,6 @@ export class UnitSyncer {
     const { map, currentResolution } = state;
     if (!map) return;
 
-    const replayingSignal =
-      state.phase.type === 'replaying' ? state.phase.abort.signal : undefined;
-
     const currentUnitIds = new Set(map.unitIds);
 
     // Remove units no longer in the map
@@ -86,8 +81,12 @@ export class UnitSyncer {
         currentResolution.unitId === unitId;
 
       if (wasPresent && prev !== undefined && prev !== nextLocation && isMoveResolution) {
+        // Animation runs to completion. Abort cancellation lived on the phase
+        // variant before phase 8; the replay loop now relies on the
+        // pendingAnimations idle gate alone — short animations finish naturally
+        // before the next mutation lands.
         this.tracker.trackAnimation(
-          this.renderer.animateUnitMove(unitId, prev, nextLocation, replayingSignal),
+          this.renderer.animateUnitMove(unitId, prev, nextLocation),
         );
       } else if (wasPresent && prev !== undefined && prev !== nextLocation) {
         this.renderer.setUnitPosition(unitId, nextLocation);

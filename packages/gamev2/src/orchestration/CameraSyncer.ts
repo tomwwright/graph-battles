@@ -16,8 +16,8 @@ export type CameraTarget = {
  * camera there. The in-flight focus promise is registered via
  * `store.trackAnimation` so the resolution sequencer awaits it.
  *
- * Owns `getResolutionFocusTerritory` — previously lived inside
- * `ResolutionRunner`.
+ * Owns `getResolutionFocusTerritory` — the pure mapping from a resolution to
+ * the territory the camera should frame.
  */
 export class CameraSyncer {
   private readonly unsubscribe: () => void;

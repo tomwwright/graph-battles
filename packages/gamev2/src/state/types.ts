@@ -54,22 +54,10 @@ export type Phase =
   | { type: 'planning'; currentPlayerId: ID }
   | { type: 'waiting'; submittedAtTurn: number }
   | {
-      type: 'replaying';
-      abort: AbortController;
-      advance: ((v: 'next' | 'skip') => void) | null;
-      /** Carried through from prior phase so UI keeps showing whose turn just resolved. */
-      currentPlayerId: ID;
-      /**
-       * Fires when the replay finishes (or is aborted). The PhaseEffects
-       * 'replaying' entry hook starts the replay and invokes this on
-       * completion. `aborted` reflects whether the AbortController fired.
-       *
-       * Set by the post-resolution flow (`runReplayAndAdvance`) to advance
-       * into next-player / victory; left undefined for set-turn scrubbing
-       * past turns (the replay just stops, phase stays).
-       */
-      onComplete?: (aborted: boolean) => void;
-    }
+    type: 'replaying';
+    /** Carried through from prior phase so UI keeps showing whose turn just resolved. */
+    currentPlayerId: ID;
+  }
   | { type: 'victory' };
 
 export type PhaseType = Phase['type'];
@@ -114,16 +102,12 @@ export type StateChange =
    */
   | { type: 'map/mutated' }
   /**
-   * Scrub to a past turn — replace the map (cloned upstream so replay mutations
-   * don't poison persisted snapshots), set turn, clear selection and
-   * resolution, transition to 'replaying'.
+   * Scrubber action. Reducer validates range, picks the map (cloned past
+   * snapshot when scrubbing back, live snapshot when jumping to current),
+   * clears selection + resolution, sets phase to `replaying` (past turn) or
+   * `planning` (current turn). Single entry point for both directions.
    */
-  | { type: 'turn/scrubbed-to-past'; turn: number; map: GameMap; currentPlayerId: ID }
-  /**
-   * Jump back to the current turn — replace the map with the live snapshot,
-   * set turn, clear selection and resolution, transition to 'planning'.
-   */
-  | { type: 'turn/jumped-to-current'; turn: number; map: GameMap; currentPlayerId: ID }
+  | { type: 'turn/set'; turn: number }
   /** Set the turn-flow phase. */
   | { type: 'phase/set'; phase: Phase }
   /** Replace the selected unit list. */
@@ -145,27 +129,32 @@ export type StateChange =
   /** An animation finished (or aborted). Removes the token from `pendingAnimations`. */
   | { type: 'animation/completed'; id: string }
   /**
-   * Post-resolution replay begins. Replaces map with the pre-resolve snapshot,
-   * sets phase to 'replaying' with a fresh AbortController and `onComplete`
-   * carrying the post-replay advance closure. Phase 8 of the refactor moves
-   * abort/onComplete off the phase variant — this action will simplify then.
+   * Server (or local) resolved a turn. Reducer replaces `state.game` with the
+   * resolved game, replaces `state.map` with the pre-resolve snapshot from
+   * `resolved.data.maps[turn - 1]`, clears selection + resolution, and
+   * transitions to `replaying`.
    */
-  | {
-      type: 'replay/started-post-resolution';
-      map: GameMap;
-      currentPlayerId: ID;
-      onComplete: (aborted: boolean) => void;
-    }
-  /** Game advanced after replay completed with a winner. */
-  | { type: 'game/advanced-to-victory'; game: Game; map: GameMap; turn: number }
-  /** Game advanced after replay completed with no winner. Clears selection + resolution. */
-  | {
-      type: 'game/advanced-to-next-player';
-      game: Game;
-      map: GameMap;
-      turn: number;
-      currentPlayerId: ID;
-    };
+  | { type: 'turn/resolved'; resolved: Game }
+  /**
+   * `provider.waitForTurn` failed for a non-abort reason. Reducer drops back
+   * to `planning` so the user can retry.
+   */
+  | { type: 'wait-for-turn/failed' }
+  /**
+   * Replay generator finished. Reducer advances `state.turn` by one:
+   *
+   * - Next turn still in history (`state.turn + 1 <= state.game.turn`) — load
+   *   that turn's pre-resolve snapshot, stay in `replaying`. Listener observes
+   *   the new map reference and restarts the generator for the next turn.
+   *
+   * - Reached `state.game.turn` — exit replay. Rebuild map from
+   *   `state.game.latestMap`, transition to `victory` (winners) or
+   *   `next-player`.
+   *
+   * Unified flow: scrub and post-resolution replays use the same continuation.
+   * Scrub-to-N animates N, advances to N+1, continues until current turn.
+   */
+  | { type: 'replay/completed' };
 
 export type StoreState = {
   // Game state

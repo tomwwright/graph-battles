@@ -1,32 +1,20 @@
-import type { Game } from '@battles/models';
 import type { GameProvider } from '../providers/GameProvider';
-import type { Phase, Subscribable } from '../state/types';
+import type { Phase, StateDispatcher, Subscribable } from '../state/types';
 
 /** Minimal `StoreState` shape this listener reads. */
 type WaitForTurnResolutionListenerState = { phase: Phase; turn: number };
 
-export type WaitForTurnCallbacks = {
-  /** Called when polling resolves with a new turn. */
-  onResolved(resolved: Game, priorTurn: number): void;
-  /**
-   * Called when polling fails for a non-abort reason. The listener does not
-   * touch phase state — the caller decides how to fall back (e.g. drop to
-   * planning).
-   */
-  onError(error: unknown): void;
-};
-
 /**
  * Self-subscribing listener for the 'waiting' phase.
  *
- * On enter: kicks `provider.waitForTurn` and pipes the result into
- * `callbacks.onResolved`. On exit: aborts the in-flight poll via the
- * internal `AbortController` — the rejected promise's `AbortError` is
- * swallowed silently.
+ * On enter: kicks `provider.waitForTurn` and dispatches `turn/resolved` when
+ * the poll resolves. On exit: aborts the in-flight poll via the internal
+ * `AbortController` — the rejected promise's `AbortError` is swallowed
+ * silently. On non-abort failure, dispatches `wait-for-turn/failed` so the
+ * reducer can drop back to `planning`.
  *
  * Subscribes itself to the store in the constructor and tracks `lastPhase`
- * to detect entry/exit transitions. The previous `PhaseChangeListeners`
- * abstraction is no longer needed.
+ * to detect entry/exit transitions.
  */
 export class WaitForTurnResolutionListener {
   private pollAbort: AbortController | null = null;
@@ -35,8 +23,8 @@ export class WaitForTurnResolutionListener {
 
   constructor(
     private readonly source: Subscribable<WaitForTurnResolutionListenerState>,
+    private readonly dispatcher: StateDispatcher,
     private readonly provider: GameProvider,
-    private readonly callbacks: WaitForTurnCallbacks,
   ) {
     this.lastPhase = source.getState().phase;
     this.unsubscribe = source.subscribe(() => this.onChange());
@@ -63,11 +51,12 @@ export class WaitForTurnResolutionListener {
       .waitForTurn(turn, signal)
       .then((resolved) => {
         if (signal.aborted) return;
-        this.callbacks.onResolved(resolved, turn);
+        this.dispatcher.dispatch({ type: 'turn/resolved', resolved });
       })
       .catch((e) => {
         if ((e as { name?: string })?.name === 'AbortError' || signal.aborted) return;
-        this.callbacks.onError(e);
+        console.warn('[WaitForTurnResolutionListener] waitForTurn failed:', e);
+        this.dispatcher.dispatch({ type: 'wait-for-turn/failed' });
       });
   }
 

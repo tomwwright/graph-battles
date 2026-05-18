@@ -2,13 +2,8 @@ import { ID, GameMap } from '@battles/models';
 import type { Actions } from '@battles/models';
 import { GameStore } from '../state/GameStore';
 import type { Command, Dispatch, Phase } from '../state/types';
-import {
-  currentPlayerIdFromPhase,
-  resolvePlayablePlayerIds,
-  selectResolvedCurrentPlayerId,
-} from '../state/selectors';
+import { currentPlayerIdFromPhase, resolvePlayablePlayerIds } from '../state/selectors';
 import { GameRenderer } from '../rendering/GameRenderer';
-import { ResolutionRunner } from './ResolutionRunner';
 import { UnitSyncer } from './UnitSyncer';
 import { TerritorySyncer } from './TerritorySyncer';
 import { CameraSyncer } from './CameraSyncer';
@@ -43,7 +38,6 @@ import {
 export class GameOrchestrator {
   readonly store: GameStore;
   private renderer: GameRenderer;
-  private resolutionRunner: ResolutionRunner;
   private unitSyncer: UnitSyncer | null = null;
   private territorySyncer: TerritorySyncer | null = null;
   private cameraSyncer: CameraSyncer | null = null;
@@ -62,29 +56,25 @@ export class GameOrchestrator {
   constructor(store: GameStore, renderer: GameRenderer, provider: GameProvider, userId?: ID) {
     this.store = store;
     this.renderer = renderer;
-    this.resolutionRunner = new ResolutionRunner(store, store);
     this.provider = provider;
     this.userId = userId;
-    this.ctx = {
-      getState: () => this.store.getState(),
-      dispatch: (action) => this.store.dispatch(action),
-      applyAction: (action) => this.applyAction(action),
-    };
 
     // Self-subscribing listeners. Construct before `initialise()` dispatches
     // the real initial phase so the placeholder→real transition fires the
     // appropriate entry hook automatically.
-    this.replayingListener = new ReplayingListener(
+    this.replayingListener = new ReplayingListener(this.store, this.store);
+    this.waitListener = new WaitForTurnResolutionListener(
       this.store,
       this.store,
-      this.resolutionRunner,
-      this.userId,
+      this.provider,
     );
-    this.waitListener = new WaitForTurnResolutionListener(this.store, this.provider, {
-      onResolved: (resolved, priorTurn) =>
-        this.replayingListener.runReplayAndAdvance(resolved, priorTurn),
-      onError: (e) => this.handleWaitForTurnError(e),
-    });
+
+    this.ctx = {
+      getState: () => this.store.getState(),
+      dispatch: (action) => this.store.dispatch(action),
+      applyAction: (action) => this.applyAction(action),
+      advanceResolution: (action) => this.replayingListener.advance(action),
+    };
   }
 
   async initialise(renderMap: RenderMap): Promise<void> {
@@ -186,25 +176,5 @@ export class GameOrchestrator {
     } catch (e) {
       console.warn('[GameOrchestrator] apply failed:', action, e);
     }
-  }
-
-  /**
-   * Fallback path when polling fails for a non-abort reason. Drops to planning
-   * so the user can retry.
-   */
-  private handleWaitForTurnError(e: unknown): void {
-    console.warn('[GameOrchestrator] waitForTurn failed:', e);
-    const state = this.store.getState();
-    if (state.phase.type !== 'waiting') return;
-    this.store.dispatch({
-      type: 'phase/set',
-      phase: {
-        type: 'planning',
-        // Phase is 'waiting' here, which has no `currentPlayerId`, so the
-        // three-tier selector falls through to playable[0] / map[0] —
-        // equivalent to the explicit two-tier chain it replaces.
-        currentPlayerId: selectResolvedCurrentPlayerId(state),
-      },
-    });
   }
 }
