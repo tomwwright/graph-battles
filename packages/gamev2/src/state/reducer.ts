@@ -36,6 +36,7 @@ export function reducer(state: StoreState, change: StateChange): StoreState {
         selectedUnitIds: [],
         selectedTerritoryId: null,
         currentResolution: null,
+        autoResolve: false, // reset auto resolve so user prompts to start resolving again
         phase: isReplay
           ? { type: 'replaying', currentPlayerId }
           : { type: 'planning', currentPlayerId },
