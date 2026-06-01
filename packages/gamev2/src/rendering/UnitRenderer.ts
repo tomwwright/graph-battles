@@ -285,6 +285,10 @@ export class UnitRenderer {
     return this.units.has(unitId);
   }
 
+  getMesh(unitId: ID): AbstractMesh | null {
+    return this.units.get(unitId)?.mesh ?? null;
+  }
+
   getUnitIds(): ID[] {
     return Array.from(this.units.keys());
   }

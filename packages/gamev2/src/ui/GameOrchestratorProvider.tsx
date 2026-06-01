@@ -1,4 +1,4 @@
-import { createContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { GameStore } from '../state/GameStore';
 import type { Dispatch } from '../state/types';
@@ -9,6 +9,13 @@ import { useGameSession } from './GameSessionProvider';
 
 export const GameStoreContext = createContext<GameStore | null>(null);
 export const DispatchContext = createContext<Dispatch | null>(null);
+export const GameRendererContext = createContext<GameRenderer | null>(null);
+
+export function useGameRenderer(): GameRenderer {
+  const ctx = useContext(GameRendererContext);
+  if (!ctx) throw new Error('useGameRenderer must be used within GameOrchestratorProvider');
+  return ctx;
+}
 
 type GameOrchestratorProviderProps = {
   children: ReactNode;
@@ -23,12 +30,14 @@ export function GameOrchestratorProvider({ children }: GameOrchestratorProviderP
   const { scene, camera } = useBabylonJs();
   const { provider, renderMap, assetLoader, userId } = useGameSession();
   const orchestratorRef = useRef<GameOrchestrator | null>(null);
+  const rendererRef = useRef<GameRenderer | null>(null);
   const initPromiseRef = useRef<Promise<void> | null>(null);
   const [orchestrator, setOrchestrator] = useState<GameOrchestrator | null>(null);
 
   useEffect(() => {
     if (orchestratorRef.current == null) {
       const renderer = new GameRenderer(scene, camera as ArcRotateCamera, assetLoader);
+      rendererRef.current = renderer;
 
       const store = new GameStore({
         game: null!,
@@ -68,7 +77,9 @@ export function GameOrchestratorProvider({ children }: GameOrchestratorProviderP
   return (
     <GameStoreContext.Provider value={orchestrator.store}>
       <DispatchContext.Provider value={orchestrator.dispatch}>
-        {children}
+        <GameRendererContext.Provider value={rendererRef.current}>
+          {children}
+        </GameRendererContext.Provider>
       </DispatchContext.Provider>
     </GameStoreContext.Provider>
   );

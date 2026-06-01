@@ -1,5 +1,6 @@
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Scene } from '@babylonjs/core/scene';
 import { ID, Values, GameMap } from '@battles/models';
 import { HexCoord, hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
@@ -171,6 +172,12 @@ export class GameRenderer {
     if (newMeshes.length > 0) {
       this.sceneRenderer.registerMeshes(newMeshes);
     }
+  }
+
+  getTerritoryWorldPos(id: ID): Vector3 | null {
+    const coord = this.territoryCoordMap.get(id);
+    if (!coord) return null;
+    return this.grid.getWorldPosition(hexCenterTile(coord));
   }
 
   // --- Unit rendering ---

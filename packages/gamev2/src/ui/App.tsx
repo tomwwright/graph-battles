@@ -9,6 +9,7 @@ import { NextPlayerPopup } from './components/NextPlayerPopup';
 import { VictoryPopup } from './components/VictoryPopup';
 import { Tooltip } from './components/Tooltip';
 import { FpsCounter } from './components/FpsCounter';
+import { MarkerLayer } from './components/MarkerLayer';
 
 export function App() {
   return (
@@ -30,6 +31,7 @@ export function App() {
         <FpsCounter />
         <ActionBar />
       </Footer>
+      <MarkerLayer />
       <NextPlayerPopup />
       <VictoryPopup />
       <Tooltip />
