@@ -107,6 +107,7 @@ export class GameRenderer {
 
   onHover(callback: HoverCallback): void {
     this.grid.onHover(callback);
+    this.unitRenderer.onHover(callback);
   }
 
   // --- Camera ---

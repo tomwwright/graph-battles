@@ -19,6 +19,7 @@ import { HexCoord, hexCenterTile } from './HexCoordinates';
 import { HexGridController } from './HexGridController';
 import { AssetLoader } from './AssetLoader';
 import type { RenderMap } from '../map/MapParser';
+import type { HoverInfo } from '../state/types';
 
 const UNIT_HEIGHT = 1.2;
 const UNIT_BASE_Y = UNIT_HEIGHT / 2 + 1;
@@ -40,6 +41,7 @@ type UnitState = {
 };
 
 type UnitClickCallback = (unitId: ID) => void;
+type HoverCallback = (hover: HoverInfo) => void;
 type MeshRegistrationCallback = (mesh: AbstractMesh) => void;
 
 /**
@@ -55,6 +57,7 @@ export class UnitRenderer {
   private map: RenderMap | null = null;
   private edgeTerritoryMap = new Map<ID, { territoryA: ID; territoryB: ID }>();
   private clickCallback: UnitClickCallback | null = null;
+  private hoverCallback: HoverCallback | null = null;
   private meshRegistrationCallback: MeshRegistrationCallback | null = null;
 
   constructor(
@@ -81,6 +84,10 @@ export class UnitRenderer {
 
   onUnitClick(callback: UnitClickCallback): void {
     this.clickCallback = callback;
+  }
+
+  onHover(callback: HoverCallback): void {
+    this.hoverCallback = callback;
   }
 
   // --- Unit lifecycle ---
@@ -138,6 +145,18 @@ export class UnitRenderer {
       m.actionManager.registerAction(
         new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
           this.clickCallback?.(unitId);
+        })
+      );
+      m.actionManager.registerAction(
+        new ExecuteCodeAction(ActionManager.OnPointerOverTrigger, () => {
+          const locationId = this.units.get(unitId)?.locationId;
+          if (!locationId) return;
+          this.hoverCallback?.({ type: 'unit', unitId });
+        })
+      );
+      m.actionManager.registerAction(
+        new ExecuteCodeAction(ActionManager.OnPointerOutTrigger, () => {
+          this.hoverCallback?.(null);
         })
       );
     };

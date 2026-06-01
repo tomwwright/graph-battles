@@ -10,7 +10,10 @@ export function Tooltip() {
   if (!hover) return null;
 
   let text: string;
-  if (hover.type === 'territory') {
+  if (hover.type === 'unit') {
+    const unit = map.unit(hover.unitId);
+    text = `Unit ${hover.unitId}${unit ? ` (${unit.data.statuses.length > 0 ? unit.data.statuses.join(', ') : 'no statuses'})` : ''}`;
+  } else if (hover.type === 'territory') {
     const territory = map.territory(hover.territoryId);
     const food = territory ? ` (food ${territory.data.food})` : '';
     text = `Territory ${hover.territoryId}${food}`;
