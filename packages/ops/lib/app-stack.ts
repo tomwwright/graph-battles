@@ -34,11 +34,17 @@ export class AppStack extends cdk.Stack {
       code: cloudfront.FunctionCode.fromInline(`
         function handler(event) {
           var uri = event.request.uri;
+          // Redirect site root to the standalone lobby app
           if (uri === '/' || uri === '') {
             return { statusCode: 302, statusDescription: 'Found', headers: { location: { value: '/lobby/' } } };
           }
+          // Redirect /v1 root to the legacy v1 lobby page
           if (uri === '/v1' || uri === '/v1/') {
             return { statusCode: 302, statusDescription: 'Found', headers: { location: { value: '/v1/lobby.html' } } };
+          }
+          // Rewrite directory requests to index.html — S3 (OAC) has no directory index
+          if (uri.endsWith('/')) {
+            event.request.uri = uri + 'index.html';
           }
           return event.request;
         }
