@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useRef } from 'react';
 import { Matrix, Vector3 } from '@babylonjs/core';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { useGameStore } from '../../state/useGameStore';
-import { useGameRenderer, GameStoreContext } from '../GameOrchestratorProvider';
+import { useGameRenderer, useGameOrchestrator } from '../GameOrchestratorProvider';
 import { useBabylonJs } from '../BabylonJsProvider';
 import { useFrameTick } from '../hooks/useFrameTick';
 import { TerritoryMarker } from './TerritoryMarker';
@@ -36,7 +36,7 @@ const UNIT_OFFSET_AMOUNT = 0.6;
 export function MarkerLayer() {
   const { scene, engine, camera } = useBabylonJs();
   const renderer = useGameRenderer();
-  const store = useContext(GameStoreContext);
+  const { store } = useGameOrchestrator();
 
   // Selectors return strings (primitives) so Object.is gives stable comparison.
   // Getters like map.territoryIds return new array instances on every call —
@@ -72,7 +72,6 @@ export function MarkerLayer() {
   const arcCamera = camera as ArcRotateCamera;
 
   useFrameTick(() => {
-    if (!store) return;
     const state = store.getState();
     const vpW = engine.getRenderWidth();
     const vpH = engine.getRenderHeight();
