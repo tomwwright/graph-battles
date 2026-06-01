@@ -30,10 +30,37 @@ export class AppStack extends cdk.Stack {
       validation: acm.CertificateValidation.fromDns(zone),
     });
 
+    const redirectFunction = new cloudfront.Function(this, "RedirectFunction", {
+      code: cloudfront.FunctionCode.fromInline(`
+        function handler(event) {
+          var uri = event.request.uri;
+          // Redirect site root to the standalone lobby app
+          if (uri === '/' || uri === '') {
+            return { statusCode: 302, statusDescription: 'Found', headers: { location: { value: '/lobby/' } } };
+          }
+          // Redirect /v1 root to the legacy v1 lobby page
+          if (uri === '/v1' || uri === '/v1/') {
+            return { statusCode: 302, statusDescription: 'Found', headers: { location: { value: '/v1/lobby.html' } } };
+          }
+          // Rewrite directory requests to index.html — S3 (OAC) has no directory index
+          if (uri.endsWith('/')) {
+            event.request.uri = uri + 'index.html';
+          }
+          return event.request;
+        }
+      `),
+    });
+
     const distribution = new cloudfront.Distribution(this, "Distribution", {
-      defaultRootObject: "lobby.html",
+      defaultRootObject: "index.html",
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
+        functionAssociations: [
+          {
+            function: redirectFunction,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          },
+        ],
       },
       domainNames: [hostname],
       certificate,
@@ -53,11 +80,8 @@ export class AppStack extends cdk.Stack {
     new s3deployment.BucketDeployment(this, "DeployApp", {
       sources: [s3deployment.Source.asset(DEPLOYMENT_ARTIFACT_GAME)],
       destinationBucket: bucket,
+      destinationKeyPrefix: "v1/",
       distribution,
-      exclude: [
-        "v2/*",
-        "lobby/*"
-      ]
     });
 
     new s3deployment.BucketDeployment(this, "DeployGameV2", {
