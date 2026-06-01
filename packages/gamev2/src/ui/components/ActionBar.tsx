@@ -1,7 +1,7 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useGameStore } from '../../state/useGameStore';
 import { useDispatch } from '../../state/useDispatch';
-import { GameStoreContext } from '../GameOrchestratorProvider';
+import { useGameOrchestrator } from '../GameOrchestratorProvider';
 import panelStyles from './panels.module.css';
 import styles from './ActionBar.module.css';
 
@@ -10,7 +10,7 @@ export function ActionBar() {
   const phaseType = useGameStore((s) => s.phase.type);
   const autoResolve = useGameStore((s) => s.autoResolve);
   const currentResolution = useGameStore((s) => s.currentResolution);
-  const store = useContext(GameStoreContext);
+  const { store } = useGameOrchestrator();
 
   useEffect(() => {
     if (phaseType !== 'replaying') return;
@@ -37,7 +37,7 @@ export function ActionBar() {
         <div className={styles.container}>
           <button
             className={panelStyles.buttonDanger}
-            onClick={() => store?.dispatch({ type: 'auto-resolve/set', autoResolve: false })}
+            onClick={() => store.dispatch({ type: 'auto-resolve/set', autoResolve: false })}
           >
             Cancel
           </button>
@@ -48,7 +48,7 @@ export function ActionBar() {
       <div className={styles.container}>
         <button
           className={panelStyles.button}
-          onClick={() => store?.dispatch({ type: 'auto-resolve/set', autoResolve: true })}
+          onClick={() => store.dispatch({ type: 'auto-resolve/set', autoResolve: true })}
           disabled={!currentResolution}
         >
           Replay All

@@ -1,5 +1,5 @@
-import { useContext, useSyncExternalStore } from 'react';
-import { GameStoreContext } from '../ui/GameOrchestratorProvider';
+import { useSyncExternalStore } from 'react';
+import { useGameOrchestrator } from '../ui/GameOrchestratorProvider';
 import { StoreState } from './types';
 
 /**
@@ -7,10 +7,7 @@ import { StoreState } from './types';
  * Components call useGameStore(s => s.turnPhase) to subscribe to specific slices.
  */
 export function useGameStore<T>(selector: (state: StoreState) => T): T {
-  const store = useContext(GameStoreContext);
-  if (!store) {
-    throw new Error('useGameStore must be used within a GameOrchestratorProvider');
-  }
+  const { store } = useGameOrchestrator();
 
   return useSyncExternalStore(
     store.subscribe.bind(store),

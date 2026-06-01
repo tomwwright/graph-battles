@@ -1,0 +1,37 @@
+.pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border-radius: 12px;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: normal;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.6);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  will-change: transform;
+  opacity: 70%;
+  /* visibility toggled imperatively by the frame loop */
+  visibility: hidden;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: -2px;
+}
+
+.symbol {
+  line-height: 1;
+  font-weight: bold;
+}
+
+.pillSelected {
+  opacity: 1;
+}

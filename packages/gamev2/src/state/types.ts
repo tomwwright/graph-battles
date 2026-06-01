@@ -42,6 +42,7 @@ export type VisibilityMode = 'all' | 'current-player';
 export type HoverInfo =
   | { type: 'territory'; territoryId: ID; hexCoord: HexCoord }
   | { type: 'edge'; territoryA: ID; territoryB: ID; hexCoord: HexCoord }
+  | { type: 'unit'; unitId: ID }
   | null;
 
 /**
