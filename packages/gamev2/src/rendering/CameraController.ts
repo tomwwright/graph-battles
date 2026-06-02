@@ -21,7 +21,7 @@ export class CameraController {
   private zoomIndex = 1;
 
   constructor(private readonly camera: ArcRotateCamera) {
-    const maxCameraDistance = 50;
+    const maxCameraDistance = 60;
     const cameraAngleDegrees = (Math.PI / 180) * 40;
 
     this.maxX = 10;

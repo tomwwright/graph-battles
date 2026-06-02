@@ -37,7 +37,7 @@ const DOUBLE_TAP_MAX_DIST_PX = 30;
 export class PointersInput implements ICameraInput<ArcRotateCamera> {
   camera!: ArcRotateCamera;
 
-  panSensibility = 800;
+  panSensibility = 400;
   rotateSensibility = 400;
   pinchSensibility = 50;
 
