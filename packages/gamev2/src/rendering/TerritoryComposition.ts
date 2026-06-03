@@ -1,6 +1,6 @@
 import { Values } from '@battles/models';
 
-export type TileType = 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'fort' | 'city' | 'castle';
+export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
 
 const { TerritoryProperty } = Values;
 
@@ -26,9 +26,8 @@ export class TerritoryComposition {
     // Determine center tile (highest-tier building)
     let center: TileType;
     if (hasCastle) center = 'castle';
-    else if (hasCity && hasFort) center = 'castle';
+    else if (hasFort) center = 'castle';
     else if (hasCity) center = 'city';
-    else if (hasFort) center = 'fort';
     else center = 'village';
 
     // Determine surrounding tiles
@@ -39,8 +38,14 @@ export class TerritoryComposition {
       surround[4] = 'farm';
     }
 
+    if (hasCity) {
+      surround[1] = 'mill';
+      surround[2] = 'village'
+      surround[5] = 'sheep';
+    }
+
     if (hasFort && (hasCity || hasCastle)) {
-      surround[0] = 'fort';
+      surround[0] = 'castle';
     }
 
     if (!hasFarm && !hasFort && !hasCity && !hasCastle) {
