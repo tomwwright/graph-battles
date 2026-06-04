@@ -3,12 +3,234 @@ import { HexCoord, coordKey } from '../rendering/HexCoordinates';
 
 export type RenderMap = {
   territories: { id: ID; coord: HexCoord }[];
-  grassCells: HexCoord[];
-  edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[];
+  pathCells: { coord: HexCoord; exclude: 1 | 2 | 3 | 4 | 5 | 6 }[];
+  edges: { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }[];
 };
 
+type ParsedCell =
+  | { type: 'empty' }
+  | { type: 'territory'; id: ID }
+  | { type: 'path'; exclude: 1 | 2 | 3 | 4 | 5 | 6 };
+
+// Direction indices 1-6, matching hexNeighbours order.
+// dir 1:(+1,0), 2:(-1,0), 3:(0,+1), 4:(0,-1), 5:(+1,-1), 6:(-1,+1)
+const HEX_DIRS: Array<[number, number]> = [
+  [+1, 0],
+  [-1, 0],
+  [0, +1],
+  [0, -1],
+  [+1, -1],
+  [-1, +1],
+];
+
+const OPPOSITE: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = { 1: 2, 2: 1, 3: 4, 4: 3, 5: 6, 6: 5 };
+
+function isOpen(cell: ParsedCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
+  if (cell.type === 'territory') return true;
+  if (cell.type === 'path') return cell.exclude !== dir;
+  return false;
+}
+
+function parseCell(raw: string, row: number, col: number): ParsedCell {
+  const s = raw.trim();
+  if (s === '') return { type: 'empty' };
+
+  const tMatch = s.match(/^T\s*(\d+)$/);
+  if (tMatch) return { type: 'territory', id: `#T${tMatch[1]}` };
+
+  const eMatch = s.match(/^E\s*-([1-6])$/);
+  if (eMatch) return { type: 'path', exclude: parseInt(eMatch[1]) as 1 | 2 | 3 | 4 | 5 | 6 };
+
+  throw new Error(`MapParser: unrecognized cell at (${row},${col}): "${s}"`);
+}
+
+const SEPARATOR_ROW = /^\|[-:\s|]+\|$/;
+
 /**
- * Parses a text grid map into a RenderMap representing the rendering view of the map.
+ * Parses a markdown-table map into a RenderMap.
+ *
+ * Format:
+ * - `T <id>` = territory with explicit integer ID
+ * - `E -<dir>` = path cell with closed direction (1-6)
+ * - blank = empty cell
+ *
+ * Edges are derived by flood-filling connected path-cell components, then
+ * collecting territories that bridge (reciprocal-open adjacency) into each
+ * component.
+ */
+export function parseMap(mapString: string): RenderMap {
+  const lines = mapString
+    .trim()
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('|') && !SEPARATOR_ROW.test(l));
+
+  // Build 2D cell grid indexed by [row][col]
+  const grid = new Map<string, ParsedCell>();
+  const territories: RenderMap['territories'] = [];
+  const pathCells: RenderMap['pathCells'] = [];
+
+  for (let row = 0; row < lines.length; row++) {
+    const cells = lines[row].replace(/^\||\|$/g, '').split('|');
+    for (let col = 0; col < cells.length; col++) {
+      const cell = parseCell(cells[col], row, col);
+      const coord: HexCoord = { x: row, z: col };
+      const key = coordKey(coord);
+      grid.set(key, cell);
+
+      if (cell.type === 'territory') {
+        territories.push({ id: cell.id, coord });
+      } else if (cell.type === 'path') {
+        pathCells.push({ coord, exclude: cell.exclude });
+      }
+    }
+  }
+
+  // Validate unique territory IDs
+  const seenIds = new Set<ID>();
+  for (const t of territories) {
+    if (seenIds.has(t.id)) throw new Error(`MapParser: duplicate territory ID ${t.id}`);
+    seenIds.add(t.id);
+  }
+
+  // Validate no direct T-T adjacency
+  const territoryByKey = new Map(territories.map((t) => [coordKey(t.coord), t.id]));
+  for (const t of territories) {
+    for (let di = 0; di < 6; di++) {
+      const [dx, dz] = HEX_DIRS[di];
+      const nKey = coordKey({ x: t.coord.x + dx, z: t.coord.z + dz });
+      if (territoryByKey.has(nKey)) {
+        throw new Error(`MapParser: territories ${t.id} and ${territoryByKey.get(nKey)} are directly adjacent`);
+      }
+    }
+  }
+
+  // Build path-cell adjacency (reciprocal-open links between path cells)
+  const pathCellByKey = new Map(pathCells.map((p) => [coordKey(p.coord), p]));
+  const pathAdjacency = new Map<string, Set<string>>();
+  for (const p of pathCells) {
+    pathAdjacency.set(coordKey(p.coord), new Set());
+  }
+
+  for (const p of pathCells) {
+    const pk = coordKey(p.coord);
+    for (let di = 0; di < 6; di++) {
+      const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+      if (p.exclude === dir) continue;
+
+      const [dx, dz] = HEX_DIRS[di];
+      const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
+      const nk = coordKey(nCoord);
+      const nCell = pathCellByKey.get(nk);
+      if (!nCell) continue;
+
+      const opp = OPPOSITE[dir];
+      if (nCell.exclude !== opp) {
+        pathAdjacency.get(pk)!.add(nk);
+        pathAdjacency.get(nk)!.add(pk);
+      }
+    }
+  }
+
+  // Warn about dangling opens and isolated path cells
+  for (const p of pathCells) {
+    let bridgeCount = 0;
+    for (let di = 0; di < 6; di++) {
+      const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+      if (p.exclude === dir) continue;
+
+      const [dx, dz] = HEX_DIRS[di];
+      const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
+      const nk = coordKey(nCoord);
+      const nCell = grid.get(nk);
+
+      if (!nCell || nCell.type === 'empty') {
+        console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir}`);
+        continue;
+      }
+
+      if (nCell.type === 'territory') {
+        bridgeCount++;
+        continue;
+      }
+
+      if (nCell.type === 'path') {
+        const opp = OPPOSITE[dir];
+        if (!isOpen(nCell, opp)) {
+          console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir} (neighbor closed)`);
+        } else {
+          bridgeCount++;
+        }
+      }
+    }
+    if (bridgeCount === 0) {
+      console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) is isolated (no bridges)`);
+    }
+  }
+
+  // Flood-fill connected path-cell components
+  const visited = new Set<string>();
+  const edges: RenderMap['edges'] = [];
+  const edgeSet = new Set<string>();
+
+  for (const p of pathCells) {
+    const startKey = coordKey(p.coord);
+    if (visited.has(startKey)) continue;
+
+    const component: HexCoord[] = [];
+    const borderTerritories = new Set<ID>();
+    const queue: string[] = [startKey];
+    visited.add(startKey);
+
+    while (queue.length > 0) {
+      const cur = queue.pop()!;
+      const curPath = pathCellByKey.get(cur)!;
+      component.push(curPath.coord);
+
+      // Collect bordering territories
+      for (let di = 0; di < 6; di++) {
+        const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+        if (curPath.exclude === dir) continue;
+
+        const [dx, dz] = HEX_DIRS[di];
+        const nk = coordKey({ x: curPath.coord.x + dx, z: curPath.coord.z + dz });
+        const nCell = grid.get(nk);
+        if (nCell?.type === 'territory') borderTerritories.add(nCell.id);
+      }
+
+      // Expand to adjacent path cells
+      for (const nk of pathAdjacency.get(cur)!) {
+        if (!visited.has(nk)) {
+          visited.add(nk);
+          queue.push(nk);
+        }
+      }
+    }
+
+    // Emit edges for every pair of bordering territories
+    const tIds = [...borderTerritories];
+    for (let i = 0; i < tIds.length; i++) {
+      for (let j = i + 1; j < tIds.length; j++) {
+        const a = tIds[i] < tIds[j] ? tIds[i] : tIds[j];
+        const b = tIds[i] < tIds[j] ? tIds[j] : tIds[i];
+        const ek = `${a}${b}`;
+        if (!edgeSet.has(ek)) {
+          edgeSet.add(ek);
+          edges.push({ territoryA: a, territoryB: b, pathCoords: component });
+        } else {
+          // Merge pathCoords from this component into existing edge
+          const existing = edges.find((e) => e.territoryA === a && e.territoryB === b)!;
+          existing.pathCoords = [...existing.pathCoords, ...component];
+        }
+      }
+    }
+  }
+
+  return { territories, pathCells, edges };
+}
+
+/**
+ * @deprecated Legacy ASCII-grid parser. Use `parseMap` (markdown-table format) instead.
  *
  * Format:
  * - `T` = territory
@@ -18,7 +240,7 @@ export type RenderMap = {
  * Edges are derived from adjacency: two territories share an edge if they
  * are both adjacent to the same grass cell.
  */
-export function parseMap(mapString: string): RenderMap {
+export function parseMapLegacy(mapString: string): RenderMap {
   const lines = mapString
     .trim()
     .split('\n')

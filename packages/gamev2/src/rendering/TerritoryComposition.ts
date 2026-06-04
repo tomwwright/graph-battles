@@ -2,6 +2,15 @@ import { Values } from '@battles/models';
 
 export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
 
+const CLOSED_DIR_TO_DROPPED_TILES: Record<1 | 2 | 3 | 4 | 5 | 6, [number, number]> = {
+  1: [5, 6],
+  2: [0, 1],
+  3: [4, 6],
+  4: [0, 2],
+  5: [2, 5],
+  6: [1, 4],
+};
+
 const { TerritoryProperty } = Values;
 
 function has(props: Values.TerritoryProperty[], prop: Values.TerritoryProperty): boolean {
@@ -59,6 +68,14 @@ export class TerritoryComposition {
 
   static composGrass(): TileType[] {
     return ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
+  }
+
+  static composePath(exclude: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
+    const tiles: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
+    const [a, b] = CLOSED_DIR_TO_DROPPED_TILES[exclude];
+    tiles[a] = 'empty';
+    tiles[b] = 'empty';
+    return tiles;
   }
 
   static diff(

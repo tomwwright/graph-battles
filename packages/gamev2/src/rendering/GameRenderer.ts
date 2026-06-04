@@ -60,8 +60,8 @@ export class GameRenderer {
     await this.assetLoader.loadAll();
 
     // Size the tile grid
-    const rows = Math.max(...renderMap.territories.map((t) => t.coord.x), ...renderMap.grassCells.map((g) => g.x)) + 1;
-    const cols = Math.max(...renderMap.territories.map((t) => t.coord.z), ...renderMap.grassCells.map((g) => g.z)) + 1;
+    const rows = Math.max(...renderMap.territories.map((t) => t.coord.x), ...renderMap.pathCells.map((p) => p.coord.x)) + 1;
+    const cols = Math.max(...renderMap.territories.map((t) => t.coord.z), ...renderMap.pathCells.map((p) => p.coord.z)) + 1;
     const gridSize = tileGridSize(rows, cols);
     this.grid.setSize(gridSize);
 
@@ -69,7 +69,7 @@ export class GameRenderer {
     this.grid.setTerritoryMap(renderMap.territories, renderMap.edges);
 
     // Place tile meshes
-    const meshes = this.mapRenderer.loadMap(renderMap.territories, renderMap.grassCells, gameMap);
+    const meshes = this.mapRenderer.loadMap(renderMap.territories, renderMap.pathCells, gameMap);
 
     // Register meshes for shadows and reflections
     this.sceneRenderer.registerMeshes(meshes);
@@ -149,7 +149,7 @@ export class GameRenderer {
     );
     if (!edge) return;
 
-    for (const grassCoord of edge.grassCoords) {
+    for (const grassCoord of edge.pathCoords) {
       const tiles = hexToTileCoords(grassCoord);
       for (const tile of tiles) {
         this.grid.setTileOverlay(tile, color, alpha);

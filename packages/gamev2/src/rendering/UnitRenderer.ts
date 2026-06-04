@@ -413,12 +413,12 @@ export class UnitRenderer {
     if (!pair) return null;
 
     const edge = this.findEdge(pair.territoryA, pair.territoryB);
-    if (!edge || edge.grassCoords.length === 0) return null;
+    if (!edge || edge.pathCoords.length === 0) return null;
 
     const coordA = this.territoryCoordMap.get(pair.territoryA);
     if (!coordA) return null;
 
-    const sorted = [...edge.grassCoords].sort(
+    const sorted = [...edge.pathCoords].sort(
       (a, b) => this.hexDistance(a, coordA) - this.hexDistance(b, coordA)
     );
 
@@ -466,7 +466,7 @@ export class UnitRenderer {
     if (!territoryCoord) return [];
 
     // Sort by distance from the territory
-    const sorted = [...edge.grassCoords].sort(
+    const sorted = [...edge.pathCoords].sort(
       (a, b) => this.hexDistance(a, territoryCoord) - this.hexDistance(b, territoryCoord)
     );
 
@@ -499,7 +499,7 @@ export class UnitRenderer {
     const fromCoord = this.territoryCoordMap.get(fromId);
     if (!fromCoord) return [];
 
-    const sorted = [...edge.grassCoords].sort(
+    const sorted = [...edge.pathCoords].sort(
       (a, b) => this.hexDistance(a, fromCoord) - this.hexDistance(b, fromCoord)
     );
 
