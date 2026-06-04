@@ -240,7 +240,11 @@ export function parseMap(mapString: string): RenderMap {
  * Edges are derived from adjacency: two territories share an edge if they
  * are both adjacent to the same grass cell.
  */
-export function parseMapLegacy(mapString: string): RenderMap {
+export function parseMapLegacy(mapString: string): {
+  territories: { id: ID; coord: HexCoord }[];
+  grassCells: HexCoord[];
+  edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[];
+} {
   const lines = mapString
     .trim()
     .split('\n')
@@ -259,7 +263,7 @@ export function parseMapLegacy(mapString: string): RenderMap {
   }
 
   // Extract territories and grass cells
-  const territories: RenderMap['territories'] = [];
+  const territories: { id: ID; coord: HexCoord }[] = [];
   const grassCells: HexCoord[] = [];
   let nextTerritoryId = 1;
 
@@ -286,7 +290,7 @@ export function parseMapLegacy(mapString: string): RenderMap {
   // between every pair of those territories.
   const grassSet = new Set(grassCells.map(coordKey));
   const visited = new Set<string>();
-  const edges: RenderMap['edges'] = [];
+  const edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[] = [];
   const edgeSet = new Set<string>();
 
   for (const grass of grassCells) {
