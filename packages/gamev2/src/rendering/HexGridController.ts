@@ -48,6 +48,8 @@ export class HexGridController {
   private territoryCoords = new Map<ID, HexCoord>();
   // Maps from grass hex coord key → edge info (connected territories)
   private edgeLookup = new Map<string, { territoryA: ID; territoryB: ID }>();
+  // Offset coord keys where a tile mesh was actually placed
+  private occupiedTiles = new Set<string>();
 
   constructor(private readonly scene: Scene) { }
 
@@ -64,7 +66,7 @@ export class HexGridController {
    */
   setTerritoryMap(
     territories: { id: ID; coord: HexCoord }[],
-    edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[]
+    edges: { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }[]
   ): void {
     this.territoryLookup.clear();
     this.territoryCoords.clear();
@@ -76,11 +78,15 @@ export class HexGridController {
     }
 
     for (const e of edges) {
-      for (const gc of e.grassCoords) {
-        const key = coordKey(gc);
+      for (const pc of e.pathCoords) {
+        const key = coordKey(pc);
         this.edgeLookup.set(key, { territoryA: e.territoryA, territoryB: e.territoryB });
       }
     }
+  }
+
+  setOccupiedTiles(occupied: Set<string>): void {
+    this.occupiedTiles = occupied;
   }
 
   setSize(size: number): void {
@@ -139,6 +145,7 @@ export class HexGridController {
 
   setTileOverlay(coord: OffsetCoord, color: Color3, alpha: number): void {
     const key = `${coord.x},${coord.z}`;
+    if (!this.occupiedTiles.has(key)) return;
     this.overlays.set(key, { color, alpha });
     this.setColorAndAlpha(coord.x, coord.z, color, alpha);
   }
@@ -157,6 +164,7 @@ export class HexGridController {
 
   dispose(): void {
     this.overlays.clear();
+    this.occupiedTiles.clear();
     for (const row of this.grid) {
       for (const cell of row) {
         cell.dispose();
@@ -231,7 +239,9 @@ export class HexGridController {
   private setHexHighlight(hexCoord: HexCoord, color: Color3, alpha: number): void {
     const tiles = hexToTileCoords(hexCoord);
     for (const tile of tiles) {
-      if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize) {
+      const key = `${tile.x},${tile.z}`;
+      if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize
+        && this.occupiedTiles.has(key)) {
         this.setColorAndAlpha(tile.x, tile.z, color, alpha);
       }
     }
@@ -240,7 +250,9 @@ export class HexGridController {
   private unsetHexHighlight(hexCoord: HexCoord): void {
     const tiles = hexToTileCoords(hexCoord);
     for (const tile of tiles) {
-      if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize) {
+      const key = `${tile.x},${tile.z}`;
+      if (tile.x >= 0 && tile.x < this.mapSize && tile.z >= 0 && tile.z < this.mapSize
+        && this.occupiedTiles.has(key)) {
         this.restoreAtPosition(tile.x, tile.z);
       }
     }

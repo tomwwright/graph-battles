@@ -9,11 +9,11 @@ import type { RenderMap } from '../map/MapParser';
  * external asset dependency.
  */
 export const STUB_MAP_TEXT = [
-  '_gT_ggT',
-  'g_gT__g',
-  'g__g_T_',
-  'gT_Tg__',
-  '_gg____',
+  '|     |     |     | E -2 | E -6|      | T 2 | E -6|',
+  '|     | E -2| T 1 |      | T 3 | E -1 |     | E -3|',
+  '|E -4 |     | E -2| E -1 |     | T  4 | E -1|     |',
+  '|E -5 | T 5 |     |T 6   | E -1|      |     |     |',
+  '|     | E -5| E -1|      |     |      |     |     |',
 ].join('\n');
 
 /**
@@ -70,7 +70,7 @@ function createStubGameData(renderMap: RenderMap): GameData {
       edgeIds: edgeIds[t.id] ?? [],
       playerId,
       food: 3,
-      properties: [Values.TerritoryProperty.SETTLED],
+      properties: [Values.TerritoryProperty.SETTLED, Values.TerritoryProperty.CITY],
     };
   }
 

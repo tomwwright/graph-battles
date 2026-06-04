@@ -9,6 +9,8 @@ const TILE_TYPE_FILES: Partial<Record<TileType, string>> = {
   farm: '/building-farm.glb',
   castle: '/building-castle.glb',
   village: '/building-village.glb',
+  city: '/building-market.glb',
+  mill: '/building-mill.glb',
   rocks: '/water-rocks.glb',
 };
 

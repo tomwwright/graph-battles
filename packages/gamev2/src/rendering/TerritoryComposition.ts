@@ -1,6 +1,15 @@
 import { Values } from '@battles/models';
 
-export type TileType = 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'fort' | 'city' | 'castle';
+export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
+
+const CLOSED_DIR_TO_DROPPED_TILES: Record<1 | 2 | 3 | 4 | 5 | 6, [number, number]> = {
+  1: [5, 6],
+  2: [0, 1],
+  3: [4, 6],
+  4: [0, 2],
+  5: [2, 5],
+  6: [1, 4],
+};
 
 const { TerritoryProperty } = Values;
 
@@ -26,9 +35,8 @@ export class TerritoryComposition {
     // Determine center tile (highest-tier building)
     let center: TileType;
     if (hasCastle) center = 'castle';
-    else if (hasCity && hasFort) center = 'castle';
+    else if (hasFort) center = 'castle';
     else if (hasCity) center = 'city';
-    else if (hasFort) center = 'fort';
     else center = 'village';
 
     // Determine surrounding tiles
@@ -39,8 +47,14 @@ export class TerritoryComposition {
       surround[4] = 'farm';
     }
 
+    if (hasCity) {
+      surround[1] = 'mill';
+      surround[2] = 'village'
+      surround[5] = 'sheep';
+    }
+
     if (hasFort && (hasCity || hasCastle)) {
-      surround[0] = 'fort';
+      surround[0] = 'castle';
     }
 
     if (!hasFarm && !hasFort && !hasCity && !hasCastle) {
@@ -54,6 +68,19 @@ export class TerritoryComposition {
 
   static composGrass(): TileType[] {
     return ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
+  }
+
+  static presentTileIndices(exclude: 1 | 2 | 3 | 4 | 5 | 6): number[] {
+    const dropped = new Set(CLOSED_DIR_TO_DROPPED_TILES[exclude]);
+    return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
+  }
+
+  static composePath(exclude: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
+    const tiles: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
+    const [a, b] = CLOSED_DIR_TO_DROPPED_TILES[exclude];
+    tiles[a] = 'empty';
+    tiles[b] = 'empty';
+    return tiles;
   }
 
   static diff(

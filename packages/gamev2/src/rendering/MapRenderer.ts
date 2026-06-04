@@ -26,14 +26,14 @@ export class MapRenderer {
     private readonly scene: Scene,
     private readonly grid: HexGridController,
     private readonly assetLoader: AssetLoader
-  ) {}
+  ) { }
 
   /**
    * Render the full map. Returns all placed meshes for shadow/mirror registration.
    */
   loadMap(
     territories: { id: ID; coord: HexCoord }[],
-    grassCells: HexCoord[],
+    pathCells: { coord: HexCoord; exclude: 1 | 2 | 3 | 4 | 5 | 6 }[],
     gameMap: GameMap
   ): AbstractMesh[] {
     this.dispose();
@@ -42,11 +42,13 @@ export class MapRenderer {
     this.scene.addTransformNode(this.mapNode);
     this.allMeshes = [];
 
-    // Place grass cells (always 7 grass tiles)
-    for (const grass of grassCells) {
-      const tiles = TerritoryComposition.composGrass();
-      const tileCoords = hexToTileCoords(grass);
-      this.placeTiles(tiles, tileCoords, `grass-${grass.x}-${grass.z}`);
+    const occupiedTiles = new Set<string>();
+
+    for (const cell of pathCells) {
+      const tiles = TerritoryComposition.composePath(cell.exclude);
+      const tileCoords = hexToTileCoords(cell.coord);
+      const placed = this.placeTiles(tiles, tileCoords, `path-${cell.coord.x}-${cell.coord.z}`);
+      for (const p of placed) occupiedTiles.add(`${tileCoords[p.tileIndex].x},${tileCoords[p.tileIndex].z}`);
     }
 
     // Place territory cells
@@ -56,8 +58,10 @@ export class MapRenderer {
       const tileCoords = hexToTileCoords(territory.coord);
       const placed = this.placeTiles(tiles, tileCoords, `territory-${territory.id}`);
       this.territoryTiles.set(territory.id, placed);
+      for (const p of placed) occupiedTiles.add(`${tileCoords[p.tileIndex].x},${tileCoords[p.tileIndex].z}`);
     }
 
+    this.grid.setOccupiedTiles(occupiedTiles);
     return this.allMeshes;
   }
 
@@ -129,6 +133,8 @@ export class MapRenderer {
 
   private placeSingleTile(tileType: TileType, tc: { x: number; z: number }, name: string): AbstractMesh | null {
     if (tc.x < 0 || tc.z < 0) return null;
+
+    if (tileType == 'empty') return null;
 
     const mesh = this.assetLoader.clone(tileType, name);
     if (!mesh) return null;
