@@ -42,10 +42,13 @@ export class MapRenderer {
     this.scene.addTransformNode(this.mapNode);
     this.allMeshes = [];
 
+    const occupiedTiles = new Set<string>();
+
     for (const cell of pathCells) {
       const tiles = TerritoryComposition.composePath(cell.exclude);
       const tileCoords = hexToTileCoords(cell.coord);
-      this.placeTiles(tiles, tileCoords, `path-${cell.coord.x}-${cell.coord.z}`);
+      const placed = this.placeTiles(tiles, tileCoords, `path-${cell.coord.x}-${cell.coord.z}`);
+      for (const p of placed) occupiedTiles.add(`${tileCoords[p.tileIndex].x},${tileCoords[p.tileIndex].z}`);
     }
 
     // Place territory cells
@@ -55,8 +58,10 @@ export class MapRenderer {
       const tileCoords = hexToTileCoords(territory.coord);
       const placed = this.placeTiles(tiles, tileCoords, `territory-${territory.id}`);
       this.territoryTiles.set(territory.id, placed);
+      for (const p of placed) occupiedTiles.add(`${tileCoords[p.tileIndex].x},${tileCoords[p.tileIndex].z}`);
     }
 
+    this.grid.setOccupiedTiles(occupiedTiles);
     return this.allMeshes;
   }
 

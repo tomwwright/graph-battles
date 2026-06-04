@@ -15,9 +15,10 @@ import {
   Vector3,
 } from '@babylonjs/core';
 import { ID, Values, GameMap } from '@battles/models';
-import { HexCoord, hexCenterTile } from './HexCoordinates';
+import { HexCoord, hexCenterTile, hexToTileCoords, coordKey } from './HexCoordinates';
 import { HexGridController } from './HexGridController';
 import { AssetLoader } from './AssetLoader';
+import { TerritoryComposition } from './TerritoryComposition';
 import type { RenderMap } from '../map/MapParser';
 import type { HoverInfo } from '../state/types';
 
@@ -426,16 +427,10 @@ export class UnitRenderer {
     const mid = Math.floor(n / 2);
 
     if (n % 2 !== 0) {
-      // Odd: center of middle tile
-      const centerTile = hexCenterTile(sorted[mid]);
-      const pos = this.grid.getWorldPosition(centerTile);
-      return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
+      return this.hexCentroid(sorted[mid]);
     } else {
-      // Even: midpoint between the two middle tile centers
-      const tileA = hexCenterTile(sorted[mid - 1]);
-      const tileB = hexCenterTile(sorted[mid]);
-      const posA = this.grid.getWorldPosition(tileA);
-      const posB = this.grid.getWorldPosition(tileB);
+      const posA = this.hexCentroid(sorted[mid - 1]);
+      const posB = this.hexCentroid(sorted[mid]);
       return new Vector3((posA.x + posB.x) / 2, UNIT_BASE_Y, (posA.z + posB.z) / 2);
     }
   }
@@ -475,11 +470,7 @@ export class UnitRenderer {
     // Take the tiles between territory and edge center
     const halfChain = sorted.slice(0, mid);
 
-    const positions = halfChain.map((coord) => {
-      const centerTile = hexCenterTile(coord);
-      const pos = this.grid.getWorldPosition(centerTile);
-      return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
-    });
+    const positions = halfChain.map((coord) => this.hexCentroid(coord));
 
     if (fromIsEdge) {
       // edge → territory: reverse so waypoints go from edge center toward territory
@@ -503,11 +494,26 @@ export class UnitRenderer {
       (a, b) => this.hexDistance(a, fromCoord) - this.hexDistance(b, fromCoord)
     );
 
-    return sorted.map((coord) => {
-      const centerTile = hexCenterTile(coord);
-      const pos = this.grid.getWorldPosition(centerTile);
+    return sorted.map((coord) => this.hexCentroid(coord));
+  }
+
+  /** World position of the visual centre of a hex cell — centroid of present tiles for path cells, centre tile for territories. */
+  private hexCentroid(coord: HexCoord): Vector3 {
+    const key = coordKey(coord);
+    const exclude = this.map?.pathCells.find((p) => coordKey(p.coord) === key)?.exclude;
+    if (!exclude) {
+      const pos = this.grid.getWorldPosition(hexCenterTile(coord));
       return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
-    });
+    }
+    const present = TerritoryComposition.presentTileIndices(exclude);
+    const positions = hexToTileCoords(coord)
+      .filter((_, i) => present.includes(i))
+      .map((t) => this.grid.getWorldPosition(t));
+    return new Vector3(
+      positions.reduce((s, p) => s + p.x, 0) / positions.length,
+      UNIT_BASE_Y,
+      positions.reduce((s, p) => s + p.z, 0) / positions.length,
+    );
   }
 
   private findEdge(territoryA: ID, territoryB: ID) {

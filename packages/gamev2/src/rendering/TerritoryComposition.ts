@@ -70,6 +70,11 @@ export class TerritoryComposition {
     return ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
   }
 
+  static presentTileIndices(exclude: 1 | 2 | 3 | 4 | 5 | 6): number[] {
+    const dropped = new Set(CLOSED_DIR_TO_DROPPED_TILES[exclude]);
+    return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
+  }
+
   static composePath(exclude: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
     const tiles: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
     const [a, b] = CLOSED_DIR_TO_DROPPED_TILES[exclude];

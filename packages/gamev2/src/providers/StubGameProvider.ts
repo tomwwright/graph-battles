@@ -70,7 +70,7 @@ function createStubGameData(renderMap: RenderMap): GameData {
       edgeIds: edgeIds[t.id] ?? [],
       playerId,
       food: 3,
-      properties: [Values.TerritoryProperty.SETTLED],
+      properties: [Values.TerritoryProperty.SETTLED, Values.TerritoryProperty.CITY],
     };
   }
 
