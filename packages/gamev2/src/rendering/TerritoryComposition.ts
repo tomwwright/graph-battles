@@ -2,32 +2,14 @@ import { Values } from '@battles/models';
 
 export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
 
+// Drop tile D and its CW-next tile (D%6+1) for closed direction D
 const CLOSED_DIR_TO_DROPPED_TILES: Record<1 | 2 | 3 | 4 | 5 | 6, [number, number]> = {
-  1: [5, 6],
-  2: [0, 1],
-  3: [4, 6],
-  4: [0, 2],
-  5: [2, 5],
-  6: [1, 4],
-};
-
-/**
- * Maps from direction to tile index
- * 
- *      _[2]_ 
- * [4] / 0 1 \ [6]
- *    < 2 3 4 >
- * [5] \ 5 6 / [3]
- *       [1]
- * 
- */
-const NARROW_PATH_TILE_MAPPING: Record<1 | 2 | 3 | 4 | 5 | 6, 0 | 1 | 2 | 3 | 4 | 5 | 6> = {
-  1: 6,
-  2: 0,
-  3: 4,
-  4: 2,
-  5: 5,
-  6: 1,
+  1: [1, 2],
+  2: [2, 3],
+  3: [3, 4],
+  4: [4, 5],
+  5: [5, 6],
+  6: [6, 1],
 };
 
 const { TerritoryProperty } = Values;
@@ -38,7 +20,7 @@ function has(props: Values.TerritoryProperty[], prop: Values.TerritoryProperty):
 
 /**
  * Computes the 7 tile types for a hex cluster based on territory properties.
- * Index 3 is the center tile; indices 0-2, 4-6 are the surrounding tiles.
+ * Index 0 is center; indices 1-6 correspond to clockwise hex directions (1=N, 2=NE, 3=E, 4=S, 5=SW, 6=W).
  */
 export class TerritoryComposition {
   static compose(properties: Values.TerritoryProperty[]): TileType[] {
@@ -58,34 +40,32 @@ export class TerritoryComposition {
     else if (hasCity) center = 'city';
     else center = 'village';
 
-    // Determine surrounding tiles
-    const surround: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
+    const surround = new Array(7).fill('grass') as TileType[];
 
     if (hasFarm) {
-      surround[1] = 'farm';
-      surround[4] = 'farm';
+      surround[2] = 'farm'; // NE
+      surround[5] = 'farm'; // SW
     }
 
     if (hasCity) {
-      surround[1] = 'mill';
-      surround[2] = 'village'
-      surround[5] = 'sheep';
+      surround[2] = 'mill';    // NE
+      surround[6] = 'village'; // W
+      surround[4] = 'sheep';   // S
     }
 
     if (hasFort && (hasCity || hasCastle)) {
-      surround[0] = 'castle';
+      surround[1] = 'castle'; // N
     }
 
     if (!hasFarm && !hasFort && !hasCity && !hasCastle) {
-      // Just SETTLED — add some forest
-      surround[0] = 'forest';
-      surround[5] = 'forest';
+      surround[1] = 'forest'; // N
+      surround[4] = 'forest'; // S
     }
 
-    return [surround[0], surround[1], surround[2], center, surround[3], surround[4], surround[5]];
+    return [center, surround[1], surround[2], surround[3], surround[4], surround[5], surround[6]];
   }
 
-  static composGrass(): TileType[] {
+  static composeGrass(): TileType[] {
     return ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
   }
 
@@ -95,7 +75,7 @@ export class TerritoryComposition {
   }
 
   static presentNarrowTileIndices(dirA: 1 | 2 | 3 | 4 | 5 | 6, dirB: 1 | 2 | 3 | 4 | 5 | 6): number[] {
-    return [NARROW_PATH_TILE_MAPPING[dirA], 3, NARROW_PATH_TILE_MAPPING[dirB]];
+    return [0, dirA, dirB];
   }
 
   static composePath(exclude: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {

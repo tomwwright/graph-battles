@@ -4,9 +4,9 @@ import { parseMap } from './MapParser';
 describe('parseMap', () => {
   it('parses territories, path cells, and derives edges', () => {
     const map = [
-      '| T 1 | E -1 | T 3 | E -1 | T 2 |',
-      '| E -6|      | E -6|      | E -6|',
-      '| T 5 | E -6 | T 6 | E -6 | T 4 |',
+      '| T 1 | E -4 | T 3 | E -4 | T 2 |',
+      '| E -2|      | E -2|      | E -2|',
+      '| T 5 | E -2 | T 6 | E -2 | T 4 |',
     ].join('\n');
 
     const result = parseMap(map);
@@ -24,10 +24,10 @@ describe('parseMap', () => {
 
   it('skips markdown separator rows', () => {
     const map = [
-      '| T 1 | E -1 | T 3 | E -1 | T 2 |',
+      '| T 1 | E -4 | T 3 | E -4 | T 2 |',
       '|-----|------|-----|------|-----|',
-      '| E -6|      | E -6|      | E -6|',
-      '| T 5 | E -6 | T 6 | E -6 | T 4 |',
+      '| E -2|      | E -2|      | E -2|',
+      '| T 5 | E -2 | T 6 | E -2 | T 4 |',
     ].join('\n');
 
     const result = parseMap(map);
@@ -48,7 +48,7 @@ describe('parseMap', () => {
   });
 
   it('parses narrow path cells', () => {
-    // E 35: valid pair (dirs 3 and 5 are not adjacent to each other)
+    // E 35: dirs 3(E) and 5(SW) — not adjacent in new numbering
     const map = [
       '|     |      |     |',
       '|     | E 35 | T 1 |',
@@ -65,13 +65,13 @@ describe('parseMap', () => {
   });
 
   it('throws on adjacent direction pair', () => {
-    const map = '| T 1 | E 13 | T 2 |';
+    // dirs 1 and 2 are consecutive (adjacent) in new CW numbering
+    const map = '| T 1 | E 12 | T 2 |';
     expect(() => parseMap(map)).toThrow('invalid narrow path pair');
   });
 
   it('derives edges through narrow path cells', () => {
     // E 35 at (1,1): open dir3→(1,2)=T1, dir5→(2,0)=T2
-    // T1(1,2) and T2(2,0) are not hex-adjacent so no T-T error
     const map = [
       '|     |      |     |',
       '|     | E 35 | T 1 |',

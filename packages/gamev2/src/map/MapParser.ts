@@ -17,18 +17,24 @@ type ParsedCell =
   | { type: 'path'; exclude: 1 | 2 | 3 | 4 | 5 | 6 }
   | { type: 'path-narrow'; dirA: 1 | 2 | 3 | 4 | 5 | 6; dirB: 1 | 2 | 3 | 4 | 5 | 6 };
 
-// Direction indices 1-6, matching hexNeighbours order.
-// dir 1:(+1,0), 2:(-1,0), 3:(0,+1), 4:(0,-1), 5:(+1,-1), 6:(-1,+1)
+/**
+ * Direction indices 1-6, clockwise from North.
+ * dir 1:N(-1,0), 2:NE(-1,+1), 3:E(0,+1), 4:S(+1,0), 5:SW(+1,-1), 6:W(0,-1)
+ * 
+ *     [0](-1,0)  [1](-1,+1)
+ * [2](0,-1) [3](0,0) [4](0,+1)
+*      [5](+1,-1) [6](+1,0)
+ */
 const HEX_DIRS: Array<[number, number]> = [
-  [+1, 0],
-  [-1, 0],
-  [0, +1],
-  [0, -1],
-  [+1, -1],
-  [-1, +1],
+  [-1, 0], // 1: N
+  [-1, +1], // 2: NE
+  [0, +1], // 3: E
+  [+1, 0], // 4: S
+  [+1, -1], // 5: SW
+  [0, -1], // 6: W
 ];
 
-const OPPOSITE: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = { 1: 2, 2: 1, 3: 4, 4: 3, 5: 6, 6: 5 };
+const OPPOSITE: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = { 1: 4, 4: 1, 2: 5, 5: 2, 3: 6, 6: 3 };
 
 function isOpen(cell: ParsedCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
   if (cell.type === 'territory') return true;
@@ -37,13 +43,15 @@ function isOpen(cell: ParsedCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
   return false;
 }
 
+// Each outer tile in a cell is adjacent to two cells
+// The cell matching the direction, and then the "previous" cell clockwise
 const DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = {
-  1: 3,
-  2: 4,
-  3: 6,
-  4: 5,
-  5: 1,
-  6: 2,
+  1: 6,
+  2: 1,
+  3: 2,
+  4: 3,
+  5: 4,
+  6: 5,
 }
 
 function pathCellOpen(cell: PathCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
@@ -76,13 +84,14 @@ function parseCell(raw: string, row: number, col: number): ParsedCell {
       dirB = c;
     }
 
+    // Adjacent pairs are not valid
     const invalidPairs: Record<1 | 2 | 3 | 4 | 5 | 6, (1 | 2 | 3 | 4 | 5 | 6)[]> = {
-      1: [3, 5],
-      2: [4, 6],
-      3: [1, 6],
-      4: [2, 5],
-      5: [1, 4],
-      6: [2, 3],
+      1: [2, 6],
+      2: [1, 3],
+      3: [2, 4],
+      4: [3, 5],
+      5: [4, 6],
+      6: [5, 1],
     }
     if (invalidPairs[dirA].includes(dirB)) {
       throw new Error(`MapParser: invalid narrow path pair (${dirA}, ${dirB})`);
