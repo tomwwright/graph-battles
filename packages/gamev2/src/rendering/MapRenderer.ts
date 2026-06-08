@@ -4,6 +4,7 @@ import { HexCoord, hexToTileCoords } from './HexCoordinates';
 import { TerritoryComposition, TileType } from './TerritoryComposition';
 import { AssetLoader } from './AssetLoader';
 import { HexGridController } from './HexGridController';
+import type { PathCell } from '../map/MapParser';
 
 type PlacedTile = {
   mesh: AbstractMesh;
@@ -33,7 +34,7 @@ export class MapRenderer {
    */
   loadMap(
     territories: { id: ID; coord: HexCoord }[],
-    pathCells: { coord: HexCoord; exclude: 1 | 2 | 3 | 4 | 5 | 6 }[],
+    pathCells: PathCell[],
     gameMap: GameMap
   ): AbstractMesh[] {
     this.dispose();
@@ -45,7 +46,9 @@ export class MapRenderer {
     const occupiedTiles = new Set<string>();
 
     for (const cell of pathCells) {
-      const tiles = TerritoryComposition.composePath(cell.exclude);
+      const tiles = cell.kind === 'wide'
+        ? TerritoryComposition.composePath(cell.exclude)
+        : TerritoryComposition.composeNarrowPath(cell.dirA, cell.dirB);
       const tileCoords = hexToTileCoords(cell.coord);
       const placed = this.placeTiles(tiles, tileCoords, `path-${cell.coord.x}-${cell.coord.z}`);
       for (const p of placed) occupiedTiles.add(`${tileCoords[p.tileIndex].x},${tileCoords[p.tileIndex].z}`);

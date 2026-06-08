@@ -8,9 +8,9 @@ The two formats coexist: `E -1` (wide, exclude dir 1) vs `E 13` (narrow, open on
 
 ---
 
-## Geometric Foundation: Arm Tile Mapping
+## Geometric Foundation
 
-The 7-tile cluster in axial coordinates:
+The 7-tile cluster. Tile index 3 is center; surrounding tiles 0-2, 4-6 face their respective directions:
 
 ```
     [0](-1,0)  [1](-1,+1)
@@ -18,23 +18,18 @@ The 7-tile cluster in axial coordinates:
     [5](+1,-1) [6](+1,0)
 ```
 
-Stride vectors from `hexToTileAxial` (+1 hex.x → (+3,-1), +1 hex.z → (+1,+2)):
-- Dir 1 (+1,0): stride (+3,-1)
-- Dir 2 (-1,0): stride (-3,+1)
-- Dir 3 (0,+1): stride (+1,+2)
-- Dir 4 (0,-1): stride (-1,-2)
-- Dir 5 (+1,-1): stride (+2,-3)
-- Dir 6 (-1,+1): stride (-2,+3)
+Direction numbering (current):
+- dir 1: (+1, 0)
+- dir 2: (-1, 0)
+- dir 3: (0, +1)
+- dir 4: (0, -1)
+- dir 5: (+1,-1)
+- dir 6: (-1,+1)
 
-For `E AB`, arm tile toward dir A = `argmax_i(proj(stride_A, tile_i) - proj(stride_B, tile_i))`.
-
-All 15 possible direction pairs reduce to **3 visual strip patterns**:
-
-| Pattern | Present indices | Pairs |
-|---------|----------------|-------|
-| Diagonal (NE-SW) | `[1, 3, 5]` | All except the 5 below |
-| Horizontal (E-W) | `[2, 3, 4]` | `(1,5)`, `(2,6)`, `(3,4)` |
-| Vertical (N-S) | `[0, 3, 6]` | `(1,4)`, `(2,3)` |
+`NARROW_PATH_TILE_MAPPING` maps each direction to its directly-facing tile index:
+```
+1→6, 2→0, 3→4, 4→2, 5→5, 6→1
+```
 
 ---
 
@@ -42,17 +37,15 @@ All 15 possible direction pairs reduce to **3 visual strip patterns**:
 
 ### `TerritoryComposition.ts`
 
-Add module-level constants and two new static methods:
+`NARROW_PATH_TILE_MAPPING` and two new static methods:
 
 ```typescript
-const NARROW_HORIZONTAL_PAIRS = new Set(['15', '26', '34']);
-const NARROW_VERTICAL_PAIRS = new Set(['14', '23']);
+const NARROW_PATH_TILE_MAPPING: Record<1|2|3|4|5|6, 0|1|2|3|4|5|6> = {
+  1: 6, 2: 0, 3: 4, 4: 2, 5: 5, 6: 1,
+};
 
 static presentNarrowTileIndices(dirA: 1|2|3|4|5|6, dirB: 1|2|3|4|5|6): number[] {
-  const key = `${Math.min(dirA, dirB)}${Math.max(dirA, dirB)}`;
-  if (NARROW_HORIZONTAL_PAIRS.has(key)) return [2, 3, 4];
-  if (NARROW_VERTICAL_PAIRS.has(key)) return [0, 3, 6];
-  return [1, 3, 5];
+  return [NARROW_PATH_TILE_MAPPING[dirA], 3, NARROW_PATH_TILE_MAPPING[dirB]];
 }
 
 static composeNarrowPath(dirA: 1|2|3|4|5|6, dirB: 1|2|3|4|5|6): TileType[] {
@@ -66,7 +59,7 @@ static composeNarrowPath(dirA: 1|2|3|4|5|6, dirB: 1|2|3|4|5|6): TileType[] {
 
 ### `MapParser.ts`
 
-**ParsedCell** — add narrow variant:
+**ParsedCell** — narrow variant:
 ```typescript
 type ParsedCell =
   | { type: 'empty' }
@@ -75,15 +68,27 @@ type ParsedCell =
   | { type: 'path-narrow'; dirA: 1|2|3|4|5|6; dirB: 1|2|3|4|5|6 };
 ```
 
-**parseCell** — add regex before existing `eMatch`:
+**parseCell** — `E <d1><d2>` regex, normalises `dirA < dirB`, validates same-dir and adjacent-dir pairs:
 ```typescript
-const nMatch = s.match(/^E\s*([1-6])([1-6])$/);
-if (nMatch) {
-  const dirA = parseInt(nMatch[1]) as 1|2|3|4|5|6;
-  const dirB = parseInt(nMatch[2]) as 1|2|3|4|5|6;
-  if (dirA === dirB) throw new Error(`MapParser: path-narrow cell at (${row},${col}) has dirA === dirB`);
-  return { type: 'path-narrow', dirA, dirB };
+const invalidPairs: Record<1|2|3|4|5|6, (1|2|3|4|5|6)[]> = {
+  1: [3, 5], 2: [4, 6], 3: [1, 6], 4: [2, 5], 5: [1, 4], 6: [2, 3],
+};
+```
+Adjacent pairs are forbidden because they would put two territory hexes hex-adjacent to each other.
+
+**`pathCellOpen`** — narrow cells open 4 directions (both arms + their CW-adjacent), enabling chaining:
+```typescript
+function pathCellOpen(cell: PathCell, dir: 1|2|3|4|5|6): boolean {
+  if (cell.kind === 'wide') return cell.exclude !== dir;
+  return cell.dirA === dir
+    || DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING[cell.dirA] === dir
+    || cell.dirB === dir
+    || DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING[cell.dirB] === dir;
 }
+
+const DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING: Record<1|2|3|4|5|6, 1|2|3|4|5|6> = {
+  1: 3, 2: 4, 3: 6, 4: 5, 5: 1, 6: 2,
+};
 ```
 
 **RenderMap.pathCells** — discriminated union:
@@ -91,38 +96,11 @@ if (nMatch) {
 export type PathCell =
   | { coord: HexCoord; kind: 'wide'; exclude: 1|2|3|4|5|6 }
   | { coord: HexCoord; kind: 'narrow'; dirA: 1|2|3|4|5|6; dirB: 1|2|3|4|5|6 };
-
-export type RenderMap = {
-  territories: { id: ID; coord: HexCoord }[];
-  pathCells: PathCell[];
-  edges: { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }[];
-};
-```
-
-**isOpen** — add narrow case:
-```typescript
-if (cell.type === 'path-narrow') return cell.dirA === dir || cell.dirB === dir;
-```
-
-**parseMap cell collection**:
-```typescript
-if (cell.type === 'path') {
-  pathCells.push({ coord, kind: 'wide', exclude: cell.exclude });
-} else if (cell.type === 'path-narrow') {
-  pathCells.push({ coord, kind: 'narrow', dirA: cell.dirA, dirB: cell.dirB });
-}
-```
-
-**Dangling open warning** — narrow cells only check their 2 open dirs:
-```typescript
-const openDirs = cell.kind === 'wide'
-  ? ([1,2,3,4,5,6] as const).filter(d => d !== cell.exclude)
-  : [cell.dirA, cell.dirB];
 ```
 
 ### `MapRenderer.ts`
 
-Dispatch on `cell.kind` in the path cell loop inside `loadMap`:
+Dispatch on `cell.kind` in `loadMap`:
 ```typescript
 const tiles = cell.kind === 'wide'
   ? TerritoryComposition.composePath(cell.exclude)
@@ -133,9 +111,6 @@ const tiles = cell.kind === 'wide'
 
 Dispatch on `pathCell.kind` in `hexCentroid`:
 ```typescript
-const pathCell = this.map?.pathCells.find((p) => coordKey(p.coord) === key);
-if (!pathCell) { /* territory: use hexCenterTile */ }
-
 const present = pathCell.kind === 'wide'
   ? TerritoryComposition.presentTileIndices(pathCell.exclude)
   : TerritoryComposition.presentNarrowTileIndices(pathCell.dirA, pathCell.dirB);
@@ -143,21 +118,152 @@ const present = pathCell.kind === 'wide'
 
 ---
 
-## Files Changed
+## Files Changed (implemented)
 
 | File | Change |
 |------|--------|
-| `packages/gamev2/src/rendering/TerritoryComposition.ts` | `composeNarrowPath`, `presentNarrowTileIndices`, 2 set constants |
-| `packages/gamev2/src/map/MapParser.ts` | `ParsedCell` + `PathCell` union, `parseCell` regex, `isOpen`, dangling warning, cell collection |
-| `packages/gamev2/src/rendering/MapRenderer.ts` | Dispatch on `cell.kind` |
-| `packages/gamev2/src/rendering/UnitRenderer.ts` | Dispatch on `pathCell.kind` in `hexCentroid` |
-| `packages/gamev2/src/rendering/TerritoryComposition.test.ts` | New narrow path tests |
-| `packages/gamev2/src/map/MapParser.test.ts` | Narrow parse + connectivity tests |
+| `src/rendering/TerritoryComposition.ts` | `NARROW_PATH_TILE_MAPPING`, `composeNarrowPath`, `presentNarrowTileIndices` |
+| `src/map/MapParser.ts` | `ParsedCell` + `PathCell` union, `parseCell` regex + validation, `isOpen`, `pathCellOpen`, `DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING` |
+| `src/rendering/MapRenderer.ts` | Dispatch on `cell.kind` |
+| `src/rendering/UnitRenderer.ts` | Dispatch on `pathCell.kind` in `hexCentroid` |
+| `src/rendering/TerritoryComposition.test.ts` | Narrow path tests |
+| `src/map/MapParser.test.ts` | Narrow parse + connectivity tests |
 
 ---
+
+---
+
+# Clockwise Tile & Direction Index Refactor
+
+## Motivation
+
+Currently tile indices 0-6 have no relationship to direction indices 1-6, requiring `NARROW_PATH_TILE_MAPPING` as a lookup. Renumbering both directions and tiles clockwise 1-6 around the center (center = 0) makes tile index = direction index throughout, and simplifies several tables to closed-form expressions.
+
+## New Numbering (clockwise from North)
+
+```
+         [1] N
+    [6] W     [2] NE
+    [5] SW    [3] E
+         [4] S
+```
+
+Tile 0 = center. Tile D = the surrounding tile facing direction D.
+
+| New dir | Name | hex (Δx,Δz) | Old dir |
+|---------|------|-------------|---------|
+| 1 | N | (-1, 0) | 2 |
+| 2 | NE | (-1,+1) | 6 |
+| 3 | E | (0,+1) | 3 |
+| 4 | S | (+1, 0) | 1 |
+| 5 | SW | (+1,-1) | 5 |
+| 6 | W | (0,-1) | 4 |
+
+Old→new tile index: 0→1, 1→2, 2→6, 3(center)→0, 4→3, 5→5, 6→4
+
+**Key properties unlocked:**
+- `OPPOSITE[D] = D > 3 ? D - 3 : D + 3`
+- `CLOSED_DIR_TO_DROPPED_TILES[D] = [D, D%6+1]`
+- `DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING[D] = D%6+1`
+- `presentNarrowTileIndices(A, B) = [0, A, B]` — no lookup needed
+- Adjacent pairs = consecutive in CW circle: `(1,2),(2,3),(3,4),(4,5),(5,6),(6,1)`
+
+## Implementation
+
+### `src/rendering/HexCoordinates.ts`
+
+```typescript
+const AXIAL_HEX_TILE_OFFSETS: ReadonlyArray<AxialCoord> = [
+  { q:  0, r:  0 }, // 0 = center
+  { q: -1, r:  0 }, // 1 = dir 1 (N)
+  { q: -1, r:  1 }, // 2 = dir 2 (NE)
+  { q:  0, r:  1 }, // 3 = dir 3 (E)
+  { q:  1, r:  0 }, // 4 = dir 4 (S)
+  { q:  1, r: -1 }, // 5 = dir 5 (SW)
+  { q:  0, r: -1 }, // 6 = dir 6 (W)
+];
+
+export const CENTER_OFFSET_INDEX = 0; // was 3
+```
+
+### `src/rendering/TerritoryComposition.ts`
+
+Remove `NARROW_PATH_TILE_MAPPING`. Replace `CLOSED_DIR_TO_DROPPED_TILES` with formula pattern:
+```typescript
+const CLOSED_DIR_TO_DROPPED_TILES: Record<1|2|3|4|5|6, [number, number]> = {
+  1: [1, 2], 2: [2, 3], 3: [3, 4],
+  4: [4, 5], 5: [5, 6], 6: [6, 1],
+};
+```
+
+`presentNarrowTileIndices` — no lookup needed:
+```typescript
+static presentNarrowTileIndices(dirA: 1|2|3|4|5|6, dirB: 1|2|3|4|5|6): number[] {
+  return [0, dirA, dirB];
+}
+```
+
+`compose()` — surround array indexed by direction (1-6):
+```typescript
+const surround = new Array(7).fill('grass') as TileType[];
+if (hasFarm) { surround[2] = 'farm'; surround[5] = 'farm'; }       // NE, SW
+if (hasCity) { surround[2] = 'mill'; surround[6] = 'village'; surround[4] = 'sheep'; }
+if (hasFort && (hasCity || hasCastle)) { surround[1] = 'castle'; }
+if (!hasFarm && !hasFort && !hasCity && !hasCastle) { surround[1] = 'forest'; surround[4] = 'forest'; }
+return [center, surround[1], surround[2], surround[3], surround[4], surround[5], surround[6]];
+```
+
+Update class doc: "Index 0 is center; indices 1-6 correspond to clockwise hex directions (1=N, 2=NE, 3=E, 4=S, 5=SW, 6=W)."
+
+### `src/map/MapParser.ts`
+
+```typescript
+const HEX_DIRS: Array<[number, number]> = [
+  [-1,  0], // dir 1: N
+  [-1, +1], // dir 2: NE
+  [ 0, +1], // dir 3: E
+  [+1,  0], // dir 4: S
+  [+1, -1], // dir 5: SW
+  [ 0, -1], // dir 6: W
+];
+
+const OPPOSITE: Record<1|2|3|4|5|6, 1|2|3|4|5|6> = { 1:4, 4:1, 2:5, 5:2, 3:6, 6:3 };
+
+const DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING: Record<1|2|3|4|5|6, 1|2|3|4|5|6> = {
+  1:2, 2:3, 3:4, 4:5, 5:6, 6:1,
+};
+
+const invalidPairs: Record<1|2|3|4|5|6, (1|2|3|4|5|6)[]> = {
+  1: [2, 6], 2: [1, 3], 3: [2, 4],
+  4: [3, 5], 5: [4, 6], 6: [5, 1],
+};
+```
+
+### `src/providers/StubGameProvider.ts`
+
+Direction mapping (old→new: 1→4, 2→1, 3→3, 4→6, 5→5, 6→2):
+- `E -1` → `E -4`
+- `E -6` → `E -2`
+
+### Tests
+
+**`TerritoryComposition.test.ts`** — update expected tile indices: center is now 0, arms are at direction indices. Example: `composeNarrowPath(1, 4)` → `tiles[0]='grass'` (center), `tiles[1]='grass'` (dir1 arm), `tiles[4]='grass'` (dir4 arm).
+
+**`MapParser.test.ts`** — update map strings (`E -1`→`E -4`, `E -6`→`E -2`); adjacent pair test `E 13`→`E 12` (new dirs 1 and 2 are adjacent).
+
+## Files to Change
+
+| File | Change |
+|------|--------|
+| `src/rendering/HexCoordinates.ts` | Reorder `AXIAL_HEX_TILE_OFFSETS`, `CENTER_OFFSET_INDEX` 3→0 |
+| `src/rendering/TerritoryComposition.ts` | `CLOSED_DIR_TO_DROPPED_TILES`, remove `NARROW_PATH_TILE_MAPPING`, `presentNarrowTileIndices`, `compose()` surround |
+| `src/map/MapParser.ts` | `HEX_DIRS`, `OPPOSITE`, `DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING`, `invalidPairs` |
+| `src/providers/StubGameProvider.ts` | Map string direction numbers |
+| `src/rendering/TerritoryComposition.test.ts` | Expected tile indices |
+| `src/map/MapParser.test.ts` | Map strings and direction numbers |
 
 ## Verification
 
 1. `npx tsc --noEmit` — no type errors
 2. `yarn test` — all tests pass
-3. Add a narrow path cell to `STUB_MAP_TEXT` in `StubGameProvider.ts` and `yarn dev` to visually confirm 3-tile cluster renders correctly
+3. `yarn dev` — map renders identically (pure renumbering, same geometry)

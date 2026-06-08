@@ -1,16 +1,21 @@
 import { ID } from '@battles/models';
 import { HexCoord, coordKey } from '../rendering/HexCoordinates';
 
+export type PathCell =
+  | { coord: HexCoord; kind: 'wide'; exclude: 1 | 2 | 3 | 4 | 5 | 6 }
+  | { coord: HexCoord; kind: 'narrow'; dirA: 1 | 2 | 3 | 4 | 5 | 6; dirB: 1 | 2 | 3 | 4 | 5 | 6 };
+
 export type RenderMap = {
   territories: { id: ID; coord: HexCoord }[];
-  pathCells: { coord: HexCoord; exclude: 1 | 2 | 3 | 4 | 5 | 6 }[];
+  pathCells: PathCell[];
   edges: { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }[];
 };
 
 type ParsedCell =
   | { type: 'empty' }
   | { type: 'territory'; id: ID }
-  | { type: 'path'; exclude: 1 | 2 | 3 | 4 | 5 | 6 };
+  | { type: 'path'; exclude: 1 | 2 | 3 | 4 | 5 | 6 }
+  | { type: 'path-narrow'; dirA: 1 | 2 | 3 | 4 | 5 | 6; dirB: 1 | 2 | 3 | 4 | 5 | 6 };
 
 // Direction indices 1-6, matching hexNeighbours order.
 // dir 1:(+1,0), 2:(-1,0), 3:(0,+1), 4:(0,-1), 5:(+1,-1), 6:(-1,+1)
@@ -28,7 +33,25 @@ const OPPOSITE: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = { 1: 2, 2
 function isOpen(cell: ParsedCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
   if (cell.type === 'territory') return true;
   if (cell.type === 'path') return cell.exclude !== dir;
+  if (cell.type === 'path-narrow') return cell.dirA === dir || cell.dirB === dir;
   return false;
+}
+
+const DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = {
+  1: 3,
+  2: 4,
+  3: 6,
+  4: 5,
+  5: 1,
+  6: 2,
+}
+
+function pathCellOpen(cell: PathCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
+  if (cell.kind === 'wide') return cell.exclude !== dir;
+  return cell.dirA === dir ||
+    DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING[cell.dirA] == dir ||
+    cell.dirB === dir ||
+    DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING[cell.dirB] == dir;
 }
 
 function parseCell(raw: string, row: number, col: number): ParsedCell {
@@ -38,8 +61,35 @@ function parseCell(raw: string, row: number, col: number): ParsedCell {
   const tMatch = s.match(/^T\s*(\d+)$/);
   if (tMatch) return { type: 'territory', id: `#T${tMatch[1]}` };
 
-  const eMatch = s.match(/^E\s*-([1-6])$/);
+  const eMatch = s.match(/^E\s*-([1-6])$/); // e.g. E -1
   if (eMatch) return { type: 'path', exclude: parseInt(eMatch[1]) as 1 | 2 | 3 | 4 | 5 | 6 };
+
+  const nMatch = s.match(/^E\s*([1-6])([1-6])$/); // e.g. E 12
+  if (nMatch) {
+    let dirA = parseInt(nMatch[1]) as 1 | 2 | 3 | 4 | 5 | 6;
+    let dirB = parseInt(nMatch[2]) as 1 | 2 | 3 | 4 | 5 | 6;
+    if (dirA === dirB) throw new Error(`MapParser: path-narrow cell at (${row},${col}) has dirA === dirB`);
+
+    if (dirA > dirB) {
+      const c = dirB;
+      dirA = dirB;
+      dirB = c;
+    }
+
+    const invalidPairs: Record<1 | 2 | 3 | 4 | 5 | 6, (1 | 2 | 3 | 4 | 5 | 6)[]> = {
+      1: [3, 5],
+      2: [4, 6],
+      3: [1, 6],
+      4: [2, 5],
+      5: [1, 4],
+      6: [2, 3],
+    }
+    if (invalidPairs[dirA].includes(dirB)) {
+      throw new Error(`MapParser: invalid narrow path pair (${dirA}, ${dirB})`);
+    }
+
+    return { type: 'path-narrow', dirA, dirB };
+  }
 
   throw new Error(`MapParser: unrecognized cell at (${row},${col}): "${s}"`);
 }
@@ -81,7 +131,9 @@ export function parseMap(mapString: string): RenderMap {
       if (cell.type === 'territory') {
         territories.push({ id: cell.id, coord });
       } else if (cell.type === 'path') {
-        pathCells.push({ coord, exclude: cell.exclude });
+        pathCells.push({ coord, kind: 'wide', exclude: cell.exclude });
+      } else if (cell.type === 'path-narrow') {
+        pathCells.push({ coord, kind: 'narrow', dirA: cell.dirA, dirB: cell.dirB });
       }
     }
   }
@@ -116,7 +168,7 @@ export function parseMap(mapString: string): RenderMap {
     const pk = coordKey(p.coord);
     for (let di = 0; di < 6; di++) {
       const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-      if (p.exclude === dir) continue;
+      if (!pathCellOpen(p, dir)) continue;
 
       const [dx, dz] = HEX_DIRS[di];
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
@@ -125,7 +177,7 @@ export function parseMap(mapString: string): RenderMap {
       if (!nCell) continue;
 
       const opp = OPPOSITE[dir];
-      if (nCell.exclude !== opp) {
+      if (pathCellOpen(nCell, opp)) {
         pathAdjacency.get(pk)!.add(nk);
         pathAdjacency.get(nk)!.add(pk);
       }
@@ -137,7 +189,7 @@ export function parseMap(mapString: string): RenderMap {
     let bridgeCount = 0;
     for (let di = 0; di < 6; di++) {
       const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-      if (p.exclude === dir) continue;
+      if (!pathCellOpen(p, dir)) continue;
 
       const [dx, dz] = HEX_DIRS[di];
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
@@ -154,7 +206,7 @@ export function parseMap(mapString: string): RenderMap {
         continue;
       }
 
-      if (nCell.type === 'path') {
+      if (nCell.type === 'path' || nCell.type === 'path-narrow') {
         const opp = OPPOSITE[dir];
         if (!isOpen(nCell, opp)) {
           console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir} (neighbor closed)`);
@@ -190,7 +242,7 @@ export function parseMap(mapString: string): RenderMap {
       // Collect bordering territories
       for (let di = 0; di < 6; di++) {
         const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-        if (curPath.exclude === dir) continue;
+        if (!pathCellOpen(curPath, dir)) continue;
 
         const [dx, dz] = HEX_DIRS[di];
         const nk = coordKey({ x: curPath.coord.x + dx, z: curPath.coord.z + dz });

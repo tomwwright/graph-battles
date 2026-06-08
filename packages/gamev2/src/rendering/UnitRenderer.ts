@@ -500,12 +500,14 @@ export class UnitRenderer {
   /** World position of the visual centre of a hex cell — centroid of present tiles for path cells, centre tile for territories. */
   private hexCentroid(coord: HexCoord): Vector3 {
     const key = coordKey(coord);
-    const exclude = this.map?.pathCells.find((p) => coordKey(p.coord) === key)?.exclude;
-    if (!exclude) {
+    const pathCell = this.map?.pathCells.find((p) => coordKey(p.coord) === key);
+    if (!pathCell) {
       const pos = this.grid.getWorldPosition(hexCenterTile(coord));
       return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
     }
-    const present = TerritoryComposition.presentTileIndices(exclude);
+    const present = pathCell.kind === 'wide'
+      ? TerritoryComposition.presentTileIndices(pathCell.exclude)
+      : TerritoryComposition.presentNarrowTileIndices(pathCell.dirA, pathCell.dirB);
     const positions = hexToTileCoords(coord)
       .filter((_, i) => present.includes(i))
       .map((t) => this.grid.getWorldPosition(t));

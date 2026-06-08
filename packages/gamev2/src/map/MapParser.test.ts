@@ -46,4 +46,41 @@ describe('parseMap', () => {
     ].join('\n');
     expect(() => parseMap(map)).toThrow('duplicate territory ID');
   });
+
+  it('parses narrow path cells', () => {
+    // E 35: valid pair (dirs 3 and 5 are not adjacent to each other)
+    const map = [
+      '|     |      |     |',
+      '|     | E 35 | T 1 |',
+      '| T 2 |      |     |',
+    ].join('\n');
+    const result = parseMap(map);
+    expect(result.pathCells).toHaveLength(1);
+    expect(result.pathCells[0]).toMatchObject({ kind: 'narrow', dirA: 3, dirB: 5 });
+  });
+
+  it('throws on narrow path cell with same direction', () => {
+    const map = '| T 1 | E 11 | T 2 |';
+    expect(() => parseMap(map)).toThrow('dirA === dirB');
+  });
+
+  it('throws on adjacent direction pair', () => {
+    const map = '| T 1 | E 13 | T 2 |';
+    expect(() => parseMap(map)).toThrow('invalid narrow path pair');
+  });
+
+  it('derives edges through narrow path cells', () => {
+    // E 35 at (1,1): open dir3→(1,2)=T1, dir5→(2,0)=T2
+    // T1(1,2) and T2(2,0) are not hex-adjacent so no T-T error
+    const map = [
+      '|     |      |     |',
+      '|     | E 35 | T 1 |',
+      '| T 2 |      |     |',
+    ].join('\n');
+    const result = parseMap(map);
+    expect(result.pathCells).toHaveLength(1);
+    expect(result.pathCells[0]).toMatchObject({ kind: 'narrow', dirA: 3, dirB: 5 });
+    expect(result.edges).toHaveLength(1);
+    expect([result.edges[0].territoryA, result.edges[0].territoryB].sort()).toEqual(['#T1', '#T2']);
+  });
 });

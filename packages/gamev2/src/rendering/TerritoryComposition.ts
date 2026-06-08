@@ -11,6 +11,25 @@ const CLOSED_DIR_TO_DROPPED_TILES: Record<1 | 2 | 3 | 4 | 5 | 6, [number, number
   6: [1, 4],
 };
 
+/**
+ * Maps from direction to tile index
+ * 
+ *      _[2]_ 
+ * [4] / 0 1 \ [6]
+ *    < 2 3 4 >
+ * [5] \ 5 6 / [3]
+ *       [1]
+ * 
+ */
+const NARROW_PATH_TILE_MAPPING: Record<1 | 2 | 3 | 4 | 5 | 6, 0 | 1 | 2 | 3 | 4 | 5 | 6> = {
+  1: 6,
+  2: 0,
+  3: 4,
+  4: 2,
+  5: 5,
+  6: 1,
+};
+
 const { TerritoryProperty } = Values;
 
 function has(props: Values.TerritoryProperty[], prop: Values.TerritoryProperty): boolean {
@@ -75,11 +94,23 @@ export class TerritoryComposition {
     return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
   }
 
+  static presentNarrowTileIndices(dirA: 1 | 2 | 3 | 4 | 5 | 6, dirB: 1 | 2 | 3 | 4 | 5 | 6): number[] {
+    return [NARROW_PATH_TILE_MAPPING[dirA], 3, NARROW_PATH_TILE_MAPPING[dirB]];
+  }
+
   static composePath(exclude: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
     const tiles: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
     const [a, b] = CLOSED_DIR_TO_DROPPED_TILES[exclude];
     tiles[a] = 'empty';
     tiles[b] = 'empty';
+    return tiles;
+  }
+
+  static composeNarrowPath(dirA: 1 | 2 | 3 | 4 | 5 | 6, dirB: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
+    const tiles: TileType[] = Array(7).fill('empty') as TileType[];
+    for (const i of TerritoryComposition.presentNarrowTileIndices(dirA, dirB)) {
+      tiles[i] = 'grass';
+    }
     return tiles;
   }
 
