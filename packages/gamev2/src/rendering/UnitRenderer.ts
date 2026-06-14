@@ -15,10 +15,9 @@ import {
   Vector3,
 } from '@babylonjs/core';
 import { ID, Values, GameMap } from '@battles/models';
-import { HexCoord, hexCenterTile, hexToTileCoords, coordKey } from './HexCoordinates';
+import { HexCoord, hexCenterTile, hexToTileCoords, coordKey, presentTileIndices, presentNarrowTileIndices } from './HexCoordinates';
 import { HexGridController } from './HexGridController';
 import { AssetLoader } from './AssetLoader';
-import { TerritoryComposition } from './TerritoryComposition';
 import type { RenderMap } from '../map/MapParser';
 import type { HoverInfo } from '../state/types';
 
@@ -506,8 +505,8 @@ export class UnitRenderer {
       return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
     }
     const present = pathCell.kind === 'wide'
-      ? TerritoryComposition.presentTileIndices(pathCell.exclude)
-      : TerritoryComposition.presentNarrowTileIndices(pathCell.dirA, pathCell.dirB);
+      ? presentTileIndices(pathCell.exclude)
+      : presentNarrowTileIndices(pathCell.dirA, pathCell.dirB);
     const positions = hexToTileCoords(coord)
       .filter((_, i) => present.includes(i))
       .map((t) => this.grid.getWorldPosition(t));

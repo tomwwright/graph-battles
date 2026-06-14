@@ -4,7 +4,7 @@ import { HexCoord, hexToTileCoords } from './HexCoordinates';
 import { TerritoryComposition, TileType } from './TerritoryComposition';
 import { AssetLoader } from './AssetLoader';
 import { HexGridController } from './HexGridController';
-import type { PathCell } from '../map/MapParser';
+import type { PathCell } from './HexCoordinates';
 
 type PlacedTile = {
   mesh: AbstractMesh;

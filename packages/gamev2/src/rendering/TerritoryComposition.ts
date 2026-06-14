@@ -1,16 +1,8 @@
 import { Values } from '@battles/models';
+import { HexDirection, presentTileIndices, presentNarrowTileIndices } from './HexCoordinates';
 
 export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
-
-// Drop tile D and its CW-next tile (D%6+1) for closed direction D
-const CLOSED_DIR_TO_DROPPED_TILES: Record<1 | 2 | 3 | 4 | 5 | 6, [number, number]> = {
-  1: [1, 2],
-  2: [2, 3],
-  3: [3, 4],
-  4: [4, 5],
-  5: [5, 6],
-  6: [6, 1],
-};
+export type { HexDirection as HexDir };
 
 const { TerritoryProperty } = Values;
 
@@ -69,28 +61,15 @@ export class TerritoryComposition {
     return ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
   }
 
-  static presentTileIndices(exclude: 1 | 2 | 3 | 4 | 5 | 6): number[] {
-    const dropped = new Set(CLOSED_DIR_TO_DROPPED_TILES[exclude]);
-    return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
-  }
-
-  static presentNarrowTileIndices(dirA: 1 | 2 | 3 | 4 | 5 | 6, dirB: 1 | 2 | 3 | 4 | 5 | 6): number[] {
-    return [0, dirA, dirB];
-  }
-
-  static composePath(exclude: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
-    const tiles: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
-    const [a, b] = CLOSED_DIR_TO_DROPPED_TILES[exclude];
-    tiles[a] = 'empty';
-    tiles[b] = 'empty';
+  static composePath(exclude: HexDirection): TileType[] {
+    const tiles: TileType[] = Array(7).fill('empty') as TileType[];
+    for (const i of presentTileIndices(exclude)) tiles[i] = 'grass';
     return tiles;
   }
 
-  static composeNarrowPath(dirA: 1 | 2 | 3 | 4 | 5 | 6, dirB: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
+  static composeNarrowPath(dirA: HexDirection, dirB: HexDirection): TileType[] {
     const tiles: TileType[] = Array(7).fill('empty') as TileType[];
-    for (const i of TerritoryComposition.presentNarrowTileIndices(dirA, dirB)) {
-      tiles[i] = 'grass';
-    }
+    for (const i of presentNarrowTileIndices(dirA, dirB)) tiles[i] = 'grass';
     return tiles;
   }
 

@@ -1,9 +1,7 @@
 import { ID } from '@battles/models';
-import { HexCoord, coordKey } from '../rendering/HexCoordinates';
+import { HexCoord, HexDirection, PathCell, coordKey, HEX_DIRS, HEX_OPPOSITE, isPathDirectionOpen } from '../rendering/HexCoordinates';
 
-export type PathCell =
-  | { coord: HexCoord; kind: 'wide'; exclude: 1 | 2 | 3 | 4 | 5 | 6 }
-  | { coord: HexCoord; kind: 'narrow'; dirA: 1 | 2 | 3 | 4 | 5 | 6; dirB: 1 | 2 | 3 | 4 | 5 | 6 };
+export type { PathCell };
 
 export type RenderMap = {
   territories: { id: ID; coord: HexCoord }[];
@@ -14,52 +12,14 @@ export type RenderMap = {
 type ParsedCell =
   | { type: 'empty' }
   | { type: 'territory'; id: ID }
-  | { type: 'path'; exclude: 1 | 2 | 3 | 4 | 5 | 6 }
-  | { type: 'path-narrow'; dirA: 1 | 2 | 3 | 4 | 5 | 6; dirB: 1 | 2 | 3 | 4 | 5 | 6 };
+  | { type: 'path'; exclude: HexDirection }
+  | { type: 'path-narrow'; dirA: HexDirection; dirB: HexDirection };
 
-/**
- * Direction indices 1-6, clockwise from North.
- * dir 1:N(-1,0), 2:NE(-1,+1), 3:E(0,+1), 4:S(+1,0), 5:SW(+1,-1), 6:W(0,-1)
- * 
- *     [0](-1,0)  [1](-1,+1)
- * [2](0,-1) [3](0,0) [4](0,+1)
-*      [5](+1,-1) [6](+1,0)
- */
-const HEX_DIRS: Array<[number, number]> = [
-  [-1, 0], // 1: N
-  [-1, +1], // 2: NE
-  [0, +1], // 3: E
-  [+1, 0], // 4: S
-  [+1, -1], // 5: SW
-  [0, -1], // 6: W
-];
-
-const OPPOSITE: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = { 1: 4, 4: 1, 2: 5, 5: 2, 3: 6, 6: 3 };
-
-function isOpen(cell: ParsedCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
+function isOpen(cell: ParsedCell, dir: HexDirection): boolean {
   if (cell.type === 'territory') return true;
   if (cell.type === 'path') return cell.exclude !== dir;
   if (cell.type === 'path-narrow') return cell.dirA === dir || cell.dirB === dir;
   return false;
-}
-
-// Each outer tile in a cell is adjacent to two cells
-// The cell matching the direction, and then the "previous" cell clockwise
-const DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING: Record<1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6> = {
-  1: 6,
-  2: 1,
-  3: 2,
-  4: 3,
-  5: 4,
-  6: 5,
-}
-
-function pathCellOpen(cell: PathCell, dir: 1 | 2 | 3 | 4 | 5 | 6): boolean {
-  if (cell.kind === 'wide') return cell.exclude !== dir;
-  return cell.dirA === dir ||
-    DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING[cell.dirA] == dir ||
-    cell.dirB === dir ||
-    DIRECTION_TO_ADDITIONAL_ADJACENT_DIRECTION_MAPPING[cell.dirB] == dir;
 }
 
 function parseCell(raw: string, row: number, col: number): ParsedCell {
@@ -177,7 +137,7 @@ export function parseMap(mapString: string): RenderMap {
     const pk = coordKey(p.coord);
     for (let di = 0; di < 6; di++) {
       const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-      if (!pathCellOpen(p, dir)) continue;
+      if (!isPathDirectionOpen(p, dir)) continue;
 
       const [dx, dz] = HEX_DIRS[di];
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
@@ -185,8 +145,8 @@ export function parseMap(mapString: string): RenderMap {
       const nCell = pathCellByKey.get(nk);
       if (!nCell) continue;
 
-      const opp = OPPOSITE[dir];
-      if (pathCellOpen(nCell, opp)) {
+      const opp = HEX_OPPOSITE[dir];
+      if (isPathDirectionOpen(nCell, opp)) {
         pathAdjacency.get(pk)!.add(nk);
         pathAdjacency.get(nk)!.add(pk);
       }
@@ -198,7 +158,7 @@ export function parseMap(mapString: string): RenderMap {
     let bridgeCount = 0;
     for (let di = 0; di < 6; di++) {
       const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-      if (!pathCellOpen(p, dir)) continue;
+      if (!isPathDirectionOpen(p, dir)) continue;
 
       const [dx, dz] = HEX_DIRS[di];
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
@@ -216,7 +176,7 @@ export function parseMap(mapString: string): RenderMap {
       }
 
       if (nCell.type === 'path' || nCell.type === 'path-narrow') {
-        const opp = OPPOSITE[dir];
+        const opp = HEX_OPPOSITE[dir];
         if (!isOpen(nCell, opp)) {
           console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir} (neighbor closed)`);
         } else {
@@ -251,7 +211,7 @@ export function parseMap(mapString: string): RenderMap {
       // Collect bordering territories
       for (let di = 0; di < 6; di++) {
         const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-        if (!pathCellOpen(curPath, dir)) continue;
+        if (!isPathDirectionOpen(curPath, dir)) continue;
 
         const [dx, dz] = HEX_DIRS[di];
         const nk = coordKey({ x: curPath.coord.x + dx, z: curPath.coord.z + dz });

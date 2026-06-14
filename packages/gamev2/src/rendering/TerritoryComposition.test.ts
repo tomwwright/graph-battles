@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { TerritoryComposition } from './TerritoryComposition';
+import { presentNarrowTileIndices } from './HexCoordinates';
 
 // New tile numbering: 0=center, 1-6 = clockwise directions (1=N,2=NE,3=E,4=S,5=SW,6=W)
 // presentNarrowTileIndices(A, B) = [0, A, B]
@@ -37,21 +38,21 @@ describe('TerritoryComposition.composeNarrowPath', () => {
   });
 });
 
-describe('TerritoryComposition.presentNarrowTileIndices', () => {
+describe('presentNarrowTileIndices', () => {
   it('returns [0, dirA, dirB] — center plus two arm indices', () => {
-    expect(TerritoryComposition.presentNarrowTileIndices(1, 4)).toEqual([0, 1, 4]);
-    expect(TerritoryComposition.presentNarrowTileIndices(3, 6)).toEqual([0, 3, 6]);
-    expect(TerritoryComposition.presentNarrowTileIndices(2, 5)).toEqual([0, 2, 5]);
+    expect(presentNarrowTileIndices(1, 4)).toEqual([0, 1, 4]);
+    expect(presentNarrowTileIndices(3, 6)).toEqual([0, 3, 6]);
+    expect(presentNarrowTileIndices(2, 5)).toEqual([0, 2, 5]);
   });
 
   it('always includes center tile 0', () => {
-    expect(TerritoryComposition.presentNarrowTileIndices(1, 4)).toContain(0);
-    expect(TerritoryComposition.presentNarrowTileIndices(3, 6)).toContain(0);
-    expect(TerritoryComposition.presentNarrowTileIndices(2, 5)).toContain(0);
+    expect(presentNarrowTileIndices(1, 4)).toContain(0);
+    expect(presentNarrowTileIndices(3, 6)).toContain(0);
+    expect(presentNarrowTileIndices(2, 5)).toContain(0);
   });
 
   it('has length 3', () => {
-    expect(TerritoryComposition.presentNarrowTileIndices(1, 4)).toHaveLength(3);
-    expect(TerritoryComposition.presentNarrowTileIndices(3, 6)).toHaveLength(3);
+    expect(presentNarrowTileIndices(1, 4)).toHaveLength(3);
+    expect(presentNarrowTileIndices(3, 6)).toHaveLength(3);
   });
 });

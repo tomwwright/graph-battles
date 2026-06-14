@@ -9,6 +9,7 @@
  */
 
 export type HexCoord = { x: number; z: number };
+export type HexDirection = 1 | 2 | 3 | 4 | 5 | 6;
 
 /** Tile position in the rendered offset grid (odd-q convention) */
 export type OffsetCoord = { x: number; z: number };
@@ -99,4 +100,52 @@ export function tileGridSize(rows: number, columns: number): number {
 
 export function coordKey(coord: HexCoord): string {
   return `${coord.x},${coord.z}`;
+}
+
+// -- Hex direction geometry --
+
+/** Direction vectors indexed by HexDir - 1 (clockwise from North). */
+export const HEX_DIRS: ReadonlyArray<readonly [number, number]> = [
+  [-1, 0], // 1: N
+  [-1, +1], // 2: NE
+  [0, +1], // 3: E
+  [+1, 0], // 4: S
+  [+1, -1], // 5: SW
+  [0, -1], // 6: W
+];
+
+export const HEX_OPPOSITE: Record<HexDirection, HexDirection> = { 1: 4, 4: 1, 2: 5, 5: 2, 3: 6, 6: 3 };
+
+/** Tile at direction D also borders the hex neighbour in the CCW-previous direction. */
+export const HEX_DIR_CCW_PREV: Record<HexDirection, HexDirection> = { 1: 6, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5 };
+
+// Tile indices dropped when direction D is closed (tile D and its CW-next D%6+1)
+const CLOSED_DIR_DROPPED_TILES: Record<HexDirection, [number, number]> = {
+  1: [1, 2], 2: [2, 3], 3: [3, 4], 4: [4, 5], 5: [5, 6], 6: [6, 1],
+};
+
+/** Tile indices present in a wide path hex cluster with one direction closed. */
+export function presentTileIndices(exclude: HexDirection): number[] {
+  const dropped = new Set(CLOSED_DIR_DROPPED_TILES[exclude]);
+  return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
+}
+
+/** Tile indices present in a narrow path hex cluster (center + two arm tiles). */
+export function presentNarrowTileIndices(dirA: HexDirection, dirB: HexDirection): number[] {
+  return [0, dirA, dirB];
+}
+
+// -- Path cell types --
+
+export type PathCell =
+  | { coord: HexCoord; kind: 'wide'; exclude: HexDirection }
+  | { coord: HexCoord; kind: 'narrow'; dirA: HexDirection; dirB: HexDirection };
+
+/** Whether a path cell is open toward a given direction for connectivity purposes. */
+export function isPathDirectionOpen(cell: PathCell, dir: HexDirection): boolean {
+  if (cell.kind === 'wide') return cell.exclude !== dir;
+  return cell.dirA === dir ||
+    HEX_DIR_CCW_PREV[cell.dirA] === dir ||
+    cell.dirB === dir ||
+    HEX_DIR_CCW_PREV[cell.dirB] === dir;
 }
