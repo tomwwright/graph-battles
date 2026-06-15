@@ -46,9 +46,10 @@ export class MapRenderer {
     const occupiedTiles = new Set<string>();
 
     for (const cell of pathCells) {
-      const tiles = cell.kind === 'wide'
-        ? TerritoryComposition.composePath(cell.exclude)
-        : TerritoryComposition.composeNarrowPath(cell.dirA, cell.dirB);
+      let tiles;
+      if (cell.kind === 'wide') tiles = TerritoryComposition.composePath(cell.exclude);
+      else if (cell.kind === 'narrow') tiles = TerritoryComposition.composeNarrowPath(cell.dirA, cell.dirB);
+      else tiles = TerritoryComposition.composeGrass();
       const tileCoords = hexToTileCoords(cell.coord);
       const placed = this.placeTiles(tiles, tileCoords, `path-${cell.coord.x}-${cell.coord.z}`);
       for (const p of placed) occupiedTiles.add(`${tileCoords[p.tileIndex].x},${tileCoords[p.tileIndex].z}`);

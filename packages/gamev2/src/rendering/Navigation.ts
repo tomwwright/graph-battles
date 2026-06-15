@@ -32,6 +32,7 @@ export class Navigation {
       }
       return new Vector3(sumX / present.length, 0, sumZ / present.length);
     }
+    // territory, full path cell, empty, or unknown — use centre tile
     const tile = hexCenterTile(coord);
     const pos = this.grid.getWorldPosition(tile);
     return new Vector3(pos.x, 0, pos.z);
