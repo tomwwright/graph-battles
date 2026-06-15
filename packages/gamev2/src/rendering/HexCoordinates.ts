@@ -143,17 +143,3 @@ export function toNarrowPathCellIndices(dirA: HexDirection, dirB: HexDirection):
   return [0, dirA, dirB];
 }
 
-// -- Path cell types --
-
-export type PathCell =
-  | { coord: HexCoord; kind: 'wide'; exclude: HexDirection }
-  | { coord: HexCoord; kind: 'narrow'; dirA: HexDirection; dirB: HexDirection };
-
-/** Whether a path cell is open toward a given direction for connectivity purposes. */
-export function isPathDirectionOpen(cell: PathCell, dir: HexDirection): boolean {
-  if (cell.kind === 'wide') return cell.exclude !== dir;
-  return cell.dirA === dir ||
-    HEX_DIR_CCW_PREV[cell.dirA] === dir ||
-    cell.dirB === dir ||
-    HEX_DIR_CCW_PREV[cell.dirB] === dir;
-}

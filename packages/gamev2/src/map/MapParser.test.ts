@@ -11,12 +11,12 @@ describe('parseMap', () => {
 
     const result = parseMap(map);
 
-    expect(result.territories).toHaveLength(6);
-    expect(result.territories.map((t) => t.id).sort()).toEqual(['#T1', '#T2', '#T3', '#T4', '#T5', '#T6']);
+    expect(result.territories()).toHaveLength(6);
+    expect(result.territories().map((t) => t.id).sort()).toEqual(['#T1', '#T2', '#T3', '#T4', '#T5', '#T6']);
 
-    expect(result.pathCells).toHaveLength(7);
+    expect(result.pathCells()).toHaveLength(7);
 
-    const edgePairs = result.edges
+    const edgePairs = result.edges()
       .map((e) => [e.territoryA, e.territoryB].sort().join('-'))
       .sort();
     expect(edgePairs).toEqual(['#T1-#T3', '#T1-#T5', '#T2-#T3', '#T2-#T4', '#T3-#T6', '#T4-#T6', '#T5-#T6']);
@@ -31,8 +31,8 @@ describe('parseMap', () => {
     ].join('\n');
 
     const result = parseMap(map);
-    expect(result.territories).toHaveLength(6);
-    expect(result.pathCells).toHaveLength(7);
+    expect(result.territories()).toHaveLength(6);
+    expect(result.pathCells()).toHaveLength(7);
   });
 
   it('throws on direct T-T adjacency', () => {
@@ -55,8 +55,8 @@ describe('parseMap', () => {
       '| T 2 |      |     |',
     ].join('\n');
     const result = parseMap(map);
-    expect(result.pathCells).toHaveLength(1);
-    expect(result.pathCells[0]).toMatchObject({ kind: 'narrow', dirA: 3, dirB: 5 });
+    expect(result.pathCells()).toHaveLength(1);
+    expect(result.pathCells()[0]).toMatchObject({ kind: 'narrow', dirA: 3, dirB: 5 });
   });
 
   it('throws on narrow path cell with same direction', () => {
@@ -78,9 +78,9 @@ describe('parseMap', () => {
       '| T 2 |      |     |',
     ].join('\n');
     const result = parseMap(map);
-    expect(result.pathCells).toHaveLength(1);
-    expect(result.pathCells[0]).toMatchObject({ kind: 'narrow', dirA: 3, dirB: 5 });
-    expect(result.edges).toHaveLength(1);
-    expect([result.edges[0].territoryA, result.edges[0].territoryB].sort()).toEqual(['#T1', '#T2']);
+    expect(result.pathCells()).toHaveLength(1);
+    expect(result.pathCells()[0]).toMatchObject({ kind: 'narrow', dirA: 3, dirB: 5 });
+    expect(result.edges()).toHaveLength(1);
+    expect([result.edges()[0].territoryA, result.edges()[0].territoryB].sort()).toEqual(['#T1', '#T2']);
   });
 });

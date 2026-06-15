@@ -3,14 +3,15 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Scene } from '@babylonjs/core/scene';
 import { ID, Values, GameMap } from '@battles/models';
-import { HexCoord, hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
+import { hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
 import { SceneRenderer } from './SceneRenderer';
 import { CameraController } from './CameraController';
 import { HexGridController } from './HexGridController';
 import { AssetLoader } from './AssetLoader';
 import { MapRenderer } from './MapRenderer';
 import { UnitRenderer } from './UnitRenderer';
-import { RenderMap } from '../map/MapParser';
+import { Navigation } from './Navigation';
+import type { HexCellMap } from '../map/HexCellMap';
 import type { HoverInfo } from '../state/types';
 
 type TerritoryClickCallback = (territoryId: ID) => void;
@@ -29,9 +30,8 @@ export class GameRenderer {
   private readonly mapRenderer: MapRenderer;
   private readonly unitRenderer: UnitRenderer;
 
-  private map: RenderMap | null = null;
-  // territory ID → hex coord, for camera focus
-  private territoryCoordMap = new Map<ID, HexCoord>();
+  private map: HexCellMap | null = null;
+  private navigation: Navigation | null = null;
 
   constructor(scene: Scene, camera: ArcRotateCamera, assetLoader: AssetLoader) {
     this.sceneRenderer = new SceneRenderer(scene, camera);
@@ -39,52 +39,38 @@ export class GameRenderer {
     this.grid = new HexGridController(scene);
     this.assetLoader = assetLoader;
     this.mapRenderer = new MapRenderer(scene, this.grid, this.assetLoader);
-    this.unitRenderer = new UnitRenderer(scene, this.grid, this.territoryCoordMap, this.assetLoader);
+    this.unitRenderer = new UnitRenderer(scene, this.assetLoader);
     this.unitRenderer.onMeshRegistration((mesh) => this.sceneRenderer.registerMeshes([mesh]));
   }
 
   // --- Lifecycle ---
 
-  async initialise(renderMap: RenderMap, gameMap: GameMap): Promise<void> {
-    this.map = renderMap;
+  async initialise(map: HexCellMap, gameMap: GameMap): Promise<void> {
+    this.map = map;
+    this.navigation = new Navigation(map, this.grid);
 
-    // Build territory coord lookup
-    this.territoryCoordMap.clear();
-    for (const t of renderMap.territories) {
-      this.territoryCoordMap.set(t.id, t.coord);
-    }
+    this.unitRenderer.initialise(this.navigation);
 
-    this.unitRenderer.initialise(renderMap, gameMap);
-
-    // Load GLB assets
     await this.assetLoader.loadAll();
 
-    // Size the tile grid
-    const rows = Math.max(...renderMap.territories.map((t) => t.coord.x), ...renderMap.pathCells.map((p) => p.coord.x)) + 1;
-    const cols = Math.max(...renderMap.territories.map((t) => t.coord.z), ...renderMap.pathCells.map((p) => p.coord.z)) + 1;
+    const territories = map.territories();
+    const pathCells = map.pathCells();
+    const rows = Math.max(...territories.map((t) => t.coord.x), ...pathCells.map((p) => p.coord.x)) + 1;
+    const cols = Math.max(...territories.map((t) => t.coord.z), ...pathCells.map((p) => p.coord.z)) + 1;
     const gridSize = tileGridSize(rows, cols);
     this.grid.setSize(gridSize);
 
-    // Register territory and edge map for click/hover resolution
-    this.grid.setTerritoryMap(renderMap.territories, renderMap.edges);
+    this.grid.setMap(map);
 
-    // Place tile meshes
-    const meshes = this.mapRenderer.loadMap(renderMap.territories, renderMap.pathCells, gameMap);
+    const meshes = this.mapRenderer.loadMap(territories, pathCells, gameMap);
 
-    // Register meshes for shadows and reflections
     this.sceneRenderer.registerMeshes(meshes);
 
-    // Size skybox/ground to extend beyond what the camera can see at max zoom
     const sceneSize =
       (Math.max(this.grid.maxX, this.grid.maxZ) + this.cameraController.maxVisibleSurroundingDistance) * 2;
     this.sceneRenderer.resize(sceneSize, this.grid.maxX / 2, this.grid.maxZ / 2);
 
-    // Set camera bounds and center based on territory bounds
     const bounds = this.grid.getBounds();
-
-    console.log('Bounds', bounds);
-    console.log('Grid', this.grid.maxX, this.grid.maxZ);
-
     this.cameraController.setBounds(bounds.maximum.x, bounds.maximum.z);
     this.cameraController.centerCamera();
   }
@@ -113,7 +99,7 @@ export class GameRenderer {
   // --- Camera ---
 
   async focusOn(territoryId: ID): Promise<void> {
-    const coord = this.territoryCoordMap.get(territoryId);
+    const coord = this.map?.territoryCoord(territoryId);
     if (!coord) return;
     const centerTile = hexCenterTile(coord);
     const worldPos = this.grid.getWorldPosition(centerTile);
@@ -123,7 +109,7 @@ export class GameRenderer {
   // --- Map rendering ---
 
   updateTerritoryOverlay(territoryId: ID, color: Color3 | null, alpha: number = 0.12): void {
-    const coord = this.territoryCoordMap.get(territoryId);
+    const coord = this.map?.territoryCoord(territoryId);
     if (!coord) return;
 
     const tiles = hexToTileCoords(coord);
@@ -137,20 +123,15 @@ export class GameRenderer {
   }
 
   /**
-   * Highlight grass cells of the edge connecting two territories.
+   * Highlight path cells of the edge connecting two territories.
    * Used to visualise movement paths when units are selected.
    */
   highlightWaypoints(territoryA: ID, territoryB: ID, color: Color3, alpha: number = 0.15): void {
-    if (!this.map) return;
-    const edge = this.map.edges.find(
-      (e) =>
-        (e.territoryA === territoryA && e.territoryB === territoryB) ||
-        (e.territoryA === territoryB && e.territoryB === territoryA)
-    );
+    const edge = this.map?.edgeBetween(territoryA, territoryB);
     if (!edge) return;
 
-    for (const grassCoord of edge.pathCoords) {
-      const tiles = hexToTileCoords(grassCoord);
+    for (const pathCoord of edge.pathCoords) {
+      const tiles = hexToTileCoords(pathCoord);
       for (const tile of tiles) {
         this.grid.setTileOverlay(tile, color, alpha);
       }
@@ -166,7 +147,7 @@ export class GameRenderer {
     prevProperties: Values.TerritoryProperty[],
     nextProperties: Values.TerritoryProperty[]
   ): void {
-    const coord = this.territoryCoordMap.get(territoryId);
+    const coord = this.map?.territoryCoord(territoryId);
     if (!coord) return;
 
     const newMeshes = this.mapRenderer.updateTerritory(territoryId, coord, prevProperties, nextProperties);
@@ -176,7 +157,7 @@ export class GameRenderer {
   }
 
   getTerritoryWorldPos(id: ID): Vector3 | null {
-    const coord = this.territoryCoordMap.get(id);
+    const coord = this.map?.territoryCoord(id);
     if (!coord) return null;
     return this.grid.getWorldPosition(hexCenterTile(coord));
   }

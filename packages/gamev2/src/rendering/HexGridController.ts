@@ -11,6 +11,7 @@ import {
 } from '@babylonjs/core';
 import { ID } from '@battles/models';
 import { HexCoord, OffsetCoord, hexToTileCoords, tileToHex, coordKey, hexCenterTile } from './HexCoordinates';
+import type { HexCellMap } from '../map/HexCellMap';
 import type { HoverInfo } from '../state/types';
 
 type TileOverlay = { color: Color3; alpha: number };
@@ -42,12 +43,7 @@ export class HexGridController {
   private hoveredHexKey: string | null = null;
   private hoveredHexes: HexCoord[] = [];
 
-  // Maps from hex coord key → territory ID
-  private territoryLookup = new Map<string, ID>();
-  // Maps from territory ID → hex coord
-  private territoryCoords = new Map<ID, HexCoord>();
-  // Maps from path hex coord key → edge info (connected territories + all path cells)
-  private edgeLookup = new Map<string, { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }>();
+  private map: HexCellMap | null = null;
   // Offset coord keys where a tile mesh was actually placed
   private occupiedTiles = new Set<string>();
 
@@ -61,28 +57,9 @@ export class HexGridController {
     this.hoverCallback = callback;
   }
 
-  /**
-   * Register territory and edge hex coordinates for click/hover resolution.
-   */
-  setTerritoryMap(
-    territories: { id: ID; coord: HexCoord }[],
-    edges: { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }[]
-  ): void {
-    this.territoryLookup.clear();
-    this.territoryCoords.clear();
-    this.edgeLookup.clear();
-
-    for (const t of territories) {
-      this.territoryLookup.set(coordKey(t.coord), t.id);
-      this.territoryCoords.set(t.id, t.coord);
-    }
-
-    for (const e of edges) {
-      const info = { territoryA: e.territoryA, territoryB: e.territoryB, pathCoords: e.pathCoords };
-      for (const pc of e.pathCoords) {
-        this.edgeLookup.set(coordKey(pc), info);
-      }
-    }
+  /** Register the parsed map for click/hover resolution. */
+  setMap(map: HexCellMap): void {
+    this.map = map;
   }
 
   setOccupiedTiles(occupied: Set<string>): void {
@@ -104,10 +81,9 @@ export class HexGridController {
     var min = new Vector3(1000, 1000, 1000);
     var max = new Vector3(-1000, -1000, -1000);
 
-    for (const coords of this.territoryCoords.values()) {
-      const tile = hexCenterTile(coords);
+    for (const t of this.map?.territories() ?? []) {
+      const tile = hexCenterTile(t.coord);
       const position = this.getWorldPosition(tile);
-      console.log(coords, 'to', position);
       if (position.x < min.x) {
         min.x = position.x;
       }
@@ -280,19 +256,19 @@ export class HexGridController {
 
         this.clearCurrentHover();
 
-        const territoryId = this.territoryLookup.get(hexKey);
-        if (territoryId) {
+        const territory = this.map?.territoryAtCoord(hex);
+        if (territory) {
           this.hoveredHexKey = hexKey;
           this.hoveredHexes = [hex];
           this.setHexHighlight(hex, territoryHighlightColor, highlightAlpha);
-          this.hoverCallback?.({ type: 'territory', territoryId, hexCoord: hex });
+          this.hoverCallback?.({ type: 'territory', territoryId: territory.id, hexCoord: hex });
           return;
         }
 
-        const edge = this.edgeLookup.get(hexKey);
+        const edge = this.map?.edgeAtCoord(hex);
         if (edge) {
           this.hoveredHexKey = hexKey;
-          this.hoveredHexes = edge.pathCoords;
+          this.hoveredHexes = [...edge.pathCoords];
           for (const pc of edge.pathCoords) {
             this.setHexHighlight(pc, edgeHighlightColor, highlightAlpha);
           }
@@ -313,9 +289,9 @@ export class HexGridController {
       },
       onPick: () => {
         const hex = tileToHex(tileCoord);
-        const territoryId = this.territoryLookup.get(coordKey(hex));
-        if (territoryId) {
-          this.clickCallback?.(territoryId);
+        const territory = this.map?.territoryAtCoord(hex);
+        if (territory) {
+          this.clickCallback?.(territory.id);
         }
       },
     };

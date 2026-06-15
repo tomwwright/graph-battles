@@ -4,7 +4,7 @@ import { HexCoord, hexToTileCoords } from './HexCoordinates';
 import { TerritoryComposition, TileType } from './TerritoryComposition';
 import { AssetLoader } from './AssetLoader';
 import { HexGridController } from './HexGridController';
-import type { PathCell } from './HexCoordinates';
+import type { PathCell, TerritoryCell } from '../map/HexCellMap';
 
 type PlacedTile = {
   mesh: AbstractMesh;
@@ -33,8 +33,8 @@ export class MapRenderer {
    * Render the full map. Returns all placed meshes for shadow/mirror registration.
    */
   loadMap(
-    territories: { id: ID; coord: HexCoord }[],
-    pathCells: PathCell[],
+    territories: readonly TerritoryCell[],
+    pathCells: readonly PathCell[],
     gameMap: GameMap
   ): AbstractMesh[] {
     this.dispose();

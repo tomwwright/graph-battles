@@ -1,41 +1,29 @@
 import { ID } from '@battles/models';
-import { HexCoord, HexDirection, PathCell, coordKey, toOffsetCoordinates, isPathDirectionOpen, toOppositeDirection } from '../rendering/HexCoordinates';
+import { HexCoord, HexDirection, coordKey, toOffsetCoordinates, toOppositeDirection } from '../rendering/HexCoordinates';
+import {
+  HexCellMap,
+  HexCell,
+  TerritoryCell,
+  PathCell,
+  HexEdge,
+  isPathCellOpen,
+  edgeIdFor,
+} from './HexCellMap';
 
-export type { PathCell };
-
-export type RenderMap = {
-  territories: { id: ID; coord: HexCoord }[];
-  pathCells: PathCell[];
-  edges: { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }[];
-};
-
-type ParsedCell =
-  | { type: 'empty' }
-  | { type: 'territory'; id: ID }
-  | { type: 'path'; exclude: HexDirection }
-  | { type: 'path-narrow'; dirA: HexDirection; dirB: HexDirection };
-
-function isOpen(cell: ParsedCell, dir: HexDirection): boolean {
-  if (cell.type === 'territory') return true;
-  if (cell.type === 'path') return cell.exclude !== dir;
-  if (cell.type === 'path-narrow') return cell.dirA === dir || cell.dirB === dir;
-  return false;
-}
-
-function parseCell(raw: string, row: number, col: number): ParsedCell {
+function parseCell(raw: string, row: number, col: number, coord: HexCoord): HexCell {
   const s = raw.trim();
-  if (s === '') return { type: 'empty' };
+  if (s === '') return { kind: 'empty', coord };
 
   const tMatch = s.match(/^T\s*(\d+)$/);
-  if (tMatch) return { type: 'territory', id: `#T${tMatch[1]}` };
+  if (tMatch) return { kind: 'territory', coord, id: `#T${tMatch[1]}` };
 
-  const eMatch = s.match(/^E\s*-([1-6])$/); // e.g. E -1
-  if (eMatch) return { type: 'path', exclude: parseInt(eMatch[1]) as 1 | 2 | 3 | 4 | 5 | 6 };
+  const eMatch = s.match(/^E\s*-([1-6])$/);
+  if (eMatch) return { kind: 'wide', coord, exclude: parseInt(eMatch[1]) as HexDirection };
 
-  const nMatch = s.match(/^E\s*([1-6])([1-6])$/); // e.g. E 12
+  const nMatch = s.match(/^E\s*([1-6])([1-6])$/);
   if (nMatch) {
-    let dirA = parseInt(nMatch[1]) as 1 | 2 | 3 | 4 | 5 | 6;
-    let dirB = parseInt(nMatch[2]) as 1 | 2 | 3 | 4 | 5 | 6;
+    let dirA = parseInt(nMatch[1]) as HexDirection;
+    let dirB = parseInt(nMatch[2]) as HexDirection;
     if (dirA === dirB) throw new Error(`MapParser: path-narrow cell at (${row},${col}) has dirA === dirB`);
 
     if (dirA > dirB) {
@@ -44,66 +32,60 @@ function parseCell(raw: string, row: number, col: number): ParsedCell {
       dirB = c;
     }
 
-    // Adjacent pairs are not valid
-    const invalidPairs: Record<1 | 2 | 3 | 4 | 5 | 6, (1 | 2 | 3 | 4 | 5 | 6)[]> = {
+    const invalidPairs: Record<HexDirection, HexDirection[]> = {
       1: [2, 6],
       2: [1, 3],
       3: [2, 4],
       4: [3, 5],
       5: [4, 6],
       6: [5, 1],
-    }
+    };
     if (invalidPairs[dirA].includes(dirB)) {
       throw new Error(`MapParser: invalid narrow path pair (${dirA}, ${dirB})`);
     }
 
-    return { type: 'path-narrow', dirA, dirB };
+    return { kind: 'narrow', coord, dirA, dirB };
   }
 
   throw new Error(`MapParser: unrecognized cell at (${row},${col}): "${s}"`);
 }
 
 const SEPARATOR_ROW = /^\|[-:\s|]+\|$/;
+const HEX_DIRECTIONS: readonly HexDirection[] = [1, 2, 3, 4, 5, 6];
 
 /**
- * Parses a markdown-table map into a RenderMap.
+ * Parses a markdown-table map into a HexCellMap.
  *
  * Format:
  * - `T <id>` = territory with explicit integer ID
- * - `E -<dir>` = path cell with closed direction (1-6)
+ * - `E -<dir>` = wide path cell with closed direction (1-6)
+ * - `E <dirA><dirB>` = narrow path cell open along two non-adjacent directions
  * - blank = empty cell
  *
  * Edges are derived by flood-filling connected path-cell components, then
  * collecting territories that bridge (reciprocal-open adjacency) into each
- * component.
+ * component. `HexEdge.pathCoords` are ordered T_A side → T_B side via BFS.
  */
-export function parseMap(mapString: string): RenderMap {
+export function parseMap(mapString: string): HexCellMap {
   const lines = mapString
     .trim()
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => l.startsWith('|') && !SEPARATOR_ROW.test(l));
 
-  // Build 2D cell grid indexed by [row][col]
-  const grid = new Map<string, ParsedCell>();
-  const territories: RenderMap['territories'] = [];
-  const pathCells: RenderMap['pathCells'] = [];
+  const grid = new Map<string, HexCell>();
+  const territories: TerritoryCell[] = [];
+  const pathCells: PathCell[] = [];
 
   for (let row = 0; row < lines.length; row++) {
     const cells = lines[row].replace(/^\||\|$/g, '').split('|');
     for (let col = 0; col < cells.length; col++) {
-      const cell = parseCell(cells[col], row, col);
       const coord: HexCoord = { x: row, z: col };
-      const key = coordKey(coord);
-      grid.set(key, cell);
+      const cell = parseCell(cells[col], row, col, coord);
+      grid.set(coordKey(coord), cell);
 
-      if (cell.type === 'territory') {
-        territories.push({ id: cell.id, coord });
-      } else if (cell.type === 'path') {
-        pathCells.push({ coord, kind: 'wide', exclude: cell.exclude });
-      } else if (cell.type === 'path-narrow') {
-        pathCells.push({ coord, kind: 'narrow', dirA: cell.dirA, dirB: cell.dirB });
-      }
+      if (cell.kind === 'territory') territories.push(cell);
+      else if (cell.kind === 'wide' || cell.kind === 'narrow') pathCells.push(cell);
     }
   }
 
@@ -117,8 +99,7 @@ export function parseMap(mapString: string): RenderMap {
   // Validate no direct T-T adjacency
   const territoryByKey = new Map(territories.map((t) => [coordKey(t.coord), t.id]));
   for (const t of territories) {
-    for (let di = 0; di < 6; di++) {
-      const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+    for (const dir of HEX_DIRECTIONS) {
       const [dx, dz] = toOffsetCoordinates(dir);
       const nKey = coordKey({ x: t.coord.x + dx, z: t.coord.z + dz });
       if (territoryByKey.has(nKey)) {
@@ -130,15 +111,12 @@ export function parseMap(mapString: string): RenderMap {
   // Build path-cell adjacency (reciprocal-open links between path cells)
   const pathCellByKey = new Map(pathCells.map((p) => [coordKey(p.coord), p]));
   const pathAdjacency = new Map<string, Set<string>>();
-  for (const p of pathCells) {
-    pathAdjacency.set(coordKey(p.coord), new Set());
-  }
+  for (const p of pathCells) pathAdjacency.set(coordKey(p.coord), new Set());
 
   for (const p of pathCells) {
     const pk = coordKey(p.coord);
-    for (let di = 0; di < 6; di++) {
-      const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-      if (!isPathDirectionOpen(p, dir)) continue;
+    for (const dir of HEX_DIRECTIONS) {
+      if (!isPathCellOpen(p, dir)) continue;
 
       const [dx, dz] = toOffsetCoordinates(dir);
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
@@ -147,7 +125,7 @@ export function parseMap(mapString: string): RenderMap {
       if (!nCell) continue;
 
       const opp = toOppositeDirection(dir);
-      if (isPathDirectionOpen(nCell, opp)) {
+      if (isPathCellOpen(nCell, opp)) {
         pathAdjacency.get(pk)!.add(nk);
         pathAdjacency.get(nk)!.add(pk);
       }
@@ -157,32 +135,28 @@ export function parseMap(mapString: string): RenderMap {
   // Warn about dangling opens and isolated path cells
   for (const p of pathCells) {
     let bridgeCount = 0;
-    for (let di = 0; di < 6; di++) {
-      const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-      if (!isPathDirectionOpen(p, dir)) continue;
+    for (const dir of HEX_DIRECTIONS) {
+      if (!isPathCellOpen(p, dir)) continue;
 
       const [dx, dz] = toOffsetCoordinates(dir);
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
-      const nk = coordKey(nCoord);
-      const nCell = grid.get(nk);
+      const nCell = grid.get(coordKey(nCoord));
 
-      if (!nCell || nCell.type === 'empty') {
+      if (!nCell || nCell.kind === 'empty') {
         console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir}`);
         continue;
       }
 
-      if (nCell.type === 'territory') {
+      if (nCell.kind === 'territory') {
         bridgeCount++;
         continue;
       }
 
-      if (nCell.type === 'path' || nCell.type === 'path-narrow') {
-        const opp = toOppositeDirection(dir);
-        if (!isOpen(nCell, opp)) {
-          console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir} (neighbor closed)`);
-        } else {
-          bridgeCount++;
-        }
+      const opp = toOppositeDirection(dir);
+      if (!isPathCellOpen(nCell, opp)) {
+        console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir} (neighbor closed)`);
+      } else {
+        bridgeCount++;
       }
     }
     if (bridgeCount === 0) {
@@ -190,37 +164,49 @@ export function parseMap(mapString: string): RenderMap {
     }
   }
 
-  // Flood-fill connected path-cell components
+  // Flood-fill connected path-cell components, collecting per-cell border territories
+  type Component = {
+    cells: string[]; // path-cell coord keys in arbitrary visit order
+    borderTerritories: Set<ID>;
+    cellsBorderingTerritory: Map<ID, Set<string>>;
+  };
+
   const visited = new Set<string>();
-  const edges: RenderMap['edges'] = [];
-  const edgeSet = new Set<string>();
+  const components: Component[] = [];
 
   for (const p of pathCells) {
     const startKey = coordKey(p.coord);
     if (visited.has(startKey)) continue;
 
-    const component: HexCoord[] = [];
-    const borderTerritories = new Set<ID>();
+    const component: Component = {
+      cells: [],
+      borderTerritories: new Set(),
+      cellsBorderingTerritory: new Map(),
+    };
     const queue: string[] = [startKey];
     visited.add(startKey);
 
     while (queue.length > 0) {
       const cur = queue.pop()!;
       const curPath = pathCellByKey.get(cur)!;
-      component.push(curPath.coord);
+      component.cells.push(cur);
 
-      // Collect bordering territories
-      for (let di = 0; di < 6; di++) {
-        const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
-        if (!isPathDirectionOpen(curPath, dir)) continue;
-
+      for (const dir of HEX_DIRECTIONS) {
+        if (!isPathCellOpen(curPath, dir)) continue;
         const [dx, dz] = toOffsetCoordinates(dir);
         const nk = coordKey({ x: curPath.coord.x + dx, z: curPath.coord.z + dz });
         const nCell = grid.get(nk);
-        if (nCell?.type === 'territory') borderTerritories.add(nCell.id);
+        if (nCell?.kind === 'territory') {
+          component.borderTerritories.add(nCell.id);
+          let set = component.cellsBorderingTerritory.get(nCell.id);
+          if (!set) {
+            set = new Set();
+            component.cellsBorderingTerritory.set(nCell.id, set);
+          }
+          set.add(cur);
+        }
       }
 
-      // Expand to adjacent path cells
       for (const nk of pathAdjacency.get(cur)!) {
         if (!visited.has(nk)) {
           visited.add(nk);
@@ -229,159 +215,69 @@ export function parseMap(mapString: string): RenderMap {
       }
     }
 
-    // Emit edges for every pair of bordering territories
-    const tIds = [...borderTerritories];
+    components.push(component);
+  }
+
+  // BFS path-cell coords from seed set, in canonical order T_A → T_B
+  const orderedCoordsFromSeeds = (component: Component, seeds: Set<string>): HexCoord[] => {
+    const order: HexCoord[] = [];
+    const seen = new Set<string>();
+    const componentSet = new Set(component.cells);
+    const queue: string[] = [];
+    for (const s of seeds) {
+      if (!seen.has(s) && componentSet.has(s)) {
+        seen.add(s);
+        queue.push(s);
+      }
+    }
+    let head = 0;
+    while (head < queue.length) {
+      const cur = queue[head++];
+      order.push(pathCellByKey.get(cur)!.coord);
+      for (const nk of pathAdjacency.get(cur)!) {
+        if (!seen.has(nk) && componentSet.has(nk)) {
+          seen.add(nk);
+          queue.push(nk);
+        }
+      }
+    }
+    return order;
+  };
+
+  // Emit edges. For repeated pairs across components, merge ordered pathCoords.
+  const edgeByPair = new Map<string, HexEdge>();
+  const pairKey = (a: ID, b: ID) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
+  for (const component of components) {
+    const tIds = [...component.borderTerritories];
     for (let i = 0; i < tIds.length; i++) {
       for (let j = i + 1; j < tIds.length; j++) {
-        const a = tIds[i] < tIds[j] ? tIds[i] : tIds[j];
-        const b = tIds[i] < tIds[j] ? tIds[j] : tIds[i];
-        const ek = `${a}${b}`;
-        if (!edgeSet.has(ek)) {
-          edgeSet.add(ek);
-          edges.push({ territoryA: a, territoryB: b, pathCoords: component });
+        const ti = tIds[i];
+        const tj = tIds[j];
+        // Canonical T_A is numerically smaller (matches edgeIdFor convention)
+        const na = parseInt(ti.slice(2), 10);
+        const nb = parseInt(tj.slice(2), 10);
+        const territoryA = na < nb ? ti : tj;
+        const territoryB = na < nb ? tj : ti;
+
+        const seeds = component.cellsBorderingTerritory.get(territoryA) ?? new Set();
+        const ordered = orderedCoordsFromSeeds(component, seeds);
+
+        const key = pairKey(territoryA, territoryB);
+        const existing = edgeByPair.get(key);
+        if (existing) {
+          existing.pathCoords.push(...ordered);
         } else {
-          // Merge pathCoords from this component into existing edge
-          const existing = edges.find((e) => e.territoryA === a && e.territoryB === b)!;
-          existing.pathCoords = [...existing.pathCoords, ...component];
-        }
-      }
-    }
-  }
-
-  return { territories, pathCells, edges };
-}
-
-/**
- * @deprecated Legacy ASCII-grid parser. Use `parseMap` (markdown-table format) instead.
- *
- * Format:
- * - `T` = territory
- * - `g` = grass (filler, also used for edge derivation)
- * - `_` = empty
- *
- * Edges are derived from adjacency: two territories share an edge if they
- * are both adjacent to the same grass cell.
- */
-export function parseMapLegacy(mapString: string): {
-  territories: { id: ID; coord: HexCoord }[];
-  grassCells: HexCoord[];
-  edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[];
-} {
-  const lines = mapString
-    .trim()
-    .split('\n')
-    .map((l) => l.trim());
-
-  const rows = lines.length;
-  const cols = Math.max(...lines.map((l) => l.length));
-
-  // Build grid
-  const grid: string[][] = [];
-  for (let x = 0; x < rows; x++) {
-    grid[x] = [];
-    for (let z = 0; z < cols; z++) {
-      grid[x][z] = lines[x]?.[z] ?? '_';
-    }
-  }
-
-  // Extract territories and grass cells
-  const territories: { id: ID; coord: HexCoord }[] = [];
-  const grassCells: HexCoord[] = [];
-  let nextTerritoryId = 1;
-
-  // Map from coord key to territory ID for adjacency lookup
-  const territoryAt = new Map<string, ID>();
-
-  for (let x = 0; x < rows; x++) {
-    for (let z = 0; z < cols; z++) {
-      const cell = grid[x][z];
-      const coord: HexCoord = { x, z };
-
-      if (cell === 'T') {
-        const id = `#T${nextTerritoryId++}`;
-        territories.push({ id, coord });
-        territoryAt.set(coordKey(coord), id);
-      } else if (cell === 'g') {
-        grassCells.push(coord);
-      }
-    }
-  }
-
-  // Derive edges by flood-filling connected grass regions.
-  // Each connected grass component that touches 2+ territories creates edges
-  // between every pair of those territories.
-  const grassSet = new Set(grassCells.map(coordKey));
-  const visited = new Set<string>();
-  const edges: { territoryA: ID; territoryB: ID; grassCoords: HexCoord[] }[] = [];
-  const edgeSet = new Set<string>();
-
-  for (const grass of grassCells) {
-    const startKey = coordKey(grass);
-    if (visited.has(startKey)) continue;
-
-    // Flood-fill this connected grass component
-    const component: HexCoord[] = [];
-    const adjacentTerritoryIds = new Set<ID>();
-    const queue: HexCoord[] = [grass];
-    visited.add(startKey);
-
-    while (queue.length > 0) {
-      const current = queue.pop()!;
-      component.push(current);
-
-      for (const neighbour of hexNeighbours(current)) {
-        const key = coordKey(neighbour);
-
-        // Check if neighbour is a territory
-        const tId = territoryAt.get(key);
-        if (tId) {
-          adjacentTerritoryIds.add(tId);
-          continue;
-        }
-
-        // Expand into unvisited grass
-        if (grassSet.has(key) && !visited.has(key)) {
-          visited.add(key);
-          queue.push(neighbour);
-        }
-      }
-    }
-
-    // Every pair of adjacent territories gets an edge via this grass component
-    const tIds = [...adjacentTerritoryIds];
-    for (let i = 0; i < tIds.length; i++) {
-      for (let j = i + 1; j < tIds.length; j++) {
-        const a = tIds[i];
-        const b = tIds[j];
-        const edgeKey = a < b ? `${a}${b}` : `${b}${a}`;
-        if (!edgeSet.has(edgeKey)) {
-          edgeSet.add(edgeKey);
-          edges.push({
-            territoryA: a < b ? a : b,
-            territoryB: a < b ? b : a,
-            grassCoords: component
+          edgeByPair.set(key, {
+            id: edgeIdFor(territoryA, territoryB),
+            territoryA,
+            territoryB,
+            pathCoords: ordered,
           });
         }
       }
     }
   }
 
-  return { territories, grassCells, edges };
-}
-
-/**
- * Returns the 6 hex neighbours using axial directions.
- * Hex coordinates are axial (mapped to tile offset coords via stride vectors
- * in HexCoordinates.ts), so no parity logic is needed here.
- */
-function hexNeighbours(coord: HexCoord): HexCoord[] {
-  const { x, z } = coord;
-  return [
-    { x: x + 1, z },
-    { x: x - 1, z },
-    { x, z: z + 1 },
-    { x, z: z - 1 },
-    { x: x + 1, z: z - 1 },
-    { x: x - 1, z: z + 1 },
-  ];
+  return new HexCellMap(grid, territories, pathCells, [...edgeByPair.values()]);
 }
