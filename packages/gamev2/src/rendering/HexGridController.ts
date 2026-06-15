@@ -38,16 +38,16 @@ export class HexGridController {
   private hoverCallback: HoverCallback | null = null;
   private overlays = new Map<string, TileOverlay>();
 
-  // Currently hovered hex (either territory or edge grass)
+  // Currently hovered hex (either territory or edge path)
   private hoveredHexKey: string | null = null;
-  private hoveredHexCoord: HexCoord | null = null;
+  private hoveredHexes: HexCoord[] = [];
 
   // Maps from hex coord key → territory ID
   private territoryLookup = new Map<string, ID>();
   // Maps from territory ID → hex coord
   private territoryCoords = new Map<ID, HexCoord>();
-  // Maps from grass hex coord key → edge info (connected territories)
-  private edgeLookup = new Map<string, { territoryA: ID; territoryB: ID }>();
+  // Maps from path hex coord key → edge info (connected territories + all path cells)
+  private edgeLookup = new Map<string, { territoryA: ID; territoryB: ID; pathCoords: HexCoord[] }>();
   // Offset coord keys where a tile mesh was actually placed
   private occupiedTiles = new Set<string>();
 
@@ -78,9 +78,9 @@ export class HexGridController {
     }
 
     for (const e of edges) {
+      const info = { territoryA: e.territoryA, territoryB: e.territoryB, pathCoords: e.pathCoords };
       for (const pc of e.pathCoords) {
-        const key = coordKey(pc);
-        this.edgeLookup.set(key, { territoryA: e.territoryA, territoryB: e.territoryB });
+        this.edgeLookup.set(coordKey(pc), info);
       }
     }
   }
@@ -259,11 +259,11 @@ export class HexGridController {
   }
 
   private clearCurrentHover(): void {
-    if (this.hoveredHexCoord) {
-      this.unsetHexHighlight(this.hoveredHexCoord);
+    for (const hex of this.hoveredHexes) {
+      this.unsetHexHighlight(hex);
     }
     this.hoveredHexKey = null;
-    this.hoveredHexCoord = null;
+    this.hoveredHexes = [];
   }
 
   private makePointerHandlers(tileCoord: OffsetCoord) {
@@ -283,7 +283,7 @@ export class HexGridController {
         const territoryId = this.territoryLookup.get(hexKey);
         if (territoryId) {
           this.hoveredHexKey = hexKey;
-          this.hoveredHexCoord = hex;
+          this.hoveredHexes = [hex];
           this.setHexHighlight(hex, territoryHighlightColor, highlightAlpha);
           this.hoverCallback?.({ type: 'territory', territoryId, hexCoord: hex });
           return;
@@ -292,9 +292,16 @@ export class HexGridController {
         const edge = this.edgeLookup.get(hexKey);
         if (edge) {
           this.hoveredHexKey = hexKey;
-          this.hoveredHexCoord = hex;
-          this.setHexHighlight(hex, edgeHighlightColor, highlightAlpha);
-          this.hoverCallback?.({ type: 'edge', ...edge, hexCoord: hex });
+          this.hoveredHexes = edge.pathCoords;
+          for (const pc of edge.pathCoords) {
+            this.setHexHighlight(pc, edgeHighlightColor, highlightAlpha);
+          }
+          this.hoverCallback?.({
+            type: 'edge',
+            territoryA: edge.territoryA,
+            territoryB: edge.territoryB,
+            hexCoord: hex,
+          });
           return;
         }
 
