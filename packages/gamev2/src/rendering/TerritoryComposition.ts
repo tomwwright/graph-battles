@@ -1,5 +1,5 @@
 import { Values } from '@battles/models';
-import { HexDirection, presentTileIndices, presentNarrowTileIndices } from './HexCoordinates';
+import { HexDirection, toPathCellIndices, toNarrowPathCellIndices } from './HexCoordinates';
 
 export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
 export type { HexDirection as HexDir };
@@ -63,13 +63,13 @@ export class TerritoryComposition {
 
   static composePath(exclude: HexDirection): TileType[] {
     const tiles: TileType[] = Array(7).fill('empty') as TileType[];
-    for (const i of presentTileIndices(exclude)) tiles[i] = 'grass';
+    for (const i of toPathCellIndices(exclude)) tiles[i] = 'grass';
     return tiles;
   }
 
   static composeNarrowPath(dirA: HexDirection, dirB: HexDirection): TileType[] {
     const tiles: TileType[] = Array(7).fill('empty') as TileType[];
-    for (const i of presentNarrowTileIndices(dirA, dirB)) tiles[i] = 'grass';
+    for (const i of toNarrowPathCellIndices(dirA, dirB)) tiles[i] = 'grass';
     return tiles;
   }
 

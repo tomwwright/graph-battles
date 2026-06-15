@@ -1,5 +1,5 @@
 import { ID } from '@battles/models';
-import { HexCoord, HexDirection, PathCell, coordKey, HEX_DIRS, HEX_OPPOSITE, isPathDirectionOpen } from '../rendering/HexCoordinates';
+import { HexCoord, HexDirection, PathCell, coordKey, toOffsetCoordinates, isPathDirectionOpen, toOppositeDirection } from '../rendering/HexCoordinates';
 
 export type { PathCell };
 
@@ -118,7 +118,8 @@ export function parseMap(mapString: string): RenderMap {
   const territoryByKey = new Map(territories.map((t) => [coordKey(t.coord), t.id]));
   for (const t of territories) {
     for (let di = 0; di < 6; di++) {
-      const [dx, dz] = HEX_DIRS[di];
+      const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+      const [dx, dz] = toOffsetCoordinates(dir);
       const nKey = coordKey({ x: t.coord.x + dx, z: t.coord.z + dz });
       if (territoryByKey.has(nKey)) {
         throw new Error(`MapParser: territories ${t.id} and ${territoryByKey.get(nKey)} are directly adjacent`);
@@ -139,13 +140,13 @@ export function parseMap(mapString: string): RenderMap {
       const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
       if (!isPathDirectionOpen(p, dir)) continue;
 
-      const [dx, dz] = HEX_DIRS[di];
+      const [dx, dz] = toOffsetCoordinates(dir);
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
       const nk = coordKey(nCoord);
       const nCell = pathCellByKey.get(nk);
       if (!nCell) continue;
 
-      const opp = HEX_OPPOSITE[dir];
+      const opp = toOppositeDirection(dir);
       if (isPathDirectionOpen(nCell, opp)) {
         pathAdjacency.get(pk)!.add(nk);
         pathAdjacency.get(nk)!.add(pk);
@@ -160,7 +161,7 @@ export function parseMap(mapString: string): RenderMap {
       const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
       if (!isPathDirectionOpen(p, dir)) continue;
 
-      const [dx, dz] = HEX_DIRS[di];
+      const [dx, dz] = toOffsetCoordinates(dir);
       const nCoord = { x: p.coord.x + dx, z: p.coord.z + dz };
       const nk = coordKey(nCoord);
       const nCell = grid.get(nk);
@@ -176,7 +177,7 @@ export function parseMap(mapString: string): RenderMap {
       }
 
       if (nCell.type === 'path' || nCell.type === 'path-narrow') {
-        const opp = HEX_OPPOSITE[dir];
+        const opp = toOppositeDirection(dir);
         if (!isOpen(nCell, opp)) {
           console.warn(`MapParser: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir} (neighbor closed)`);
         } else {
@@ -213,7 +214,7 @@ export function parseMap(mapString: string): RenderMap {
         const dir = (di + 1) as 1 | 2 | 3 | 4 | 5 | 6;
         if (!isPathDirectionOpen(curPath, dir)) continue;
 
-        const [dx, dz] = HEX_DIRS[di];
+        const [dx, dz] = toOffsetCoordinates(dir);
         const nk = coordKey({ x: curPath.coord.x + dx, z: curPath.coord.z + dz });
         const nCell = grid.get(nk);
         if (nCell?.type === 'territory') borderTerritories.add(nCell.id);

@@ -105,7 +105,7 @@ export function coordKey(coord: HexCoord): string {
 // -- Hex direction geometry --
 
 /** Direction vectors indexed by HexDir - 1 (clockwise from North). */
-export const HEX_DIRS: ReadonlyArray<readonly [number, number]> = [
+const HEX_DIRS: ReadonlyArray<readonly [number, number]> = [
   [-1, 0], // 1: N
   [-1, +1], // 2: NE
   [0, +1], // 3: E
@@ -114,7 +114,15 @@ export const HEX_DIRS: ReadonlyArray<readonly [number, number]> = [
   [0, -1], // 6: W
 ];
 
-export const HEX_OPPOSITE: Record<HexDirection, HexDirection> = { 1: 4, 4: 1, 2: 5, 5: 2, 3: 6, 6: 3 };
+export function toOffsetCoordinates(direction: HexDirection) {
+  return HEX_DIRS[direction - 1];
+}
+
+const HEX_OPPOSITE: Record<HexDirection, HexDirection> = { 1: 4, 4: 1, 2: 5, 5: 2, 3: 6, 6: 3 };
+
+export function toOppositeDirection(direction: HexDirection) {
+  return HEX_OPPOSITE[direction];
+}
 
 /** Tile at direction D also borders the hex neighbour in the CCW-previous direction. */
 export const HEX_DIR_CCW_PREV: Record<HexDirection, HexDirection> = { 1: 6, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5 };
@@ -125,13 +133,13 @@ const CLOSED_DIR_DROPPED_TILES: Record<HexDirection, [number, number]> = {
 };
 
 /** Tile indices present in a wide path hex cluster with one direction closed. */
-export function presentTileIndices(exclude: HexDirection): number[] {
+export function toPathCellIndices(exclude: HexDirection): number[] {
   const dropped = new Set(CLOSED_DIR_DROPPED_TILES[exclude]);
   return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
 }
 
 /** Tile indices present in a narrow path hex cluster (center + two arm tiles). */
-export function presentNarrowTileIndices(dirA: HexDirection, dirB: HexDirection): number[] {
+export function toNarrowPathCellIndices(dirA: HexDirection, dirB: HexDirection): number[] {
   return [0, dirA, dirB];
 }
 
