@@ -90,16 +90,27 @@ describe('constructHexCellMap', () => {
     expect(map.edgeBetween('#T1', '#T2')?.pathCoords).toEqual([{ x: 0, z: 1 }]);
   });
 
-  it('produces no edge when a path cell has no bordering territories', () => {
-    // Isolated path cells warn but do not crash; no edges emitted.
-    const map = constructHexCellMap([
-      T(0, 0, 1),
-      empty(0, 1),
-      wide(0, 2),
-      empty(0, 3),
-      T(0, 4, 2),
-    ]);
+  it('throws when a path cell has fewer than two bridges', () => {
+    // Single path cell touching only T1 — second open dirs all wall/empty.
+    expect(() => constructHexCellMap([T(0, 0, 1), wide(0, 1), empty(0, 2)]))
+      .toThrow(/has 1 bridges, expected exactly 2/);
+  });
 
-    expect(map.edges()).toHaveLength(0);
+  it('throws when a path cell has zero bridges (isolated)', () => {
+    expect(() => constructHexCellMap([empty(0, 0), wide(0, 1), empty(0, 2)]))
+      .toThrow(/has 0 bridges, expected exactly 2/);
+  });
+
+  it('throws when a path cell has more than two bridges', () => {
+    // Full path cell at (1,1) borders three territories via dirs 1, 3, 5 —
+    // alternate neighbours, which are pairwise non-adjacent. Adjacent pairs
+    // would trip the T-T adjacency check before the bridge count.
+    const cells: HexCell[] = [
+      T(0, 1, 1),                                     // dir 1 neighbour
+      { kind: 'full', coord: { x: 1, z: 1 } },
+      T(1, 2, 2),                                     // dir 3 neighbour
+      T(2, 0, 3),                                     // dir 5 neighbour
+    ];
+    expect(() => constructHexCellMap(cells)).toThrow(/has 3 bridges, expected exactly 2/);
   });
 });

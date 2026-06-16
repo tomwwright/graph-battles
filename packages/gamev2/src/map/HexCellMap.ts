@@ -171,31 +171,29 @@ export function constructHexCellMap(cells: readonly HexCell[]): HexCellMap {
     }
   }
 
-  // Warn about dangling opens and isolated path cells
+  // Every path cell must have exactly 2 valid bridges. A bridge is an open
+  // direction whose neighbour is either a territory, or a path cell whose
+  // opposite-direction is also open. Off-grid, empty, and closed-back path
+  // neighbours are non-bridges — only the total count is checked.
   for (const p of pathCells) {
     let bridgeCount = 0;
     for (const dir of HEX_DIRECTIONS) {
       if (!isPathCellOpen(p, dir)) continue;
-
       const [dx, dz] = toOffsetCoordinates(dir);
       const nCell = grid.get(coordKey({ x: p.coord.x + dx, z: p.coord.z + dz }));
-
-      if (!nCell || nCell.kind === 'empty') {
-        console.warn(`HexCellMap: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir}`);
-        continue;
-      }
+      if (!nCell || nCell.kind === 'empty') continue;
       if (nCell.kind === 'territory') {
         bridgeCount++;
         continue;
       }
-      if (!isPathCellOpen(nCell, toOppositeDirection(dir))) {
-        console.warn(`HexCellMap: path cell at (${p.coord.x},${p.coord.z}) has dangling open in dir ${dir} (neighbor closed)`);
-      } else {
+      if (isPathCellOpen(nCell, toOppositeDirection(dir))) {
         bridgeCount++;
       }
     }
-    if (bridgeCount === 0) {
-      console.warn(`HexCellMap: path cell at (${p.coord.x},${p.coord.z}) is isolated (no bridges)`);
+    if (bridgeCount !== 2) {
+      throw new Error(
+        `HexCellMap: path cell at (${p.coord.x},${p.coord.z}) has ${bridgeCount} bridges, expected exactly 2`
+      );
     }
   }
 
