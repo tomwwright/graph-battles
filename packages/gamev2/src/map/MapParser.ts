@@ -18,7 +18,7 @@ function parseCell(raw: string, row: number, col: number, coord: HexCoord): HexC
     if (dirA === dirB) throw new Error(`MapParser: path-narrow cell at (${row},${col}) has dirA === dirB`);
 
     if (dirA > dirB) {
-      const c = dirB;
+      const c = dirA;
       dirA = dirB;
       dirB = c;
     }
