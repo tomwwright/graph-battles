@@ -62,7 +62,13 @@ export function selectionFromUnitClick(state: StoreState, unitId: ID): Selection
  * During non-planning phases, territories may still be clicked for inspection.
  */
 export function selectionFromTerritoryClick(state: StoreState, territoryId: ID): SelectionResult {
-  const { map, selectedUnitIds, phase } = state;
+  const { map, selectedUnitIds, selectedTerritoryId, phase } = state;
+
+  // Clicking the already-selected territory toggles it off (mirrors unit click).
+  if (territoryId === selectedTerritoryId) {
+    return { selection: { unitIds: [], territoryId: null }, moveTo: null };
+  }
+
   if (phase.type !== 'planning') {
     return {
       selection: { unitIds: [], territoryId },

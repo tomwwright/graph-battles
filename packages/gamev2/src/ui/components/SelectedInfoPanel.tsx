@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useGameStore } from '../../state/useGameStore';
 import { useDispatch } from '../../state/useDispatch';
 import { selectCurrentPlayerId } from '../../state/selectors';
@@ -17,31 +18,25 @@ export function SelectedInfoPanel() {
   const isPlanning = phaseType === 'planning';
   const currentPlayer = currentPlayerId ? map.player(currentPlayerId) : null;
 
+  let content: ReactNode = null;
+
   if (selectedUnitIds.length > 0) {
-    return (
-      <div className={styles.container}>
-        {selectedUnitIds.map((id) => {
-          const unit = map.unit(id);
-          if (!unit) return null;
-          return (
-            <UnitInfo
-              key={id}
-              unit={unit}
-              isPlanning={isPlanning}
-              onCancelMove={() => dispatch({ type: 'cancel-move', unitIds: [id] })}
-            />
-          );
-        })}
-      </div>
-    );
-  }
-
-  if (selectedTerritoryId != null) {
+    content = selectedUnitIds.map((id) => {
+      const unit = map.unit(id);
+      if (!unit) return null;
+      return (
+        <UnitInfo
+          key={id}
+          unit={unit}
+          isPlanning={isPlanning}
+          onCancelMove={() => dispatch({ type: 'cancel-move', unitIds: [id] })}
+        />
+      );
+    });
+  } else if (selectedTerritoryId != null) {
     const territory = map.territory(selectedTerritoryId);
-    if (!territory) return null;
-
-    return (
-      <div className={styles.container}>
+    if (territory) {
+      content = (
         <TerritoryInfo
           territory={territory}
           currentPlayer={currentPlayer}
@@ -53,9 +48,18 @@ export function SelectedInfoPanel() {
             dispatch({ type: 'territory-action', territoryId: selectedTerritoryId, action: null })
           }
         />
-      </div>
-    );
+      );
+    }
   }
 
-  return null;
+  if (!content) return null;
+
+  return (
+    <div className={styles.container}>
+      {content}
+      <button className={styles.unselectButton} onClick={() => dispatch({ type: 'clear-selection' })}>
+        Unselect
+      </button>
+    </div>
+  );
 }

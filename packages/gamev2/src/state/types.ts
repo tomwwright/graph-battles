@@ -79,6 +79,8 @@ export type Command =
   // Planning actions. `action: null` cancels the pending action on the territory.
   | { type: 'territory-action'; territoryId: ID; action: Values.TerritoryAction | null }
   | { type: 'cancel-move'; unitIds: ID[] }
+  // Clear the current unit/territory selection
+  | { type: 'clear-selection' }
   // Renderer-originated input
   | { type: 'click-territory'; territoryId: ID }
   | { type: 'click-unit'; unitId: ID };

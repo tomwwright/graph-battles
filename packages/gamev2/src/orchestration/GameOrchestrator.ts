@@ -17,6 +17,7 @@ import {
   onClickTerritory,
   onTerritoryAction,
   onCancelMove,
+  onClearSelection,
   onConfirmNextPlayer,
   onReadyPlayer,
   onSetTurn,
@@ -146,6 +147,8 @@ export class GameOrchestrator {
         return onTerritoryAction(this.ctx, cmd);
       case 'cancel-move':
         return onCancelMove(this.ctx, cmd);
+      case 'clear-selection':
+        return onClearSelection(this.ctx);
       case 'confirm-next-player':
         return onConfirmNextPlayer(this.ctx);
       case 'ready-player':
