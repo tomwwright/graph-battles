@@ -25,6 +25,25 @@ export function isPathCellOpen(cell: PathCell, dir: HexDirection): boolean {
     || cell.dirB === dir || HEX_DIR_CCW_PREV[cell.dirB] === dir;
 }
 
+/* Strict adjacency check for two narrow paths, which can be adjacent to each others cells
+ * without being actually adjacent (e.g. A = E _5, B = 2_, dir = 4)
+ *
+ * The logic is a little asymmetric, because the cells have parity and
+ * are partially offset
+ * 
+ * e.g. for cells A, B, dir = 4, A4 is adjacent to B1 + B2, but A5 is only adjacent to B1
+ */
+export function areNarrowPathsAdjacent(a: NarrowPathCell, dirAtoB: HexDirection, b: NarrowPathCell): boolean {
+  const dirBtoA = toOppositeDirection(dirAtoB);
+  const hasTile = (p: NarrowPathCell, idx: HexDirection) => p.dirA == idx || p.dirB == idx;
+  const next = (idx: HexDirection) => (idx % 6) + 1 as HexDirection;
+  return (
+    hasTile(a, dirAtoB) && (hasTile(b, dirBtoA) || hasTile(b, next(dirBtoA)))
+  ) || (
+      hasTile(a, next(dirAtoB)) && hasTile(b, dirBtoA)
+    )
+}
+
 /** Edge ID convention shared with lobby-authored map JSON: `#T<a>#T<b>` with numerical order. */
 export function edgeIdFor(a: ID, b: ID): ID {
   const na = parseInt(a.slice(2), 10);
@@ -162,12 +181,17 @@ export function constructHexCellMap(cells: readonly HexCell[]): HexCellMap {
       const [dx, dz] = toOffsetCoordinates(dir);
       const nk = coordKey({ x: p.coord.x + dx, z: p.coord.z + dz });
       const nCell = pathCellByKey.get(nk);
-      if (!nCell) continue;
+      if (!nCell || !isPathCellOpen(nCell, toOppositeDirection(dir))) continue;
 
-      if (isPathCellOpen(nCell, toOppositeDirection(dir))) {
-        pathAdjacency.get(pk)!.add(nk);
-        pathAdjacency.get(nk)!.add(pk);
+      /* Extra chech for two narrow paths, which can be adjacent to each others cells
+       * without being actually adjacent (e.g. A = E _5, B = 2_, dir = 4) */
+      if (p.kind == "narrow" && nCell.kind == "narrow" && !areNarrowPathsAdjacent(p, dir, nCell)) {
+        console.log("not adjacent", p, dir, nCell);
+        continue;
       }
+
+      pathAdjacency.get(pk)!.add(nk);
+      pathAdjacency.get(nk)!.add(pk);
     }
   }
 
@@ -186,9 +210,11 @@ export function constructHexCellMap(cells: readonly HexCell[]): HexCellMap {
         bridgeCount++;
         continue;
       }
-      if (isPathCellOpen(nCell, toOppositeDirection(dir))) {
-        bridgeCount++;
-      }
+
+      if (!isPathCellOpen(nCell, toOppositeDirection(dir))) continue;
+      if (p.kind == "narrow" && nCell.kind == "narrow" && !areNarrowPathsAdjacent(p, dir, nCell)) continue;
+
+      bridgeCount++;
     }
     if (bridgeCount !== 2) {
       throw new Error(

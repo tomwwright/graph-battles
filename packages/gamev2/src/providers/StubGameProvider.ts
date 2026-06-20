@@ -9,10 +9,10 @@ import type { HexCellMap } from '../map/HexCellMap';
  * external asset dependency.
  */
 export const STUB_MAP_TEXT = [
-  '|     |     |     | E -1 | E -2|      | T 2 | E -2|',
-  '|     | E 36| T 1 |      | T 3 | E -4 |     | E -3|',
-  '|E 25 |     | E -1| E -4 |     | T  4 | E -4|     |',
-  '|E 13 | T 5 |     |T 6   | E -4|      |     |     |',
+  '|     |     |     | E -1 | E -2| E 35 | T 2 | E -2|',
+  '|     | E 36| T 1 |      | T 3 |      |     | E -3|',
+  '|E 25 |     | E 35| E 26 | E 15| T  4 | E -4|     |',
+  '|E 13 | T 5 |     | T 6  | E 36|      |     |     |',
   '|     | E -5| E -4|      |     |      |     |     |',
 ].join('\n');
 
