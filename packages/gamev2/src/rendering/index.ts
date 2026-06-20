@@ -6,4 +6,4 @@ export { AssetLoader } from './AssetLoader';
 export { MapRenderer } from './MapRenderer';
 export { TerritoryComposition } from './TerritoryComposition';
 export type { TileType } from './TerritoryComposition';
-export * from './HexCoordinates';
+export * from '../map/HexCoordinates';

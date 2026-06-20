@@ -10,7 +10,7 @@ import {
   Vector3,
 } from '@babylonjs/core';
 import { ID } from '@battles/models';
-import { HexCoord, OffsetCoord, hexToTileCoords, tileToHex, coordKey, hexCenterTile } from './HexCoordinates';
+import { HexCoord, OffsetCoord, hexToTileCoords, tileToHex, coordKey, hexCenterTile } from '../map/HexCoordinates';
 import type { HexCellMap } from '../map/HexCellMap';
 import type { HoverInfo } from '../state/types';
 

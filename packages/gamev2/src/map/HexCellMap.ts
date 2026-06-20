@@ -1,5 +1,5 @@
 import type { ID } from '@battles/models';
-import { HexCoord, HexDirection, HEX_DIR_CCW_PREV, coordKey, toOffsetCoordinates, toOppositeDirection } from '../rendering/HexCoordinates';
+import { HexCoord, HexDirection, HEX_DIR_CCW_PREV, coordKey, toOffsetCoordinates, toOppositeDirection } from './HexCoordinates';
 
 export type TerritoryCell = { kind: 'territory'; coord: HexCoord; id: ID };
 export type WidePathCell = { kind: 'wide'; coord: HexCoord; exclude: HexDirection };

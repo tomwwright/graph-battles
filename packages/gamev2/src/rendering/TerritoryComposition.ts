@@ -1,5 +1,5 @@
 import { Values } from '@battles/models';
-import { HexDirection, toPathCellIndices, toNarrowPathCellIndices } from './HexCoordinates';
+import { HexDirection, toPathCellIndices, toNarrowPathCellIndices } from '../map/HexCoordinates';
 
 export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
 export type { HexDirection as HexDir };

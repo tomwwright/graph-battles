@@ -3,7 +3,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Scene } from '@babylonjs/core/scene';
 import { ID, Values, GameMap } from '@battles/models';
-import { hexCenterTile, hexToTileCoords, tileGridSize } from './HexCoordinates';
+import { hexCenterTile, hexToTileCoords, tileGridSize } from '../map/HexCoordinates';
 import { SceneRenderer } from './SceneRenderer';
 import { CameraController } from './CameraController';
 import { HexGridController } from './HexGridController';

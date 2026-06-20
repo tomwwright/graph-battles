@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { TerritoryComposition } from './TerritoryComposition';
-import { toNarrowPathCellIndices } from './HexCoordinates';
+import { toNarrowPathCellIndices } from '../map/HexCoordinates';
 
 // New tile numbering: 0=center, 1-6 = clockwise directions (1=N,2=NE,3=E,4=S,5=SW,6=W)
 // presentNarrowTileIndices(A, B) = [0, A, B]

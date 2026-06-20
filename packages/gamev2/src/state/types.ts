@@ -1,5 +1,5 @@
 import { Game, GameMap, ID, Resolution, Values } from '@battles/models';
-import type { HexCoord } from '../rendering/HexCoordinates';
+import type { HexCoord } from '../map/HexCoordinates';
 
 /**
  * Generic subscribable source of T. Anything that can hand out a current

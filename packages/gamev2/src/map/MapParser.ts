@@ -1,4 +1,4 @@
-import { HexCoord, HexDirection } from '../rendering/HexCoordinates';
+import { HexCoord, HexDirection } from './HexCoordinates';
 import { HexCellMap, HexCell, constructHexCellMap } from './HexCellMap';
 
 function parseCell(raw: string, row: number, col: number, coord: HexCoord): HexCell {

@@ -1,6 +1,6 @@
 import { AbstractMesh, Scene, TransformNode, Vector3 } from '@babylonjs/core';
 import { ID, Values, GameMap } from '@battles/models';
-import { HexCoord, hexToTileCoords } from './HexCoordinates';
+import { HexCoord, hexToTileCoords } from '../map/HexCoordinates';
 import { TerritoryComposition, TileType } from './TerritoryComposition';
 import { AssetLoader } from './AssetLoader';
 import { HexGridController } from './HexGridController';

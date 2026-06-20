@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core';
 import type { ID } from '@battles/models';
 import type { HexCellMap, HexEdge } from '../map/HexCellMap';
-import { HexCoord, hexCenterTile, hexToTileCoords, toPathCellIndices, toNarrowPathCellIndices } from './HexCoordinates';
+import { HexCoord, hexCenterTile, hexToTileCoords, toPathCellIndices, toNarrowPathCellIndices } from '../map/HexCoordinates';
 import type { HexGridController } from './HexGridController';
 
 /**
@@ -13,7 +13,7 @@ export class Navigation {
   constructor(
     private readonly map: HexCellMap,
     private readonly grid: HexGridController,
-  ) {}
+  ) { }
 
   /** Visual centre of a hex cell. Territory → center tile world pos. Path cell → centroid of present tiles. */
   cellCenter(coord: HexCoord): Vector3 {
