@@ -14,16 +14,14 @@ import {
   StandardMaterial,
   Vector3,
 } from '@babylonjs/core';
-import { ID, Values, GameMap } from '@battles/models';
-import { HexCoord, hexCenterTile, hexToTileCoords, coordKey } from './HexCoordinates';
-import { HexGridController } from './HexGridController';
+import { ID, Values } from '@battles/models';
+import { Navigation } from './Navigation';
 import { AssetLoader } from './AssetLoader';
-import { TerritoryComposition } from './TerritoryComposition';
-import type { RenderMap } from '../map/MapParser';
 import type { HoverInfo } from '../state/types';
 
 const UNIT_HEIGHT = 1.2;
 const UNIT_BASE_Y = UNIT_HEIGHT / 2 + 1;
+const DESTINATION_LINE_Y = UNIT_BASE_Y + 0.1;
 
 const UNITS_PER_ROW = 3;
 const UNIT_SPACING = 1.4;
@@ -55,32 +53,22 @@ type MeshRegistrationCallback = (mesh: AbstractMesh) => void;
 export class UnitRenderer {
   private units = new Map<ID, UnitState>();
   private animatingUnits = new Set<ID>();
-  private map: RenderMap | null = null;
-  private edgeTerritoryMap = new Map<ID, { territoryA: ID; territoryB: ID }>();
+  private navigation: Navigation | null = null;
   private clickCallback: UnitClickCallback | null = null;
   private hoverCallback: HoverCallback | null = null;
   private meshRegistrationCallback: MeshRegistrationCallback | null = null;
 
   constructor(
     private readonly scene: Scene,
-    private readonly grid: HexGridController,
-    private readonly territoryCoordMap: Map<ID, HexCoord>,
-    private readonly assetLoader: AssetLoader
+    private readonly assetLoader: AssetLoader,
   ) { }
 
   onMeshRegistration(callback: MeshRegistrationCallback): void {
     this.meshRegistrationCallback = callback;
   }
 
-  initialise(map: RenderMap, gameMap: GameMap): void {
-    this.map = map;
-    this.edgeTerritoryMap.clear();
-    for (const edge of gameMap.edges) {
-      this.edgeTerritoryMap.set(edge.data.id, {
-        territoryA: edge.data.territoryAId,
-        territoryB: edge.data.territoryBId,
-      });
-    }
+  initialise(navigation: Navigation): void {
+    this.navigation = navigation;
   }
 
   onUnitClick(callback: UnitClickCallback): void {
@@ -202,9 +190,8 @@ export class UnitRenderer {
     signal?: AbortSignal
   ): Promise<void> {
     const state = this.units.get(unitId);
-    if (!state) return;
+    if (!state || !this.navigation) return;
 
-    // Reassign immediately so other units rearrange while this one is in flight
     state.locationId = toLocationId;
     this.animatingUnits.add(unitId);
     this.arrangeLocation(fromLocationId, true);
@@ -213,10 +200,13 @@ export class UnitRenderer {
     try {
       const startPos = state.mesh.position.clone();
       const endPos = this.targetUnitPosition(unitId, toLocationId);
-      const waypoints = this.getMovementWaypoints(fromLocationId, toLocationId);
+      const waypoints = this.navigation.path(fromLocationId, toLocationId);
 
-      // Build a path: start → waypoint(s) → end
-      const path: Vector3[] = [startPos, ...waypoints, endPos];
+      const path: Vector3[] = [
+        startPos,
+        ...waypoints.map((p) => this.lift(p, UNIT_BASE_Y)),
+        endPos,
+      ];
 
       for (let i = 0; i < path.length - 1; i++) {
         if (signal?.aborted) break;
@@ -224,12 +214,10 @@ export class UnitRenderer {
       }
 
       if (signal?.aborted) {
-        // Snap to final position on abort
         state.mesh.position = endPos;
       }
     } finally {
       this.animatingUnits.delete(unitId);
-      // Final reposition in case grid layout changed during animation
       this.arrangeLocation(toLocationId, false);
     }
   }
@@ -240,7 +228,6 @@ export class UnitRenderer {
     const state = this.units.get(unitId);
     if (!state) return;
 
-    // Dispose old status meshes
     for (const sm of state.statusMeshes) sm.dispose();
     state.statusMeshes = [];
 
@@ -259,7 +246,7 @@ export class UnitRenderer {
 
   setUnitDestination(unitId: ID, destinationId: ID | null): void {
     const state = this.units.get(unitId);
-    if (!state) return;
+    if (!state || !this.navigation) return;
 
     if (state.destinationId === destinationId) return;
     state.destinationId = destinationId;
@@ -272,15 +259,15 @@ export class UnitRenderer {
     if (!destinationId) return;
 
     const fromPos = this.targetUnitPosition(unitId, state.locationId);
-    const toPos = this.territoryCenterPosition(destinationId);
+    const toPos = this.navigation.locationCenter(destinationId);
     if (!toPos) return;
 
-    const waypoints = this.getConnectingWaypoints(state.locationId, destinationId);
+    const waypoints = this.navigation.path(state.locationId, destinationId);
 
     const linePoints: Vector3[] = [
-      this.lift(fromPos, 0.1),
-      ...waypoints.map((p) => this.lift(p, 0.1)),
-      this.lift(toPos, 0.1),
+      new Vector3(fromPos.x, DESTINATION_LINE_Y, fromPos.z),
+      ...waypoints.map((p) => new Vector3(p.x, DESTINATION_LINE_Y, p.z)),
+      new Vector3(toPos.x, DESTINATION_LINE_Y, toPos.z),
     ];
 
     const line = MeshBuilder.CreateLines(
@@ -333,12 +320,14 @@ export class UnitRenderer {
    * @param tween if true, smoothly tween non-animating units to their new positions
    */
   private arrangeLocation(locationId: ID, tween: boolean): void {
+    if (!this.navigation) return;
+
     const unitsHere: ID[] = [];
     for (const [uid, state] of this.units) {
       if (state.locationId === locationId) unitsHere.push(uid);
     }
 
-    const basePos = this.locationCenterPosition(locationId);
+    const basePos = this.navigation.locationCenter(locationId);
     if (!basePos) return;
 
     const total = unitsHere.length;
@@ -375,9 +364,11 @@ export class UnitRenderer {
     }
 
     const idx = unitsHere.indexOf(unitId);
-    const basePos = this.locationCenterPosition(locationId);
+    const basePos = this.navigation?.locationCenter(locationId) ?? null;
     if (!basePos || idx < 0) {
-      return basePos ?? new Vector3(0, UNIT_BASE_Y, 0);
+      return basePos
+        ? new Vector3(basePos.x, UNIT_BASE_Y, basePos.z)
+        : new Vector3(0, UNIT_BASE_Y, 0);
     }
 
     const total = unitsHere.length;
@@ -389,146 +380,6 @@ export class UnitRenderer {
     const offsetZ = (row - (totalRows - 1) / 2) * UNIT_SPACING;
 
     return new Vector3(basePos.x + offsetX, UNIT_BASE_Y, basePos.z + offsetZ);
-  }
-
-  /** Get the center position for any location (territory or edge). */
-  private locationCenterPosition(locationId: ID): Vector3 | null {
-    return this.territoryCenterPosition(locationId) ?? this.edgeCenterPosition(locationId);
-  }
-
-  private territoryCenterPosition(territoryId: ID): Vector3 | null {
-    const coord = this.territoryCoordMap.get(territoryId);
-    if (!coord) return null;
-    const centerTile = hexCenterTile(coord);
-    const pos = this.grid.getWorldPosition(centerTile);
-    return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
-  }
-
-  /**
-   * Compute the center position of an edge.
-   * Odd tile chain: center of the middle tile.
-   * Even tile chain: midpoint between the two middle tile centers.
-   */
-  private edgeCenterPosition(edgeId: ID): Vector3 | null {
-    const pair = this.edgeTerritoryMap.get(edgeId);
-    if (!pair) return null;
-
-    const edge = this.findEdge(pair.territoryA, pair.territoryB);
-    if (!edge || edge.pathCoords.length === 0) return null;
-
-    const coordA = this.territoryCoordMap.get(pair.territoryA);
-    if (!coordA) return null;
-
-    const sorted = [...edge.pathCoords].sort(
-      (a, b) => this.hexDistance(a, coordA) - this.hexDistance(b, coordA)
-    );
-
-    const n = sorted.length;
-    const mid = Math.floor(n / 2);
-
-    if (n % 2 !== 0) {
-      return this.hexCentroid(sorted[mid]);
-    } else {
-      const posA = this.hexCentroid(sorted[mid - 1]);
-      const posB = this.hexCentroid(sorted[mid]);
-      return new Vector3((posA.x + posB.x) / 2, UNIT_BASE_Y, (posA.z + posB.z) / 2);
-    }
-  }
-
-  /**
-   * Get waypoints for movement between two locations.
-   * For territory↔edge moves, returns the half of the edge's tile chain
-   * between the territory and the edge center. For territory↔territory
-   * (fallback), returns the full chain of waypoints.
-   */
-  private getMovementWaypoints(fromLocationId: ID, toLocationId: ID): Vector3[] {
-    const fromIsEdge = this.edgeTerritoryMap.has(fromLocationId);
-    const toIsEdge = this.edgeTerritoryMap.has(toLocationId);
-
-    if (!fromIsEdge && !toIsEdge) {
-      // territory → territory fallback: full waypoint chain
-      return this.getConnectingWaypoints(fromLocationId, toLocationId);
-    }
-
-    const edgeId = fromIsEdge ? fromLocationId : toLocationId;
-    const territoryId = fromIsEdge ? toLocationId : fromLocationId;
-
-    const pair = this.edgeTerritoryMap.get(edgeId)!;
-    const edge = this.findEdge(pair.territoryA, pair.territoryB);
-    if (!edge) return [];
-
-    const territoryCoord = this.territoryCoordMap.get(territoryId);
-    if (!territoryCoord) return [];
-
-    // Sort by distance from the territory
-    const sorted = [...edge.pathCoords].sort(
-      (a, b) => this.hexDistance(a, territoryCoord) - this.hexDistance(b, territoryCoord)
-    );
-
-    const mid = Math.floor(sorted.length / 2);
-
-    // Take the tiles between territory and edge center
-    const halfChain = sorted.slice(0, mid);
-
-    const positions = halfChain.map((coord) => this.hexCentroid(coord));
-
-    if (fromIsEdge) {
-      // edge → territory: reverse so waypoints go from edge center toward territory
-      positions.reverse();
-    }
-
-    return positions;
-  }
-
-  /** Get world positions of waypoints connecting two territories (for destination lines). */
-  private getConnectingWaypoints(fromId: ID, toId: ID): Vector3[] {
-    if (!this.map) return [];
-
-    const edge = this.findEdge(fromId, toId);
-    if (!edge) return [];
-
-    const fromCoord = this.territoryCoordMap.get(fromId);
-    if (!fromCoord) return [];
-
-    const sorted = [...edge.pathCoords].sort(
-      (a, b) => this.hexDistance(a, fromCoord) - this.hexDistance(b, fromCoord)
-    );
-
-    return sorted.map((coord) => this.hexCentroid(coord));
-  }
-
-  /** World position of the visual centre of a hex cell — centroid of present tiles for path cells, centre tile for territories. */
-  private hexCentroid(coord: HexCoord): Vector3 {
-    const key = coordKey(coord);
-    const exclude = this.map?.pathCells.find((p) => coordKey(p.coord) === key)?.exclude;
-    if (!exclude) {
-      const pos = this.grid.getWorldPosition(hexCenterTile(coord));
-      return new Vector3(pos.x, UNIT_BASE_Y, pos.z);
-    }
-    const present = TerritoryComposition.presentTileIndices(exclude);
-    const positions = hexToTileCoords(coord)
-      .filter((_, i) => present.includes(i))
-      .map((t) => this.grid.getWorldPosition(t));
-    return new Vector3(
-      positions.reduce((s, p) => s + p.x, 0) / positions.length,
-      UNIT_BASE_Y,
-      positions.reduce((s, p) => s + p.z, 0) / positions.length,
-    );
-  }
-
-  private findEdge(territoryA: ID, territoryB: ID) {
-    return this.map?.edges.find(
-      (e) =>
-        (e.territoryA === territoryA && e.territoryB === territoryB) ||
-        (e.territoryA === territoryB && e.territoryB === territoryA)
-    ) ?? null;
-  }
-
-  private hexDistance(a: HexCoord, b: HexCoord): number {
-    // Axial distance
-    const dx = a.x - b.x;
-    const dz = a.z - b.z;
-    return (Math.abs(dx) + Math.abs(dz) + Math.abs(dx + dz)) / 2;
   }
 
   private async lerpMesh(mesh: AbstractMesh, from: Vector3, to: Vector3, frames: number): Promise<void> {
@@ -587,7 +438,6 @@ export class UnitRenderer {
   }
 
   private createStatusIndicator(unitId: ID, status: number): Mesh | null {
-    // Values.Status: DEFEND=0, STARVE=1
     const isDefend = status === Values.Status.DEFEND;
     const isStarve = status === Values.Status.STARVE;
     if (!isDefend && !isStarve) return null;
@@ -605,8 +455,7 @@ export class UnitRenderer {
     return mesh;
   }
 
-  private lift(p: Vector3, dy: number): Vector3 {
-    return new Vector3(p.x, p.y + dy, p.z);
+  private lift(p: Vector3, y: number): Vector3 {
+    return new Vector3(p.x, y, p.z);
   }
-
 }

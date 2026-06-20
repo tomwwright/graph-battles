@@ -1,7 +1,7 @@
 import { Game, GameMap, Values } from '@battles/models';
 import type { GameData, GameMapData } from '@battles/models';
 import type { GameProvider } from './GameProvider';
-import type { RenderMap } from '../map/MapParser';
+import type { HexCellMap } from '../map/HexCellMap';
 
 /**
  * Hard-coded fallback map used when the page is loaded with no `gameId` in the
@@ -9,21 +9,20 @@ import type { RenderMap } from '../map/MapParser';
  * external asset dependency.
  */
 export const STUB_MAP_TEXT = [
-  '|     |     |     | E -2 | E -6|      | T 2 | E -6|',
-  '|     | E -2| T 1 |      | T 3 | E -1 |     | E -3|',
-  '|E -4 |     | E -2| E -1 |     | T  4 | E -1|     |',
-  '|E -5 | T 5 |     |T 6   | E -1|      |     |     |',
-  '|     | E -5| E -1|      |     |      |     |     |',
+  '|     |     |     | E -1 | E -2| E 35 | T 2 | E -2|',
+  '|     | E 36| T 1 |      | T 3 |      |     | E -3|',
+  '|E 25 |     | E 35| E 26 | E 15| T  4 | E -4|     |',
+  '|E 13 | T 5 |     | T 6  | E 36|      |     |     |',
+  '|     | E -5| E -4|      |     |      |     |     |',
 ].join('\n');
 
 /**
- * Creates a stub GameData from a RenderMap.
+ * Creates a stub GameData from a HexCellMap.
  * Assigns players to alternating territories and places one unit on the first territory.
  */
-function createStubGameData(renderMap: RenderMap): GameData {
+function createStubGameData(map: HexCellMap): GameData {
   const dataMap: Record<string, any> = {};
 
-  // Two players
   dataMap['p1'] = {
     id: 'p1',
     type: 'player',
@@ -39,30 +38,24 @@ function createStubGameData(renderMap: RenderMap): GameData {
     goldProduction: 1,
   };
 
-  // Territories — alternate ownership between players
-  let edgeNextId = 1;
+  const territories = map.territories();
+  const edges = map.edges();
   const edgeIds: Record<string, string[]> = {};
+  for (const t of territories) edgeIds[t.id] = [];
 
-  for (const t of renderMap.territories) {
-    edgeIds[t.id] = [];
-  }
-
-  // Create edges
-  for (const e of renderMap.edges) {
-    const edgeId = `${e.territoryA}${e.territoryB}`;
-    edgeIds[e.territoryA]?.push(edgeId);
-    edgeIds[e.territoryB]?.push(edgeId);
-    dataMap[edgeId] = {
-      id: edgeId,
+  for (const e of edges) {
+    edgeIds[e.territoryA]?.push(e.id);
+    edgeIds[e.territoryB]?.push(e.id);
+    dataMap[e.id] = {
+      id: e.id,
       type: 'edge',
       territoryAId: e.territoryA,
       territoryBId: e.territoryB,
     };
   }
 
-  // Create territories
-  for (let i = 0; i < renderMap.territories.length; i++) {
-    const t = renderMap.territories[i];
+  for (let i = 0; i < territories.length; i++) {
+    const t = territories[i];
     const playerId = i % 2 === 0 ? 'p1' : 'p2';
     dataMap[t.id] = {
       id: t.id,
@@ -74,13 +67,12 @@ function createStubGameData(renderMap: RenderMap): GameData {
     };
   }
 
-  // One unit on the first territory
-  if (renderMap.territories.length > 0) {
+  if (territories.length > 0) {
     dataMap['u1'] = {
       id: 'u1',
       type: 'unit',
       playerId: 'p1',
-      locationId: renderMap.territories[0].id,
+      locationId: territories[0].id,
       statuses: [],
     };
   }
@@ -105,8 +97,8 @@ function createStubGameData(renderMap: RenderMap): GameData {
   };
 }
 
-export function createStubProvider(renderMap: RenderMap): GameProvider {
-  let gameData = createStubGameData(renderMap);
+export function createStubProvider(map: HexCellMap): GameProvider {
+  let gameData = createStubGameData(map);
 
   return {
     async get() {

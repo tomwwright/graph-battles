@@ -1,15 +1,8 @@
 import { Values } from '@battles/models';
+import { HexDirection, toPathCellIndices, toNarrowPathCellIndices } from '../map/HexCoordinates';
 
 export type TileType = 'empty' | 'grass' | 'forest' | 'village' | 'farm' | 'sheep' | 'rocks' | 'city' | 'castle' | 'mill';
-
-const CLOSED_DIR_TO_DROPPED_TILES: Record<1 | 2 | 3 | 4 | 5 | 6, [number, number]> = {
-  1: [5, 6],
-  2: [0, 1],
-  3: [4, 6],
-  4: [0, 2],
-  5: [2, 5],
-  6: [1, 4],
-};
+export type { HexDirection as HexDir };
 
 const { TerritoryProperty } = Values;
 
@@ -19,7 +12,7 @@ function has(props: Values.TerritoryProperty[], prop: Values.TerritoryProperty):
 
 /**
  * Computes the 7 tile types for a hex cluster based on territory properties.
- * Index 3 is the center tile; indices 0-2, 4-6 are the surrounding tiles.
+ * Index 0 is center; indices 1-6 correspond to clockwise hex directions (1=N, 2=NE, 3=E, 4=S, 5=SW, 6=W).
  */
 export class TerritoryComposition {
   static compose(properties: Values.TerritoryProperty[]): TileType[] {
@@ -39,47 +32,44 @@ export class TerritoryComposition {
     else if (hasCity) center = 'city';
     else center = 'village';
 
-    // Determine surrounding tiles
-    const surround: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
+    const surround = new Array(7).fill('grass') as TileType[];
 
     if (hasFarm) {
-      surround[1] = 'farm';
-      surround[4] = 'farm';
+      surround[2] = 'farm'; // NE
+      surround[5] = 'farm'; // SW
     }
 
     if (hasCity) {
-      surround[1] = 'mill';
-      surround[2] = 'village'
-      surround[5] = 'sheep';
+      surround[2] = 'mill';    // NE
+      surround[6] = 'village'; // W
+      surround[4] = 'sheep';   // S
     }
 
     if (hasFort && (hasCity || hasCastle)) {
-      surround[0] = 'castle';
+      surround[1] = 'castle'; // N
     }
 
     if (!hasFarm && !hasFort && !hasCity && !hasCastle) {
-      // Just SETTLED — add some forest
-      surround[0] = 'forest';
-      surround[5] = 'forest';
+      surround[1] = 'forest'; // N
+      surround[4] = 'forest'; // S
     }
 
-    return [surround[0], surround[1], surround[2], center, surround[3], surround[4], surround[5]];
+    return [center, surround[1], surround[2], surround[3], surround[4], surround[5], surround[6]];
   }
 
-  static composGrass(): TileType[] {
+  static composeGrass(): TileType[] {
     return ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
   }
 
-  static presentTileIndices(exclude: 1 | 2 | 3 | 4 | 5 | 6): number[] {
-    const dropped = new Set(CLOSED_DIR_TO_DROPPED_TILES[exclude]);
-    return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
+  static composePath(exclude: HexDirection): TileType[] {
+    const tiles: TileType[] = Array(7).fill('empty') as TileType[];
+    for (const i of toPathCellIndices(exclude)) tiles[i] = 'grass';
+    return tiles;
   }
 
-  static composePath(exclude: 1 | 2 | 3 | 4 | 5 | 6): TileType[] {
-    const tiles: TileType[] = ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'];
-    const [a, b] = CLOSED_DIR_TO_DROPPED_TILES[exclude];
-    tiles[a] = 'empty';
-    tiles[b] = 'empty';
+  static composeNarrowPath(dirA: HexDirection, dirB: HexDirection): TileType[] {
+    const tiles: TileType[] = Array(7).fill('empty') as TileType[];
+    for (const i of toNarrowPathCellIndices(dirA, dirB)) tiles[i] = 'grass';
     return tiles;
   }
 

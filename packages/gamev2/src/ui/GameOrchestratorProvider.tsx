@@ -36,7 +36,7 @@ type GameOrchestratorProviderProps = {
  */
 export function GameOrchestratorProvider({ children }: GameOrchestratorProviderProps) {
   const { scene, camera } = useBabylonJs();
-  const { provider, renderMap, assetLoader, userId } = useGameSession();
+  const { provider, map, assetLoader, userId } = useGameSession();
   const orchestratorRef = useRef<GameOrchestrator | null>(null);
   const ctxValueRef = useRef<GameOrchestratorContextValue | null>(null);
   const initPromiseRef = useRef<Promise<void> | null>(null);
@@ -64,7 +64,7 @@ export function GameOrchestratorProvider({ children }: GameOrchestratorProviderP
       const orch = new GameOrchestrator(store, renderer, provider, userId);
       orchestratorRef.current = orch;
       ctxValueRef.current = { store, dispatch: orch.dispatch, renderer };
-      initPromiseRef.current = orch.initialise(renderMap);
+      initPromiseRef.current = orch.initialise(map);
     }
 
     // Both mount runs await the same in-flight init before publishing the
@@ -75,7 +75,7 @@ export function GameOrchestratorProvider({ children }: GameOrchestratorProviderP
     });
 
     // Don't dispose on cleanup — StrictMode remounts effects in dev
-  }, [scene, camera, provider, renderMap, userId, assetLoader]);
+  }, [scene, camera, provider, map, userId, assetLoader]);
 
   if (!ctxValue) return null;
 

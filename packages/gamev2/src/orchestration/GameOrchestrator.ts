@@ -8,7 +8,7 @@ import { UnitSyncer } from './UnitSyncer';
 import { TerritorySyncer } from './TerritorySyncer';
 import { CameraSyncer } from './CameraSyncer';
 import { GameProvider } from '../providers/GameProvider';
-import type { RenderMap } from '../map/MapParser';
+import type { HexCellMap } from '../map/HexCellMap';
 import type { HandlerContext } from './HandlerContext';
 import { WaitForTurnResolutionListener } from './WaitForTurnResolutionListener';
 import { ReplayingListener } from './ReplayingListener';
@@ -42,7 +42,6 @@ export class GameOrchestrator {
   private territorySyncer: TerritorySyncer | null = null;
   private cameraSyncer: CameraSyncer | null = null;
   private provider: GameProvider;
-  private renderMap: RenderMap | null = null;
   private readonly userId: ID | undefined;
   private readonly waitListener: WaitForTurnResolutionListener;
   private readonly replayingListener: ReplayingListener;
@@ -77,8 +76,7 @@ export class GameOrchestrator {
     };
   }
 
-  async initialise(renderMap: RenderMap): Promise<void> {
-    this.renderMap = renderMap;
+  async initialise(hexMap: HexCellMap): Promise<void> {
 
     const game = await this.provider.get();
     const map = new GameMap(game.latestMap);
@@ -115,7 +113,7 @@ export class GameOrchestrator {
       },
     });
 
-    await this.renderer.initialise(renderMap, map);
+    await this.renderer.initialise(hexMap, map);
 
     this.renderer.onTerritoryClick((territoryId) =>
       this.dispatch({ type: 'click-territory', territoryId }),

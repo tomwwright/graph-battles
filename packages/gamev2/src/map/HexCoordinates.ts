@@ -9,6 +9,7 @@
  */
 
 export type HexCoord = { x: number; z: number };
+export type HexDirection = 1 | 2 | 3 | 4 | 5 | 6;
 
 /** Tile position in the rendered offset grid (odd-q convention) */
 export type OffsetCoord = { x: number; z: number };
@@ -31,24 +32,25 @@ export function axialToOffset(axial: AxialCoord): OffsetCoord {
 // -- Super hex tile offsets --
 
 /**
- * The 7 tile positions within a hex cluster in axial coordinates:
- * center + 6 neighbours.
+ * The 7 tile positions within a hex cluster in axial coordinates.
+ * Index 0 is center; indices 1-6 face clockwise hex directions:
  *
- *     (-1, 0) (-1,+1)
- * ( 0,-1) ( 0, 0) ( 0,+1)
- *     (+1,-1) (+1, 0)
+ *     [1] N
+ * [6] W    [2] NE
+ *  [5] SW   [3] E
+ *      [4] S
  */
 const AXIAL_HEX_TILE_OFFSETS: ReadonlyArray<AxialCoord> = [
-  { q: -1, r: 0 },
-  { q: -1, r: 1 },
-  { q: 0, r: -1 },
-  { q: 0, r: 0 }, // center
-  { q: 0, r: 1 },
-  { q: 1, r: -1 },
-  { q: 1, r: 0 },
+  { q: 0, r: 0 }, // 0 = center
+  { q: -1, r: 0 }, // 1 = N
+  { q: -1, r: 1 }, // 2 = NE
+  { q: 0, r: 1 }, // 3 = E
+  { q: 1, r: 0 }, // 4 = S
+  { q: 1, r: -1 }, // 5 = SW
+  { q: 0, r: -1 }, // 6 = W
 ];
 
-export const CENTER_OFFSET_INDEX = 3;
+export const CENTER_OFFSET_INDEX = 0;
 
 // -- Axial-space hex↔tile transforms --
 
@@ -99,3 +101,47 @@ export function tileGridSize(rows: number, columns: number): number {
 export function coordKey(coord: HexCoord): string {
   return `${coord.x},${coord.z}`;
 }
+
+// -- Hex direction geometry --
+
+/** Direction vectors indexed by HexDir - 1 (clockwise from North). */
+const HEX_DIRS: ReadonlyArray<readonly [number, number]> = [
+  [-1, 0], // 1: N
+  [-1, +1], // 2: NE
+  [0, +1], // 3: E
+  [+1, 0], // 4: S
+  [+1, -1], // 5: SW
+  [0, -1], // 6: W
+];
+
+export function toOffsetCoordinates(direction: HexDirection) {
+  return HEX_DIRS[direction - 1];
+}
+
+export const HEX_DIRECTIONS: readonly HexDirection[] = [1, 2, 3, 4, 5, 6];
+
+const HEX_OPPOSITE: Record<HexDirection, HexDirection> = { 1: 4, 4: 1, 2: 5, 5: 2, 3: 6, 6: 3 };
+
+export function toOppositeDirection(direction: HexDirection) {
+  return HEX_OPPOSITE[direction];
+}
+
+/** Tile at direction D also borders the hex neighbour in the CCW-previous direction. */
+export const HEX_DIR_CCW_PREV: Record<HexDirection, HexDirection> = { 1: 6, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5 };
+
+// Tile indices dropped when direction D is closed (tile D and its CW-next D%6+1)
+const CLOSED_DIR_DROPPED_TILES: Record<HexDirection, [number, number]> = {
+  1: [1, 2], 2: [2, 3], 3: [3, 4], 4: [4, 5], 5: [5, 6], 6: [6, 1],
+};
+
+/** Tile indices present in a wide path hex cluster with one direction closed. */
+export function toPathCellIndices(exclude: HexDirection): number[] {
+  const dropped = new Set(CLOSED_DIR_DROPPED_TILES[exclude]);
+  return [0, 1, 2, 3, 4, 5, 6].filter((i) => !dropped.has(i));
+}
+
+/** Tile indices present in a narrow path hex cluster (center + two arm tiles). */
+export function toNarrowPathCellIndices(dirA: HexDirection, dirB: HexDirection): number[] {
+  return [0, dirA, dirB];
+}
+

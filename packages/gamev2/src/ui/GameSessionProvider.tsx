@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { parseMap, RenderMap } from '../map/MapParser';
-import { validateRenderMap } from '../map/validateRenderMap';
+import { parseMap } from '../map/MapParser';
+import { validateHexCellMap } from '../map/validateHexCellMap';
+import type { HexCellMap } from '../map/HexCellMap';
 import {
   APIGameProvider,
   LocalGameProvider,
@@ -13,7 +14,7 @@ import { AssetLoader } from '../rendering';
 /**
  * Resolved per-session context shared across the gamev2 React tree:
  * URL identity (gameId/userId/isLocal), the configured GameProvider,
- * the AssetLoader, and the parsed RenderMap derived from the provider's
+ * the AssetLoader, and the parsed HexCellMap derived from the provider's
  * map text.
  *
  * For the no-`gameId` dev path, a stub provider is used and `gameId` /
@@ -26,7 +27,7 @@ export type GameSession = {
   baseUrl: string;
   provider: GameProvider;
   assetLoader: AssetLoader;
-  renderMap: RenderMap;
+  map: HexCellMap;
 };
 
 const GameSessionContext = createContext<GameSession | null>(null);
@@ -74,11 +75,10 @@ export function GameSessionProvider({ children }: GameSessionProviderProps) {
         let provider: GameProvider;
 
         if (!gameId) {
-          // Dev fallback — parse stub map text and build an in-memory game.
-          const renderMap = parseMap(STUB_MAP_TEXT);
-          provider = createStubProvider(renderMap);
+          const map = parseMap(STUB_MAP_TEXT);
+          provider = createStubProvider(map);
           const game = await provider.get();
-          validateRenderMap(renderMap, game.data.maps[0]);
+          validateHexCellMap(map, game.data.maps[0]);
           sessionRef.current = {
             gameId: undefined,
             userId: undefined,
@@ -86,7 +86,7 @@ export function GameSessionProvider({ children }: GameSessionProviderProps) {
             baseUrl,
             provider,
             assetLoader,
-            renderMap,
+            map,
           };
           setState({ kind: 'loaded', session: sessionRef.current });
           return;
@@ -102,9 +102,9 @@ export function GameSessionProvider({ children }: GameSessionProviderProps) {
           : new APIGameProvider(gameId, userId);
 
         const mapText = await provider.getMapText();
-        const renderMap = parseMap(mapText);
+        const map = parseMap(mapText);
         const game = await provider.get();
-        validateRenderMap(renderMap, game.data.maps[0]);
+        validateHexCellMap(map, game.data.maps[0]);
         sessionRef.current = {
           gameId,
           userId,
@@ -112,7 +112,7 @@ export function GameSessionProvider({ children }: GameSessionProviderProps) {
           baseUrl,
           provider,
           assetLoader,
-          renderMap,
+          map,
         };
         setState({ kind: 'loaded', session: sessionRef.current });
       } catch (e) {

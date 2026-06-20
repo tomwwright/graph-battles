@@ -1,9 +1,10 @@
 import { AbstractMesh, Scene, TransformNode, Vector3 } from '@babylonjs/core';
 import { ID, Values, GameMap } from '@battles/models';
-import { HexCoord, hexToTileCoords } from './HexCoordinates';
+import { HexCoord, hexToTileCoords } from '../map/HexCoordinates';
 import { TerritoryComposition, TileType } from './TerritoryComposition';
 import { AssetLoader } from './AssetLoader';
 import { HexGridController } from './HexGridController';
+import type { PathCell, TerritoryCell } from '../map/HexCellMap';
 
 type PlacedTile = {
   mesh: AbstractMesh;
@@ -32,8 +33,8 @@ export class MapRenderer {
    * Render the full map. Returns all placed meshes for shadow/mirror registration.
    */
   loadMap(
-    territories: { id: ID; coord: HexCoord }[],
-    pathCells: { coord: HexCoord; exclude: 1 | 2 | 3 | 4 | 5 | 6 }[],
+    territories: readonly TerritoryCell[],
+    pathCells: readonly PathCell[],
     gameMap: GameMap
   ): AbstractMesh[] {
     this.dispose();
@@ -45,7 +46,10 @@ export class MapRenderer {
     const occupiedTiles = new Set<string>();
 
     for (const cell of pathCells) {
-      const tiles = TerritoryComposition.composePath(cell.exclude);
+      let tiles;
+      if (cell.kind === 'wide') tiles = TerritoryComposition.composePath(cell.exclude);
+      else if (cell.kind === 'narrow') tiles = TerritoryComposition.composeNarrowPath(cell.dirA, cell.dirB);
+      else tiles = TerritoryComposition.composeGrass();
       const tileCoords = hexToTileCoords(cell.coord);
       const placed = this.placeTiles(tiles, tileCoords, `path-${cell.coord.x}-${cell.coord.z}`);
       for (const p of placed) occupiedTiles.add(`${tileCoords[p.tileIndex].x},${tileCoords[p.tileIndex].z}`);
