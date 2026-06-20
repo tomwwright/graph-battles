@@ -9,7 +9,8 @@ Renderers (`src/rendering/*`) consume `HexCellMap` and the helpers exported here
 | File | Role |
 |------|------|
 | `HexCoordinates.ts` | Pure geometry — coord types, hex↔tile transforms, direction tables, tile-presence helpers. |
-| `HexCellMap.ts` | `HexCell` discriminated union, `HexCellMap` class, `constructHexCellMap` builder. |
+| `HexCellMap.ts` | `HexCell` discriminated union, `HexCellMap` class, `constructHexCellMap` builder (orchestrates parsing → validation → edge derivation). |
+| `EdgeBuilder.ts` | Owns flood-fill of path-cell segments + per-segment BFS ordering + cross-segment edge merge. Called by `constructHexCellMap` after validation passes. |
 | `MapParser.ts` | Text → `HexCell[]` lifters. `parseMap` (markdown table) + `parseMapLegacy` (ASCII grid). Each delegates to `constructHexCellMap`. |
 | `validateHexCellMap.ts` | Cross-check `HexCellMap` against `GameMapData` (territory + edge ID drift detector). |
 | `HexCellMap.test.ts`, `MapParser.test.ts` | Vitest coverage. |
@@ -139,20 +140,27 @@ Edge IDs follow the lobby JSON convention (`edgeIdFor(a, b)`). `pathCoords` orde
 ```
 cells: HexCell[]
    │
-   ├─ Bucket into grid + territories + pathCells
+   ├─ Bucket into grid + territories + paths
    ├─ Validate: unique territory IDs
-   ├─ Validate: no direct T-T adjacency (any hex-direction)
-   ├─ Build path-cell adjacency map (reciprocal open + tile-pair check)
-   ├─ Validate: every path cell has exactly 2 bridges
-   ├─ Flood-fill connected path-cell components
-   │       ↓ tracks per-component { cells, border-territories, cells-bordering-each-territory }
-   ├─ Per component × per (T_A, T_B) border pair:
-   │       order pathCoords by BFS from T_A-adjacent cells
-   │       merge if (T_A, T_B) already has an edge from another component
-   └─ new HexCellMap(grid, territories, pathCells, edges)
+   ├─ Build single adjacency map over every non-empty cell
+   │       (reciprocal open + narrow tile-pair check)
+   ├─ Validate: no direct T-T adjacency (read from adj)
+   ├─ Validate: every path cell has exactly 2 bridges (adj.size === 2)
+   ├─ EdgeBuilder.from(adj, grid).toEdges()  →  HexEdge[]
+   └─ new HexCellMap(grid, territories, paths, edges)
 ```
 
-Validation throws on the first error encountered; partial maps are never returned.
+Validation throws on the first error encountered; partial maps are never returned. Edge derivation (flood-fill segments, per-segment BFS ordering, cross-segment merge) is delegated to `EdgeBuilder` — see below.
+
+## `EdgeBuilder` — flood-fill + edge derivation
+
+Given a validated path-cell graph (`adj` + `grid`), `EdgeBuilder.from(adj, grid).toEdges()` produces canonical `HexEdge[]`. Internal phases:
+
+1. **Flood-fill segments.** Each connected component of the path-cell subgraph becomes a `Segment` — `{ cells: Set<key>, borders: Map<territoryId, Set<key>> }`. `visited` lives on the builder instance.
+2. **Per-segment edge emission.** For each segment × each `(T_A, T_B)` border-territory pair: order pathCoords by BFS from cells bordering `T_A`, build a `HexEdge` using the canonical-ordered pair (smaller territory number = `T_A`).
+3. **Cross-segment merge.** If two disjoint segments share the same `(T_A, T_B)` pair, their `pathCoords` are concatenated into a single edge. Ordering across the join is **visually approximate** — branchy/looping components are out of scope per the path-cell spec.
+
+`Segment` is a private record inside `EdgeBuilder.ts`. The builder is single-use: construct via `from`, call `toEdges` once.
 
 ## Parsers
 

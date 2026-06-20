@@ -118,6 +118,8 @@ export function toOffsetCoordinates(direction: HexDirection) {
   return HEX_DIRS[direction - 1];
 }
 
+export const HEX_DIRECTIONS: readonly HexDirection[] = [1, 2, 3, 4, 5, 6];
+
 const HEX_OPPOSITE: Record<HexDirection, HexDirection> = { 1: 4, 4: 1, 2: 5, 5: 2, 3: 6, 6: 3 };
 
 export function toOppositeDirection(direction: HexDirection) {
