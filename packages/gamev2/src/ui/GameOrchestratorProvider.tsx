@@ -59,6 +59,7 @@ export function GameOrchestratorProvider({ children }: GameOrchestratorProviderP
         autoResolve: false,
         visibilityMode: 'current-player',
         pendingAnimations: [],
+        lastSavedAt: null,
       });
 
       const orch = new GameOrchestrator(store, renderer, provider, userId);

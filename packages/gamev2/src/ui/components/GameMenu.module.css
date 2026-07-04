@@ -1,0 +1,16 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.buttonRow {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 6px;
+  padding-right: 6px;
+  white-space: nowrap;
+}

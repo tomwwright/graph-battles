@@ -131,6 +131,8 @@ export type StateChange =
   | { type: 'animation/started'; id: string }
   /** An animation finished (or aborted). Removes the token from `pendingAnimations`. */
   | { type: 'animation/completed'; id: string }
+  /** Bump `lastSavedAt` to `Date.now()`. Dispatched after a successful `provider.action(...)`. */
+  | { type: 'save/tracked' }
   /**
    * Server (or local) resolved a turn. Reducer replaces `state.game` with the
    * resolved game, replaces `state.map` with the pre-resolve snapshot from
@@ -198,6 +200,9 @@ export type StoreState = {
    * Tokens are opaque identifiers — only the count matters.
    */
   pendingAnimations: AnimationToken[];
+
+  /** Timestamp (ms since epoch) of the last successful provider.action(...) call. Null when never saved. */
+  lastSavedAt: number | null;
 };
 
 export type AnimationToken = { id: string };

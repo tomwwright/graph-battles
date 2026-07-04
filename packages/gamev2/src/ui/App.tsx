@@ -9,7 +9,7 @@ import { ResolutionPanel } from './components/ResolutionPanel';
 import { NextPlayerPopup } from './components/NextPlayerPopup';
 import { VictoryPopup } from './components/VictoryPopup';
 import { Tooltip } from './components/Tooltip';
-import { FpsCounter } from './components/FpsCounter';
+import { HeaderBar } from './components/HeaderBar';
 import { MarkerLayer } from './components/MarkerLayer';
 import { TerritoriesModal } from './components/TerritoriesModal';
 import { ReplayPhaseList } from './components/ReplayPhaseList';
@@ -20,7 +20,7 @@ export function App() {
   return (
     <Frame>
       <Header>
-        <FpsCounter />
+        <HeaderBar />
       </Header>
       <LeftColumn>
         <PlayerLeaderboard />

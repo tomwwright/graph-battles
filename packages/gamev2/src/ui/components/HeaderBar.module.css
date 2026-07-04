@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lastSaved {
+  font-family: monospace;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.identity {
+  font-family: monospace;
+  font-size: 12px;
+  opacity: 0.8;
+}
