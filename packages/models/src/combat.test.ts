@@ -35,6 +35,30 @@ describe('Combat Model', () => {
     );
   });
 
+  it('outcome preview matches resolve retention', () => {
+    const combats = map.getCombats();
+
+    // Edge #E23: ratings 4 vs 2 -> retain ceil((4-2)/2) = 1, winner is top combatant
+    const e23Outcome = combats[0].outcome();
+    expect(e23Outcome.retainedCount).to.equal(1);
+    expect(e23Outcome.winner).to.equal(combats[0].combatants[0]);
+
+    // Territory #T4: ratings 3 vs 2 vs 1 -> retain ceil((3-2)/2) = 1
+    const t4Outcome = combats[1].outcome();
+    expect(t4Outcome.retainedCount).to.equal(1);
+    expect(t4Outcome.winner).to.equal(combats[1].combatants[0]);
+  });
+
+  it('outcome with fewer than two combatants has no winner', () => {
+    // Synthesise by clearing combatants after construction — pure-function test
+    const combats = map.getCombats();
+    const combat = combats[0];
+    combat.combatants = [combat.combatants[0]];
+    const outcome = combat.outcome();
+    expect(outcome.winner).to.equal(null);
+    expect(outcome.retainedCount).to.equal(0);
+  });
+
   it('resolve', () => {
     const combats = map.getCombats();
 
