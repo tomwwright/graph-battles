@@ -1,0 +1,62 @@
+.header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.localityIcon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.metric {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.activeBadge {
+  font-size: 10px;
+  background: rgba(0, 128, 0, 0.5);
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.readyBadge {
+  font-size: 10px;
+  background: rgba(80, 120, 200, 0.6);
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.bodyRow {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.territoryButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 2px;
+  width: 100%;
+}
+
+.territoryButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

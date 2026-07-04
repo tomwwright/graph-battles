@@ -23,7 +23,7 @@ export function App() {
         <HeaderBar />
       </Header>
       <LeftColumn>
-        <PlayerLeaderboard />
+        <PlayerLeaderboard onOpenTerritories={() => setTerritoriesOpen(true)} />
         <button
           type="button"
           onClick={() => setTerritoriesOpen(true)}

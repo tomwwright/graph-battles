@@ -1,24 +1,30 @@
 import { useGameStore } from '../../state/useGameStore';
 import { selectCurrentPlayerId } from '../../state/selectors';
-import { PlayerInfo } from './PlayerInfo';
-import panelStyles from './panels.module.css';
+import { useGameSession } from '../GameSessionProvider';
+import { PlayerRow } from './PlayerRow';
 import styles from './PlayerLeaderboard.module.css';
 
-export function PlayerLeaderboard() {
+type PlayerLeaderboardProps = {
+  onOpenTerritories: () => void;
+};
+
+export function PlayerLeaderboard({ onOpenTerritories }: PlayerLeaderboardProps) {
   const currentPlayerId = useGameStore(selectCurrentPlayerId);
   const map = useGameStore((s) => s.map);
   useGameStore((s) => s.mapRevision);
+  const session = useGameSession();
 
   const players = map.players;
 
   return (
-    <div className={`${panelStyles.panel} ${styles.container}`}>
-      <div className={panelStyles.heading}>Players</div>
+    <div className={styles.container}>
       {players.map((player) => (
-        <PlayerInfo
+        <PlayerRow
           key={player.data.id}
           player={player}
           isActive={player.data.id === currentPlayerId}
+          sessionUserId={session.userId}
+          onOpenTerritories={onOpenTerritories}
         />
       ))}
     </div>
