@@ -117,7 +117,12 @@ export function TerritoriesModal({ isOpen, onDismiss }: TerritoriesModalProps) {
         key: 'foodProd',
         header: 'Food +',
         align: 'right',
-        render: (r) => `+${r.foodProduction}`,
+        render: (r) => {
+          if (r.unitCount === 0) return `+${r.foodProduction}`;
+          const delta = r.foodProduction - r.unitCount;
+          const sign = delta >= 0 ? '+' : '';
+          return `+${r.foodProduction} (${sign}${delta})`;
+        },
         sortValue: (r) => r.foodProduction,
       },
       {
