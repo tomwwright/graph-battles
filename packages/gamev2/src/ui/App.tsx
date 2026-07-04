@@ -20,7 +20,7 @@ export function App() {
   return (
     <Frame>
       <Header>
-        <TurnSelector />
+        <FpsCounter />
       </Header>
       <LeftColumn>
         <PlayerLeaderboard />
@@ -41,7 +41,7 @@ export function App() {
         </SelectedSlot>
       </RightColumn>
       <Footer>
-        <FpsCounter />
+        <TurnSelector />
         <ActionBar />
       </Footer>
       <MarkerLayer />
