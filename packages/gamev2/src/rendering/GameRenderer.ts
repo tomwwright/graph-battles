@@ -16,6 +16,7 @@ import type { HoverInfo } from '../state/types';
 
 type TerritoryClickCallback = (territoryId: ID) => void;
 type UnitClickCallback = (unitId: ID) => void;
+type DoubleClickCallback = (id: ID) => void;
 type HoverCallback = (hover: HoverInfo) => void;
 
 /**
@@ -89,6 +90,15 @@ export class GameRenderer {
 
   onUnitClick(callback: UnitClickCallback): void {
     this.unitRenderer.onUnitClick(callback);
+  }
+
+  /** Fires on double-click of a territory tile or path edge tile. */
+  onDoubleClick(callback: DoubleClickCallback): void {
+    this.grid.onDoubleClick(callback);
+  }
+
+  onUnitDoubleClick(callback: DoubleClickCallback): void {
+    this.unitRenderer.onUnitDoubleClick(callback);
   }
 
   onHover(callback: HoverCallback): void {

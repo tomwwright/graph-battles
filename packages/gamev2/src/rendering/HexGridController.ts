@@ -17,6 +17,7 @@ import type { HoverInfo } from '../state/types';
 type TileOverlay = { color: Color3; alpha: number };
 
 type TerritoryClickCallback = (territoryId: ID) => void;
+type DoubleClickCallback = (id: ID) => void;
 type HoverCallback = (hover: HoverInfo) => void;
 
 /**
@@ -36,6 +37,7 @@ export class HexGridController {
 
   private mapSize = 0;
   private clickCallback: TerritoryClickCallback | null = null;
+  private doubleClickCallback: DoubleClickCallback | null = null;
   private hoverCallback: HoverCallback | null = null;
   private overlays = new Map<string, TileOverlay>();
 
@@ -53,6 +55,11 @@ export class HexGridController {
     this.clickCallback = callback;
   }
 
+  /** Fires on double-click of a territory or edge tile. */
+  onDoubleClick(callback: DoubleClickCallback): void {
+    this.doubleClickCallback = callback;
+  }
+
   onHover(callback: HoverCallback): void {
     this.hoverCallback = callback;
   }
@@ -64,6 +71,17 @@ export class HexGridController {
 
   setOccupiedTiles(occupied: Set<string>): void {
     this.occupiedTiles = occupied;
+    // Mark occupied tile meshes as pick-consumable so PointersInput can
+    // suppress its double-tap zoom over interactive tiles (territory/edge)
+    // while still allowing zoom over empty grass tiles.
+    for (let x = 0; x < this.grid.length; x++) {
+      const row = this.grid[x];
+      for (let z = 0; z < row.length; z++) {
+        const mesh = row[z];
+        const consumable = occupied.has(`${x},${z}`);
+        mesh.metadata = { ...(mesh.metadata ?? {}), pickConsumable: consumable };
+      }
+    }
   }
 
   setSize(size: number): void {
@@ -187,6 +205,9 @@ export class HexGridController {
         hexagon.actionManager.registerAction(
           new ExecuteCodeAction(ActionManager.OnPickTrigger, handlers.onPick)
         );
+        hexagon.actionManager.registerAction(
+          new ExecuteCodeAction(ActionManager.OnDoublePickTrigger, handlers.onDoublePick)
+        );
 
         row.push(hexagon);
       }
@@ -292,6 +313,18 @@ export class HexGridController {
         const territory = this.map?.territoryAtCoord(hex);
         if (territory) {
           this.clickCallback?.(territory.id);
+        }
+      },
+      onDoublePick: () => {
+        const hex = tileToHex(tileCoord);
+        const edge = this.map?.edgeAtCoord(hex);
+        if (edge) {
+          this.doubleClickCallback?.(edge.id);
+          return;
+        }
+        const territory = this.map?.territoryAtCoord(hex);
+        if (territory) {
+          this.doubleClickCallback?.(territory.id);
         }
       },
     };

@@ -40,6 +40,7 @@ type UnitState = {
 };
 
 type UnitClickCallback = (unitId: ID) => void;
+type UnitDoubleClickCallback = (unitId: ID) => void;
 type HoverCallback = (hover: HoverInfo) => void;
 type MeshRegistrationCallback = (mesh: AbstractMesh) => void;
 
@@ -55,6 +56,7 @@ export class UnitRenderer {
   private animatingUnits = new Set<ID>();
   private navigation: Navigation | null = null;
   private clickCallback: UnitClickCallback | null = null;
+  private doubleClickCallback: UnitDoubleClickCallback | null = null;
   private hoverCallback: HoverCallback | null = null;
   private meshRegistrationCallback: MeshRegistrationCallback | null = null;
 
@@ -73,6 +75,10 @@ export class UnitRenderer {
 
   onUnitClick(callback: UnitClickCallback): void {
     this.clickCallback = callback;
+  }
+
+  onUnitDoubleClick(callback: UnitDoubleClickCallback): void {
+    this.doubleClickCallback = callback;
   }
 
   onHover(callback: HoverCallback): void {
@@ -135,10 +141,16 @@ export class UnitRenderer {
   private attachUnitPicking(root: AbstractMesh, unitId: ID): void {
     const apply = (m: AbstractMesh) => {
       m.isPickable = true;
+      m.metadata = { ...(m.metadata ?? {}), pickConsumable: true };
       m.actionManager = new ActionManager(this.scene);
       m.actionManager.registerAction(
         new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
           this.clickCallback?.(unitId);
+        })
+      );
+      m.actionManager.registerAction(
+        new ExecuteCodeAction(ActionManager.OnDoublePickTrigger, () => {
+          this.doubleClickCallback?.(unitId);
         })
       );
       m.actionManager.registerAction(
