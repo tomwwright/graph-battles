@@ -6,6 +6,7 @@ type ExpandablePanelProps = {
   children: ReactNode;
   defaultExpanded?: boolean;
   className?: string;
+  showCaret?: boolean;
 };
 
 export function ExpandablePanel({
@@ -13,6 +14,7 @@ export function ExpandablePanel({
   children,
   defaultExpanded = false,
   className,
+  showCaret = true,
 }: ExpandablePanelProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const bodyId = useId();
@@ -26,9 +28,11 @@ export function ExpandablePanel({
         aria-controls={bodyId}
         onClick={() => setExpanded((v) => !v)}
       >
-        <span className={styles.caret} aria-hidden="true">
-          {expanded ? '▾' : '▸'}
-        </span>
+        {showCaret && (
+          <span className={styles.caret} aria-hidden="true">
+            {expanded ? '▾' : '▸'}
+          </span>
+        )}
         <span className={styles.headerContent}>{header}</span>
       </button>
       {expanded && (

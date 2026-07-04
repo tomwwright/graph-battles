@@ -58,7 +58,7 @@ export function PlayerRow({ player, isActive, sessionUserId, onOpenTerritories }
   const history = vpHistory(game, player.data.id, VP_HISTORY_TURNS);
 
   return (
-    <ExpandablePanel header={header}>
+    <ExpandablePanel header={header} showCaret={false}>
       <div className={styles.bodyRow}>
         <span className={panelStyles.small}>VPs</span>
         <span>{history.length > 0 ? history.join(', ') : '—'}</span>
