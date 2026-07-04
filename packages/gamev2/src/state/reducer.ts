@@ -141,6 +141,8 @@ export function reducer(state: StoreState, change: StateChange): StoreState {
         ...state,
         pendingAnimations: state.pendingAnimations.filter((a) => a.id !== change.id),
       };
+    case 'save/tracked':
+      return { ...state, lastSavedAt: Date.now() };
   }
   // TS exhaustiveness ensures every variant above returns; this guards against
   // a future variant being added without a `case`.

@@ -5,6 +5,7 @@ import { Table, type Column } from './Table';
 import { TERRITORY_ACTION_LABELS } from './TerritoryInfo';
 import { useGameStore } from '../../state/useGameStore';
 import { useDispatch } from '../../state/useDispatch';
+import panelStyles from './panels.module.css';
 
 type TerritoryRow = {
   id: string;
@@ -22,12 +23,13 @@ type TerritoryRow = {
 type TerritoriesModalProps = {
   isOpen: boolean;
   onDismiss: () => void;
+  onSwitch?: () => void;
 };
 
-export function TerritoriesModal({ isOpen, onDismiss }: TerritoriesModalProps) {
+export function TerritoriesModal({ isOpen, onDismiss, onSwitch }: TerritoriesModalProps) {
   const map = useGameStore((s) => s.map);
   const phase = useGameStore((s) => s.phase);
-  useGameStore((s) => s.mapRevision);
+  const mapRevision = useGameStore((s) => s.mapRevision);
   const dispatch = useDispatch();
   const isPlanning = phase.type === 'planning';
 
@@ -45,7 +47,7 @@ export function TerritoriesModal({ isOpen, onDismiss }: TerritoriesModalProps) {
         availableActions: t.actions.length,
         currentAction: t.currentAction,
       })),
-    [map, phase],
+    [map, phase, mapRevision],
   );
 
   const columns = useMemo<Column<TerritoryRow>[]>(
@@ -170,8 +172,19 @@ export function TerritoriesModal({ isOpen, onDismiss }: TerritoriesModalProps) {
     [dispatch, isPlanning, onDismiss],
   );
 
+  const title = onSwitch ? (
+    <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+      <span>Territories</span>
+      <button type="button" className={panelStyles.button} onClick={onSwitch}>
+        Switch to Units →
+      </button>
+    </span>
+  ) : (
+    'Territories'
+  );
+
   return (
-    <DismissableModal isOpen={isOpen} onDismiss={onDismiss} title="Territories">
+    <DismissableModal isOpen={isOpen} onDismiss={onDismiss} title={title}>
       <Table
         columns={columns}
         rows={rows}

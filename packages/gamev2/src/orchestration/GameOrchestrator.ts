@@ -116,6 +116,7 @@ export class GameOrchestrator {
         autoResolve: false,
         visibilityMode: 'all',
         pendingAnimations: [],
+        lastSavedAt: null,
       },
     });
 
@@ -177,9 +178,11 @@ export class GameOrchestrator {
       this.store.dispatch({ type: 'map/mutated' });
       const playerId = currentPlayerIdFromPhase(phase);
       if (playerId) {
-        this.provider.action(playerId, action).catch((e) => {
-          console.warn('[GameOrchestrator] provider.action failed:', e);
-        });
+        this.provider.action(playerId, action)
+          .then(() => this.store.dispatch({ type: 'save/tracked' }))
+          .catch((e) => {
+            console.warn('[GameOrchestrator] provider.action failed:', e);
+          });
       }
     } catch (e) {
       console.warn('[GameOrchestrator] apply failed:', action, e);
