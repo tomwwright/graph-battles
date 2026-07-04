@@ -13,6 +13,7 @@ type TerritoryRow = {
   food: number;
   maxFood: number;
   foodProduction: number;
+  goldProduction: number;
   unitCount: number;
   availableActions: number;
   currentAction: Values.TerritoryAction | null;
@@ -39,6 +40,7 @@ export function TerritoriesModal({ isOpen, onDismiss }: TerritoriesModalProps) {
         food: t.data.food,
         maxFood: t.maxFood,
         foodProduction: t.foodProduction,
+        goldProduction: t.goldProduction,
         unitCount: t.units.length,
         availableActions: t.actions.length,
         currentAction: t.currentAction,
@@ -113,10 +115,17 @@ export function TerritoriesModal({ isOpen, onDismiss }: TerritoriesModalProps) {
       },
       {
         key: 'foodProd',
-        header: 'Food prod.',
+        header: 'Food +',
         align: 'right',
         render: (r) => `+${r.foodProduction}`,
         sortValue: (r) => r.foodProduction,
+      },
+      {
+        key: 'goldProd',
+        header: 'Gold +',
+        align: 'right',
+        render: (r) => `+${r.goldProduction}`,
+        sortValue: (r) => r.goldProduction,
       },
       {
         key: 'units',
