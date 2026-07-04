@@ -11,11 +11,11 @@ import { VictoryPopup } from './components/VictoryPopup';
 import { Tooltip } from './components/Tooltip';
 import { HeaderBar } from './components/HeaderBar';
 import { MarkerLayer } from './components/MarkerLayer';
-import { TerritoriesModal } from './components/TerritoriesModal';
+import { ModalContainer, type OpenModal } from './components/ModalContainer';
 import { ReplayPhaseList } from './components/ReplayPhaseList';
 
 export function App() {
-  const [territoriesOpen, setTerritoriesOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<OpenModal>(null);
 
   return (
     <Frame>
@@ -23,14 +23,15 @@ export function App() {
         <HeaderBar />
       </Header>
       <LeftColumn>
-        <PlayerLeaderboard onOpenTerritories={() => setTerritoriesOpen(true)} />
-        <button
-          type="button"
-          onClick={() => setTerritoriesOpen(true)}
-          style={{ pointerEvents: 'auto', marginTop: 8 }}
-        >
-          Territories
-        </button>
+        <PlayerLeaderboard onOpenTerritories={() => setOpenModal('territories')} />
+        <div style={{ display: 'flex', gap: 6, pointerEvents: 'auto', marginTop: 8 }}>
+          <button type="button" onClick={() => setOpenModal('territories')}>
+            Territories
+          </button>
+          <button type="button" onClick={() => setOpenModal('units')}>
+            Units
+          </button>
+        </div>
         <ReplayPhaseList />
       </LeftColumn>
       <RightColumn>
@@ -48,9 +49,10 @@ export function App() {
       <NextPlayerPopup />
       <VictoryPopup />
       <Tooltip />
-      <TerritoriesModal
-        isOpen={territoriesOpen}
-        onDismiss={() => setTerritoriesOpen(false)}
+      <ModalContainer
+        open={openModal}
+        onDismiss={() => setOpenModal(null)}
+        onSwitch={(target) => setOpenModal(target)}
       />
     </Frame>
   );
