@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Frame, Header, LeftColumn, RightColumn, SelectedSlot, Footer } from './components/Frame';
 import { TurnSelector } from './components/TurnSelector';
 import { PlayerLeaderboard } from './components/PlayerLeaderboard';
@@ -10,8 +11,11 @@ import { VictoryPopup } from './components/VictoryPopup';
 import { Tooltip } from './components/Tooltip';
 import { FpsCounter } from './components/FpsCounter';
 import { MarkerLayer } from './components/MarkerLayer';
+import { TerritoriesModal } from './components/TerritoriesModal';
 
 export function App() {
+  const [territoriesOpen, setTerritoriesOpen] = useState(false);
+
   return (
     <Frame>
       <Header>
@@ -19,6 +23,13 @@ export function App() {
       </Header>
       <LeftColumn>
         <PlayerLeaderboard />
+        <button
+          type="button"
+          onClick={() => setTerritoriesOpen(true)}
+          style={{ pointerEvents: 'auto', marginTop: 8 }}
+        >
+          Territories
+        </button>
       </LeftColumn>
       <RightColumn>
         <GameSettingsPanel />
@@ -35,6 +46,10 @@ export function App() {
       <NextPlayerPopup />
       <VictoryPopup />
       <Tooltip />
+      <TerritoriesModal
+        isOpen={territoriesOpen}
+        onDismiss={() => setTerritoriesOpen(false)}
+      />
     </Frame>
   );
 }
