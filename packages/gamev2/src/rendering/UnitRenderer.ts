@@ -5,7 +5,6 @@ import {
   Color3,
   EasingFunction,
   ExecuteCodeAction,
-  LinesMesh,
   Mesh,
   MeshBuilder,
   PBRMaterial,
@@ -14,6 +13,7 @@ import {
   StandardMaterial,
   Vector3,
 } from '@babylonjs/core';
+import { CreateGreasedLine } from '@babylonjs/core/Meshes/Builders/greasedLineBuilder';
 import { ID, Values } from '@battles/models';
 import { Navigation } from './Navigation';
 import { AssetLoader } from './AssetLoader';
@@ -22,6 +22,10 @@ import type { HoverInfo } from '../state/types';
 const UNIT_HEIGHT = 1.2;
 const UNIT_BASE_Y = UNIT_HEIGHT / 2 + 1;
 const DESTINATION_LINE_Y = UNIT_BASE_Y + 0.1;
+const DESTINATION_LINE_WIDTH = 0.2;
+const DESTINATION_LINE_ALPHA = 0.5;
+const DESTINATION_END_OFFSET = 1;
+const DESTINATION_MARKER_DIAMETER = 0.5;
 
 const UNITS_PER_ROW = 3;
 const UNIT_SPACING = 1.4;
@@ -34,8 +38,10 @@ const MOVE_FRAMES_PER_SEGMENT = 12;
 type UnitState = {
   mesh: AbstractMesh;
   locationId: ID;
+  colour: Values.Colour;
   statusMeshes: Mesh[];
-  destinationLine: LinesMesh | null;
+  destinationLine: AbstractMesh | null;
+  destinationMarker: Mesh | null;
   destinationId: ID | null;
 };
 
@@ -104,8 +110,10 @@ export class UnitRenderer {
     this.units.set(unitId, {
       mesh,
       locationId,
+      colour,
       statusMeshes: [],
       destinationLine: null,
+      destinationMarker: null,
       destinationId: null,
     });
 
@@ -177,6 +185,7 @@ export class UnitRenderer {
     state.mesh.dispose();
     for (const sm of state.statusMeshes) sm.dispose();
     if (state.destinationLine) state.destinationLine.dispose();
+    if (state.destinationMarker) state.destinationMarker.dispose();
 
     const locationId = state.locationId;
     this.units.delete(unitId);
@@ -272,6 +281,10 @@ export class UnitRenderer {
       state.destinationLine.dispose();
       state.destinationLine = null;
     }
+    if (state.destinationMarker) {
+      state.destinationMarker.dispose();
+      state.destinationMarker = null;
+    }
 
     if (!destinationId) return;
 
@@ -281,20 +294,50 @@ export class UnitRenderer {
 
     const waypoints = this.navigation.path(state.locationId, destinationId);
 
+    // Terminate the final segment DESTINATION_END_OFFSET world units before the
+    // destination centre so the terminating marker sits offset from the tile centre.
+    const preTerminal = waypoints.length > 0
+      ? waypoints[waypoints.length - 1]
+      : fromPos;
+    const dx = toPos.x - preTerminal.x;
+    const dz = toPos.z - preTerminal.z;
+    const dist = Math.hypot(dx, dz);
+    const terminal = dist > DESTINATION_END_OFFSET
+      ? { x: toPos.x - (dx / dist) * DESTINATION_END_OFFSET, z: toPos.z - (dz / dist) * DESTINATION_END_OFFSET }
+      : { x: preTerminal.x, z: preTerminal.z };
+
     const linePoints: Vector3[] = [
       new Vector3(fromPos.x, DESTINATION_LINE_Y, fromPos.z),
       ...waypoints.map((p) => new Vector3(p.x, DESTINATION_LINE_Y, p.z)),
-      new Vector3(toPos.x, DESTINATION_LINE_Y, toPos.z),
+      new Vector3(terminal.x, DESTINATION_LINE_Y, terminal.z),
     ];
 
-    const line = MeshBuilder.CreateLines(
+    const colour3 = this.colourToColor3(state.colour);
+
+    const line = CreateGreasedLine(
       `move-line-${unitId}`,
-      { points: linePoints, updatable: false },
+      { points: linePoints },
+      { color: colour3, width: DESTINATION_LINE_WIDTH },
       this.scene
     );
-    line.color = new Color3(1.0, 1.0, 0.3);
     line.isPickable = false;
+    if (line.material) line.material.alpha = DESTINATION_LINE_ALPHA;
     state.destinationLine = line;
+
+    const marker = MeshBuilder.CreateSphere(
+      `move-marker-${unitId}`,
+      { diameter: DESTINATION_MARKER_DIAMETER },
+      this.scene
+    );
+    marker.position = new Vector3(terminal.x, DESTINATION_LINE_Y, terminal.z);
+    marker.isPickable = false;
+    const markerMat = new StandardMaterial(`move-marker-mat-${unitId}`, this.scene);
+    markerMat.diffuseColor = colour3;
+    markerMat.emissiveColor = colour3;
+    markerMat.specularColor = Color3.Black();
+    markerMat.alpha = DESTINATION_LINE_ALPHA;
+    marker.material = markerMat;
+    state.destinationMarker = marker;
   }
 
   clearAllDestinations(): void {
