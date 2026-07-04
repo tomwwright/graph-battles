@@ -98,11 +98,12 @@ export class GameRenderer {
 
   // --- Camera ---
 
-  async focusOn(territoryId: ID): Promise<void> {
-    const coord = this.map?.territoryCoord(territoryId);
-    if (!coord) return;
-    const centerTile = hexCenterTile(coord);
-    const worldPos = this.grid.getWorldPosition(centerTile);
+  async focusOn(id: ID): Promise<void> {
+    // Unit ids resolve to the unit's tracked location via UnitRenderer;
+    // territory/edge ids resolve directly through Navigation.
+    const locationId = this.unitRenderer.getUnitLocation(id) ?? id;
+    const worldPos = this.navigation!.locationCenter(locationId);
+    if (!worldPos) throw new Error(`Unable to resolve id for focusOn: ${locationId}`);
     await this.cameraController.focusOn(worldPos);
   }
 

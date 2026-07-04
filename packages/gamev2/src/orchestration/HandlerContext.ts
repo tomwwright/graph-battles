@@ -1,4 +1,4 @@
-import type { Actions } from '@battles/models';
+import type { Actions, ID } from '@battles/models';
 import type { StateChange, StoreState } from '../state/types';
 
 /**
@@ -15,4 +15,9 @@ export type HandlerContext = {
   applyAction(action: Actions.ModelAction): void;
   /** Resolve the in-flight replay step gate. */
   advanceResolution(action: 'next' | 'skip'): void;
+  /**
+   * Pan camera to a target id (territory, unit, or edge). Renderer resolves
+   * unit ids to their current location centroid. Fire-and-forget — not tracked.
+   */
+  focusOn(id: ID): void;
 };
