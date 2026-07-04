@@ -94,7 +94,8 @@ export class PointersInput implements ICameraInput<ArcRotateCamera> {
       case PointerEventTypes.POINTERDOUBLETAP:
         // ignore Babylon's synthetic doubletap; use POINTERUP for own logic
         if (info.type === PointerEventTypes.POINTERUP) {
-          this.onUp(ev);
+          const pickedMesh = info.pickInfo?.hit ? info.pickInfo.pickedMesh : null;
+          this.onUp(ev, pickedMesh?.metadata?.pickConsumable === true);
         }
         break;
     }
@@ -183,7 +184,7 @@ export class PointersInput implements ICameraInput<ArcRotateCamera> {
     }
   }
 
-  private onUp(ev: PointerEvent): void {
+  private onUp(ev: PointerEvent, pickConsumed: boolean): void {
     const state = this.pointers.get(ev.pointerId);
     this.pointers.delete(ev.pointerId);
     if (this.pointers.size < 2) {
@@ -202,7 +203,8 @@ export class PointersInput implements ICameraInput<ArcRotateCamera> {
     const dt = now - this.lastTapTime;
     const dpos = Math.hypot(ev.clientX - this.lastTapX, ev.clientY - this.lastTapY);
     if (dt < DOUBLE_TAP_MS && dpos < DOUBLE_TAP_MAX_DIST_PX) {
-      this.controller.cycleZoom();
+      // Tap on tile/unit mesh (has an ActionManager) is consumed by the picking layer.
+      if (!pickConsumed) this.controller.cycleZoom();
       this.lastTapTime = 0;
     } else {
       this.lastTapTime = now;

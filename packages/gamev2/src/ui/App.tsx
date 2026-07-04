@@ -12,6 +12,7 @@ import { Tooltip } from './components/Tooltip';
 import { FpsCounter } from './components/FpsCounter';
 import { MarkerLayer } from './components/MarkerLayer';
 import { TerritoriesModal } from './components/TerritoriesModal';
+import { ReplayPhaseList } from './components/ReplayPhaseList';
 
 export function App() {
   const [territoriesOpen, setTerritoriesOpen] = useState(false);
@@ -30,6 +31,7 @@ export function App() {
         >
           Territories
         </button>
+        <ReplayPhaseList />
       </LeftColumn>
       <RightColumn>
         <GameSettingsPanel />

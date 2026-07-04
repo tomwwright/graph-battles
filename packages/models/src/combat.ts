@@ -25,6 +25,11 @@ export class Combatant {
   }
 }
 
+export type CombatOutcome = {
+  winner: Combatant | null;
+  retainedCount: number;
+};
+
 export class Combat {
   location: UnitContainer<ModelData>;
   combatants: Combatant[];
@@ -50,13 +55,28 @@ export class Combat {
     this.combatants = combatants;
   }
 
+  /**
+   * Pure preview of combat resolution. Does not mutate. When fewer than two
+   * combatants are present the combat has no outcome (`winner` = null,
+   * `retainedCount` = 0). Formula must stay in sync with `resolve()`.
+   */
+  outcome(): CombatOutcome {
+    if (this.combatants.length < 2) return { winner: null, retainedCount: 0 };
+    const [a, b] = this.combatants;
+    const retainedCount = Math.max(0, Math.ceil((a.combatRating - b.combatRating) / 2));
+    return {
+      winner: retainedCount > 0 ? a : null,
+      retainedCount,
+    };
+  }
+
   resolve() {
     let removedUnits: Unit[] = [];
-    let combatants = this.combatants;
+    const combatants = this.combatants;
+    const { retainedCount } = this.outcome();
 
-    let unitsRetained = Math.ceil((combatants[0].combatRating - combatants[1].combatRating) / 2);
-    if (unitsRetained < combatants[0].units.length) {
-      removedUnits.push(...combatants[0].units.splice(unitsRetained, combatants[0].units.length - unitsRetained));
+    if (retainedCount < combatants[0].units.length) {
+      removedUnits.push(...combatants[0].units.splice(retainedCount, combatants[0].units.length - retainedCount));
     }
 
     for (let i = 1; i < combatants.length; ++i) {

@@ -76,6 +76,16 @@ function createStubGameData(map: HexCellMap): GameData {
       statuses: [],
     };
   }
+  if (territories.length > 1) {
+    // Adjacent (alternating) territory owned by p2. Enables combat flow in dev.
+    dataMap['u2'] = {
+      id: 'u2',
+      type: 'unit',
+      playerId: 'p2',
+      locationId: territories[1].id,
+      statuses: [],
+    };
+  }
 
   const mapData: GameMapData = {
     id: 'map0',

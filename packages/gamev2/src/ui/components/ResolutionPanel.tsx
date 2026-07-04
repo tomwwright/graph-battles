@@ -5,18 +5,9 @@ import { UnitInfo } from './UnitInfo';
 import { TerritoryInfo } from './TerritoryInfo';
 import { PlayerInfo } from './PlayerInfo';
 import { CombatInfo } from './CombatInfo';
+import { PHASE_LABELS } from './phaseLabels';
 import panelStyles from './panels.module.css';
 import styles from './ResolutionPanel.module.css';
-
-const PHASE_LABELS: Record<string, string> = {
-  move: 'Movement',
-  combat: 'Combat',
-  'add-defend': 'Defenders',
-  food: 'Food',
-  gold: 'Gold',
-  'territory-control': 'Territory Captures',
-  'territory-action': 'Territory Actions',
-};
 
 export function ResolutionPanel() {
   const phaseType = useGameStore((s) => s.phase.type);

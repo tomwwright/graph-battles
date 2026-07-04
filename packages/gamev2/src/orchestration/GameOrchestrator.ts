@@ -125,6 +125,8 @@ export class GameOrchestrator {
       this.dispatch({ type: 'click-territory', territoryId }),
     );
     this.renderer.onUnitClick((unitId) => this.dispatch({ type: 'click-unit', unitId }));
+    this.renderer.onDoubleClick((id) => this.dispatch({ type: 'focus', id }));
+    this.renderer.onUnitDoubleClick((id) => this.dispatch({ type: 'focus', id }));
     this.renderer.onHover((hover) => this.store.dispatch({ type: 'hover/set', hover }));
 
     this.unitSyncer = new UnitSyncer(this.store, this.store, this.renderer.getUnitRenderer());
