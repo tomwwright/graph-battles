@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import './ui/styles/app.css';
 import { BabylonJsProvider } from './ui/BabylonJsProvider';
 import { GameOrchestratorProvider } from './ui/GameOrchestratorProvider';
 import { CursorProvider } from './ui/CursorProvider';

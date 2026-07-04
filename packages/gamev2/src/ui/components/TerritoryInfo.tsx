@@ -1,7 +1,7 @@
 import { Territory, Player, Values } from '@battles/models';
 import panelStyles from './panels.module.css';
 
-const TERRITORY_ACTION_LABELS: Record<string, string> = {
+export const TERRITORY_ACTION_LABELS: Record<string, string> = {
   [Values.TerritoryAction.CREATE_UNIT]: 'Create Unit',
   [Values.TerritoryAction.BUILD_SETTLEMENT]: 'Build Settlement',
   [Values.TerritoryAction.BUILD_FARM]: 'Build Farm',

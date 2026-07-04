@@ -81,7 +81,9 @@ export type Command =
   | { type: 'cancel-move'; unitIds: ID[] }
   // Renderer-originated input
   | { type: 'click-territory'; territoryId: ID }
-  | { type: 'click-unit'; unitId: ID };
+  | { type: 'click-unit'; unitId: ID }
+  // UI-originated input, `id` can be a unit, territory, or edge
+  | { type: 'focus'; id: ID };
 
 export type Dispatch = (cmd: Command) => void;
 

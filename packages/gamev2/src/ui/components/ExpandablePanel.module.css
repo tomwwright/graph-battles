@@ -1,0 +1,33 @@
+.panel {
+  composes: panel from './panels.module.css';
+}
+
+.headerButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.caret {
+  display: inline-block;
+  width: 0.8em;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.headerContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.body {
+  padding-top: 6px;
+}

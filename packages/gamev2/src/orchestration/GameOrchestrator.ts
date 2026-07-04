@@ -21,6 +21,7 @@ import {
   onReadyPlayer,
   onSetTurn,
   onAdvanceResolution,
+  onFocus,
 } from './handlers';
 
 /**
@@ -73,6 +74,11 @@ export class GameOrchestrator {
       dispatch: (action) => this.store.dispatch(action),
       applyAction: (action) => this.applyAction(action),
       advanceResolution: (action) => this.replayingListener.advance(action),
+      focusOn: (id) => {
+        this.renderer.focusOn(id).catch((e) => {
+          console.warn('[GameOrchestrator] focusOn failed:', e);
+        });
+      },
     };
   }
 
@@ -155,6 +161,8 @@ export class GameOrchestrator {
       case 'resolve-next':
       case 'skip-resolution':
         return onAdvanceResolution(this.ctx, cmd);
+      case 'focus':
+        return onFocus(this.ctx, cmd);
     }
   }
 

@@ -79,6 +79,11 @@ export class UnitRenderer {
     this.hoverCallback = callback;
   }
 
+  /** Current tracked location of a unit, or null if unknown. */
+  getUnitLocation(unitId: ID): ID | null {
+    return this.units.get(unitId)?.locationId ?? null;
+  }
+
   // --- Unit lifecycle ---
 
   addUnit(unitId: ID, locationId: ID, colour: Values.Colour): AbstractMesh | null {

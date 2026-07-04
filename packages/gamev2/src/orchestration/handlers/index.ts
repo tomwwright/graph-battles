@@ -6,3 +6,4 @@ export { onConfirmNextPlayer } from './confirmNextPlayer';
 export { onReadyPlayer } from './readyPlayer';
 export { onSetTurn } from './setTurn';
 export { onAdvanceResolution } from './advanceResolution';
+export { onFocus } from './focus';

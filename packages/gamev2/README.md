@@ -1,12 +1,12 @@
-# AGENTS.md — `@battles/gamev2`
+# `@battles/gamev2`
 
-Modern game client. Babylon.js 9 scene + React 19 UI, glued by a `GameOrchestrator`. Served at `/v2/` (Vite `base`). See repo-root `AGENTS.md` for monorepo context and `packages/models` for the domain model.
+Modern game client. Babylon.js 9 scene + React 19 UI, glued by a `GameOrchestrator`. Served at `/v2/` (Vite `base`). See repo-root `AGENTS.md` for monorepo context and `packages/models` for the domain model. UI kit guide: [`src/ui/README.md`](src/ui/README.md).
 
 ## Stack
 
 - Vite 6, React 19, TypeScript 6
 - `@babylonjs/core` + `loaders`, `gui`, `inspector`, `materials`, `addons`
-- `@fluentui/react-components` 9 for UI panels
+- Vanilla React + CSS Modules (no Fluent UI in application code; Fluent packages are only listed to satisfy `@babylonjs/inspector` peer-deps)
 - Depends on `@battles/models` (domain) and `@battles/api` (REST client + view-data envelope helpers)
 - No test suite — verify via `yarn workspace @battles/gamev2 dev`
 
@@ -176,6 +176,8 @@ Camera focus mapping lives in `CameraSyncer.getResolutionFocusTerritory`: `move`
 
 ## React UI
 
+For component-level guide (generic primitives, hooks, styling), see [`src/ui/README.md`](src/ui/README.md).
+
 `src/main.tsx` provider chain (outer → inner): `GameSessionProvider` → `CursorProvider` → `BabylonJsProvider` → `GameOrchestratorProvider` → `App`.
 
 - **`GameSessionProvider`** — reads URL params (`gameId`, `userId`, `local`). Constructs the right `GameProvider`, fetches map text, parses `RenderMap`, validates against `game.data.maps[0]`. No `gameId` → stub provider with `STUB_MAP_TEXT`. v1 view-data → inline error UI ("cannot be opened in gamev2"). Builds `AssetLoader` from `baseUrl`.
@@ -185,7 +187,7 @@ Camera focus mapping lives in `CameraSyncer.getResolutionFocusTerritory`: `move`
 
 ### App layout
 
-`src/ui/App.tsx` slots Fluent UI panels into a CSS grid `Frame`:
+`src/ui/App.tsx` slots React panels into a CSS grid `Frame`:
 - Header: `TurnSelector`
 - LeftColumn: `PlayerLeaderboard`
 - RightColumn: `GameSettingsPanel`, `SelectedSlot` (`ResolutionPanel` + `SelectedInfoPanel`)
